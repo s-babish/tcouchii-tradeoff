@@ -36,57 +36,66 @@ c4p_long <- c4p_raw %>%
   mutate(
     time = as.numeric(gsub("X","", time))
   )
+#remove weird ones (based on pulse 1 waveform plots)
+plot_IDs_1 <- ggplot(subset(c4p_long, Snake %in% c("CRF2630", "CRF2631", "CRF2633", "CRF2669", "CRF2670", "CRF2671", "CRF2672", "CRF2673", "CRF2674")),
+                     aes(x = time, y = force, color = Snake)) +
+  geom_line() 
+plot_IDs_1
+#2671 and 2669 don't seem to have really contracted
 
-c4p1 <- c4p_long %>% 
-  filter(Pulse == 1) %>% 
-  filter(Snake!= "CRF3600") %>% 
-  filter(Snake != "CRF3066")
-c4p2 <- c4p_long %>% 
-  filter(Pulse == 2)
-c4p3 <- c4p_long %>% 
-  filter(Pulse == 3)
-c4p4 <- c4p_long %>% 
-  filter(Pulse == 4)
+plot_IDs_2 <- ggplot(subset(c4p_long, Snake %in% c("CRF2676", "CRF2677", "CRF2678", "CRF2679", "CRF2680", "CRF2681", "CRF3051", "CRF3052", "CRF3055")),
+                     aes(x = time, y = force, color = Snake)) +
+  geom_line() 
+plot_IDs_2
+#all seem fine enough, some are slower to respond than others
+#actually 2677 should go based on how choppy it is; i think lots of these muscles were small and thus normalized fuzzily
+
+plot_IDs_3 <- ggplot(subset(c4p_long, Snake %in% c("CRF3058", "CRF3059", "CRF3060", "CRF3061", "CRF3064", "CRF3065", "CRF3066", "CRF3069", "CRF3070")),
+                     aes(x = time, y = force, color = Snake)) +
+  geom_line() 
+plot_IDs_3
+#3066 way too big
+
+plot_IDs_4 <- ggplot(subset(c4p_long, Snake %in% c("CRF3074", "CRF3211", "EJE164",  "EJE186", "CRF2675", "CRF3056", "CRF3072")),
+                     aes(x = time, y = force, color = Snake)) +
+  geom_line() 
+plot_IDs_4
+#all pretty much fine
+
+#remove outliers from visual examination
+c4p_long_sub <- c4p_long %>% 
+  filter(!Snake %in% c("CRF3066", "CRF2677", "CRF2671", "CRF2669"))
+
+#save file
+#write.csv(c4p_long_sub, "data_processed/c4p_no_outliers.csv")
+
+c4p1 <- c4p_long_sub %>% 
+  filter(Pulse == 1) 
 
 plot1 <- ggplot(c4p1, aes(x = time, y = force, group = Snake)) +
   geom_line() 
 plot1
-#another weird one again; also notable that the force is a normal amount in this
-# file, i need to look into why
-c4p1[c4p1$force > 8, ]
-#CRF3600 and 3066, so of course multiple different ones this time
 
-c4p2 <- c4p_long %>% 
-  filter(Pulse == 2)%>% 
-  filter(Snake!= "CRF3600") %>% 
-  filter(Snake != "CRF3066")
+c4p2 <- c4p_long_sub %>% 
+  filter(Pulse == 2)
 
 plot2 <- ggplot(c4p2, aes(x = time, y = force, group = Snake)) +
   geom_line() 
 plot2
 
-c4p3 <- c4p_long %>% 
+c4p3 <- c4p_long_sub %>% 
   filter(Pulse == 3)
-  filter(Snake!= "CRF3600") %>% 
-  filter(Snake != "CRF3066")
 
 plot3 <- ggplot(c4p3, aes(x = time, y = force, group = Snake)) +
   geom_line() 
 plot3
 
-pc4p4 <- c4p_long %>% 
-  filter(Pulse == 4)%>% 
-  filter(Snake!= "CRF3600") %>% 
-  filter(Snake != "CRF3066")
+c4p4 <- c4p_long_sub %>% 
+  filter(Pulse == 4)
 
 plot4 <- ggplot(c4p4, aes(x = time, y = force, group = Snake)) +
   geom_line() 
 plot4
-
-#I think bobby might have averaged this stuff together? unsure
-#also these plots won't look good until i figure out the averaging thing
-
-#Plotting C4P (transient force) results, pulses plotted sequentially ----
 
 #Plotting tetanus results -----
 #First plot will plot all results separately ----
@@ -111,15 +120,67 @@ tet_force_long <- tet_force %>%
     time = as.numeric(gsub("t","", time))
   )
 
+#filter out outliers/invalid data based on waveform ----
+#some muscles likely tore themselves or had other issues based on waveform, 
+# and there's few enough runs I can filter those out manually instead of writing
+# some sort of algorithm to recognize bad waveforms
 
-plot <- ggplot(tet_force_long, aes(x = time, y = force, group = Snake, color = MAMU)) +
+#need to plot only 5 snakes at a time for colors to be distinguishable
+#(i promise i'm aware of how incredibly cursed this method is, please forgive me)
+plot_IDs_1 <- ggplot(subset(tet_force_long, 
+                            Snake %in% c("CRF2630","CRF2631","CRF2633", "CRF2669","CRF2670")),
+                     aes(x = time, y = force, color = Snake)) +
+  geom_line() 
+plot_IDs_1
+#lots of bad ones, 2669 and 2631 both look ripped and 2670 is a bit small
+
+plot_IDs_2 <- ggplot(subset(tet_force_long, 
+                            Snake %in% c("CRF2671", "CRF2672", "CRF2673", "CRF2674", "CRF2675")),
+                     aes(x = time, y = force, color = Snake)) +
+  geom_line() 
+plot_IDs_2
+#all look fine, though the normalization is horrid
+#2675 is the tall outlier, contrary to bobby's suggestion it's actually on the smaller side (11 mg)
+
+plot_IDs_3 <- ggplot(subset(tet_force_long, 
+                            Snake %in% c("CRF2676", "CRF2677", "CRF2678", "CRF2679", "CRF2680")),
+                     aes(x = time, y = force, color = Snake)) +
+  geom_line() 
+plot_IDs_3
+#CRF2680 ripped
+
+plot_IDs_4 <- ggplot(subset(tet_force_long, 
+                            Snake %in% c("CRF2681", "CRF3051", "CRF3052", "CRF3055", "CRF3056")),
+                     aes(x = time, y = force, color = Snake)) +
+  geom_line() 
+plot_IDs_4
+#all fine (except maybe 2681)
+
+plot_IDs_5 <- ggplot(subset(tet_force_long, 
+                            Snake %in% c("CRF3065", "CRF3066", "CRF3070", "CRF3074")),
+                     aes(x = time, y = force, color = Snake)) +
+  geom_line() 
+plot_IDs_5
+#3074 totally wrong, 3065 and 3066 also look bad
+
+plot_IDs_6 <- ggplot(subset(tet_force_long, 
+                            Snake %in% c("CRF3058", "CRF3059", "CRF3060", "CRF3061", "CRF3064")),
+                     aes(x = time, y = force, color = Snake)) +
+  geom_line() 
+plot_IDs_6
+#3060 has weird decay
+tet_force_long_sub <- tet_force_long %>% 
+  filter(!Snake %in% c("CRF3060","CRF3074","CRF3065","CRF3066","CRF2680","CRF2669","CRF2631","CRF2670")) 
+#%>% filter(Snake != "CRF2675")
+
+#save this file
+#write.csv(tet_force_long_sub, "data_processed/tetanus_no_outliers.csv")
+
+#plot with MAMU color-coding -----
+plot_MAMUs <- ggplot(tet_force_long_sub, aes(x = time, y = force, group = Snake, color = MAMU)) +
   geom_line() + 
   scale_color_viridis(option = "viridis")
-plot
-
-#figure out who the really strong individual was
-tet_force_long[tet_force_long$force > 10000, ]
-#CRF2675
+plot_MAMUs
 
 #Second plot will average results together ----
 plot <- ggplot(tet_force_long, aes(x = time, y = force)) +
@@ -136,13 +197,21 @@ plot2 <- ggplot(tet_force_long,aes(x=time,y=force, group = Snake, color = MAMU))
 plot2
 
 #Alternative alternative that fits bobby's equation:
-plot3 <- ggplot(tet_force_long,aes(x=time,y=force, group = Snake, color = MAMU))+
-  geom_smooth(method="nls", 
-              formula=A2 + (A1 * A2) / (1 + exp((log(x) - log(x0)) / dx)), # this is an nls argument
-              method.args = list(start=c(A1 = 1, A2 = 1, x0 = 1, dx = 1)), # this too
-              se=FALSE) + 
-  scale_color_viridis(option = "viridis")
-plot3
+#none of this works right now but i am not in the mood to figure it out
+# plot3 <- ggplot(tet_force_long,aes(x=time,y=force, group = Snake, color = MAMU))+
+#   geom_smooth(method="nls",
+#               formula=y~A2 + (A1 * A2) / (1 + exp((log(x) - log(x0)) / dx)), # this is an nls argument
+#               method.args = list(start=c(A1 = 1, A2 = 1, x0 = 400, dx = 1)), # this too
+#               se=FALSE) +
+#   scale_color_viridis(option = "viridis")
+# plot3
+# 
+# drc_formula <- force~A2 + (A1 * A2) / (1 + exp((log(time) - log(x0)) / dx))
+
+# tetanus_models <- tet_force_long %>%
+#   group_by(Snake) %>%
+#   do(fit = nlsLM(MMformula,., start = list(A2 = )))
+# MMmodels %>% tidy(fit)
 
 
 #**Variant including error bars ----
@@ -175,41 +244,4 @@ plot <- ggplot(tet_force1d_long, aes(x = time, y = force, group = Snake)) +
 plot
 #that one individual is so messed up - CRF3074; i'm excluding them
 #this is another plot that will read way better once i can average it
-#Rheobase plots (separated by pulse length) -----
-#vector with all pulse length options for iterating (excluding files with no or few snakes)
-pulse_l <- c(50,100,200,500,1000,10000,50000)
-i=1
 
-keydf <- read.csv("TPA-sigmoidal-rpt.csv")
-keydf <- keydf[,c(7,11)]
-
-for (i in 1:length(pulse_l)) {
-  infile <- toString(paste("TPA_",pulse_l[i],".csv", sep=""))
-  df <- read.csv(infile)
-  df <- df[,c(-1)] #remove index line
-  dose_labels = df$Dose
-  df_long <- df %>%
-    mutate (
-      Dose = 0:15 #this is to make the plot look better bc ggplot is fighting me
-    ) %>% 
-    pivot_longer(
-      cols = -Dose,
-      names_to = "Snake",
-      values_to = "scaled_force"
-    ) %>% 
-    mutate(
-      Snake = sub("_[^_]+$", "", Snake),
-      MAMU = 0
-    ) %>% 
-    rows_update(distinct(keydf), by = "Snake", unmatched = "ignore") #pull in MAMU
-  
-  plot <- ggplot(df_long, aes(x = Dose, y = scaled_force, group = Snake, color = MAMU)) +
-    geom_smooth(se = F) + 
-    scale_color_viridis(option = "viridis") +
-    scale_x_continuous(labels = dose_labels, breaks = 0:15) +
-    ggtitle(toString(paste("Rheobase, pulse length ", pulse_l[i], "us"))) +
-    xlab("Current (mA)") + 
-    ylab("Proportion of maximal force")
-  print(plot)
- 
-}
