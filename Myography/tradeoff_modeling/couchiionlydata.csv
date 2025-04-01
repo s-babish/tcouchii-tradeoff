@@ -1,0 +1,200 @@
+,species,INDIV,CollPreNo,locality,region,County,sex,age,mass_g,SVL_cm,TL_cm,baseline_ms,MAMU,allele_a,allele_b,log_MAMU,E_allele,P_allele,N_allele,T_allele,L_allele,V1_allele,V2_allele,A_allele
+1,Thamnophis couchii,12.02,CRF2335,N Fork Mokelumne River,NA,NA,NA,NA,35.8,NA,NA,0.617,13.9,T,T,2.63188884,0,0,0,2,0,0,0,0
+2,Thamnophis couchii,12.021,CRF2336,N Fork Mokelumne River,NA,NA,NA,NA,4.9,NA,NA,1.067,50,T,T,NA,0,0,0,2,0,0,0,0
+3,Thamnophis couchii,12.022,CRF2337,N Fork Mokelumne River,NA,NA,NA,NA,5.1,NA,NA,1.042,50,T,T,NA,0,0,0,2,0,0,0,0
+4,Thamnophis couchii,12.023,CRF2338,N Fork Mokelumne River,NA,NA,NA,NA,5.4,NA,NA,0.911,15,T,T,2.708050201,0,0,0,2,0,0,0,0
+5,Thamnophis couchii,12.024,CRF2339,N Fork Mokelumne River,NA,NA,NA,NA,4.9,NA,NA,0.845,NA,T,T,NA,0,0,0,2,0,0,0,0
+6,Thamnophis couchii,12.025,CRF2340,N Fork Mokelumne River,NA,NA,NA,NA,50.6,NA,NA,0.544,15.8,T,T,2.76000994,0,0,0,2,0,0,0,0
+7,Thamnophis couchii,12.026,CRF2341,N Fork Feather River,NA,NA,NA,NA,5.5,NA,NA,0.982,4.73,T,T,1.553925203,0,0,0,2,0,0,0,0
+8,Thamnophis couchii,12.027,CRF2342,N Fork Feather River,NA,NA,NA,NA,6.2,NA,NA,0.902,6.38,T,T,1.853168097,0,0,0,2,0,0,0,0
+9,Thamnophis couchii,12.03,CRF2346,N Fork Mokelumne River,NA,NA,NA,NA,5.9,NA,NA,0.848,7.3,T,T,1.987874348,0,0,0,2,0,0,0,0
+23,Thamnophis couchii,15.35,CRF2630,Deep Creek,NA,Fresno,NA,NA,6.8,NA,NA,1.049,100,T,T,NA,0,0,0,2,0,0,0,0
+24,Thamnophis couchii,15.36,CRF2631,Deep Creek,NA,Fresno,NA,NA,22.8,NA,NA,0.84,175,T,T,5.164785974,0,0,0,2,0,0,0,0
+10,Thamnophis couchii,15.22,CRF2669,Canyon Creek,NA,Nevada,NA,NA,19.9,NA,NA,0.731,82.5,T,T,4.412798293,0,0,0,2,0,0,0,0
+11,Thamnophis couchii,15.23,CRF2670,Canyon Creek,NA,Nevada,NA,NA,7.2,NA,NA,0.877,82,T,T,4.406719247,0,0,0,2,0,0,0,0
+12,Thamnophis couchii,15.24,CRF2671,Canyon Creek,NA,Nevada,NA,NA,50.9,NA,NA,0.592,17,T,T,2.833213344,0,0,0,2,0,0,0,0
+13,Thamnophis couchii,15.25,CRF2672,Canyon Creek,NA,Nevada,NA,NA,10.8,NA,NA,0.661,32,T,T,3.465735903,0,0,0,2,0,0,0,0
+14,Thamnophis couchii,15.26,CRF2673,Canyon Creek,NA,Nevada,NA,NA,22.4,NA,NA,0.661,21.8,T,T,3.08190997,0,0,0,2,0,0,0,0
+15,Thamnophis couchii,15.27,CRF2674,Canyon Creek,NA,Nevada,NA,NA,5,NA,NA,0.893,21.9,T,T,3.086486637,0,0,0,2,0,0,0,0
+16,Thamnophis couchii,15.28,CRF2675,Canyon Creek,NA,Nevada,NA,NA,4.7,NA,NA,1.007,33.7,T,T,3.517497837,0,0,0,2,0,0,0,0
+17,Thamnophis couchii,15.29,CRF2676,Canyon Creek,NA,Nevada,NA,NA,20.6,NA,NA,0.691,21.3,T,T,3.058707073,0,0,0,2,0,0,0,0
+18,Thamnophis couchii,15.3,CRF2677,Canyon Creek,NA,Nevada,NA,NA,5.8,NA,NA,0.905,40.2,T,T,3.693866996,0,0,0,2,0,0,0,0
+19,Thamnophis couchii,15.31,CRF2678,Canyon Creek,NA,Nevada,NA,NA,15.8,NA,NA,0.724,36.5,T,T,3.597312261,0,0,0,2,0,0,0,0
+20,Thamnophis couchii,15.32,CRF2679,Canyon Creek,NA,Nevada,NA,NA,11.4,NA,NA,0.795,35.7,T,T,3.575150689,0,0,0,2,0,0,0,0
+21,Thamnophis couchii,15.33,CRF2680,Canyon Creek,NA,Nevada,NA,NA,7.9,NA,NA,0.793,40.8,T,T,3.708682081,0,0,0,2,0,0,0,0
+22,Thamnophis couchii,15.34,CRF2681,Canyon Creek,NA,Nevada,NA,NA,18.2,NA,NA,0.679,20.6,T,T,3.025291076,0,0,0,2,0,0,0,0
+58,Thamnophis couchii,16.68,CRF3051,Williams Creek,NA,Lassen,NA,NA,32.3,NA,NA,0.89,3.3,T,T,1.193922468,0,0,0,2,0,0,0,0
+59,Thamnophis couchii,16.69,CRF3052,Williams Creek,NA,Lassen,NA,NA,9.9,NA,NA,0.828,3.3,T,T,1.193922468,0,0,0,2,0,0,0,0
+60,Thamnophis couchii,16.7,CRF3053,Williams Creek,NA,Lassen,NA,NA,6.9,NA,NA,0.927,3.2,T,T,1.16315081,0,0,0,2,0,0,0,0
+61,Thamnophis couchii,16.71,CRF3054,Williams Creek,NA,Lassen,NA,NA,5.7,NA,NA,0.874,2.7,T,T,0.993251773,0,0,0,2,0,0,0,0
+62,Thamnophis couchii,16.72,CRF3055,Williams Creek,NA,Lassen,NA,NA,5.1,NA,NA,0.946,3.35,T,T,1.208960346,0,0,0,2,0,0,0,0
+63,Thamnophis couchii,16.73,CRF3056,Williams Creek,NA,Lassen,NA,NA,19.8,NA,NA,0.81,5,T,T,1.609437912,0,0,0,2,0,0,0,0
+64,Thamnophis couchii,16.74,CRF3057,Willard Creek,NA,Lassen,NA,NA,5.1,NA,NA,1.023,3.32,T,T,1.199964783,0,0,0,2,0,0,0,0
+65,Thamnophis couchii,16.75,CRF3058,Willard Creek,NA,Lassen,NA,NA,43.4,NA,NA,0.635,2.41,T,T,0.879626748,0,0,0,2,0,0,0,0
+66,Thamnophis couchii,16.76,CRF3059,Willard Creek,NA,Lassen,NA,NA,47.9,NA,NA,0.54,0.1,T,T,-2.302585093,0,0,0,2,0,0,0,0
+67,Thamnophis couchii,16.77,CRF3060,Willard Creek,NA,Lassen,NA,NA,24.3,NA,NA,0.573,3.14,T,T,1.1442228,0,0,0,2,0,0,0,0
+68,Thamnophis couchii,16.78,CRF3061,Willard Creek,NA,Lassen,NA,NA,130.6,NA,NA,0.636,3.76,T,T,1.324418957,0,0,0,2,0,0,0,0
+69,Thamnophis couchii,16.79,CRF3062,Willard Creek,NA,Lassen,NA,NA,87.6,NA,NA,0.846,7.6,T,T,NA,0,0,0,2,0,0,0,0
+29,Thamnophis couchii,16.108,CRF3063,Cherry Creek,NA,Tuolumne,NA,NA,89.2,NA,NA,0.865,17.9,T,T,NA,0,0,0,2,0,0,0,0
+30,Thamnophis couchii,16.109,CRF3064,Cherry Creek,NA,Tuolumne,NA,NA,48.8,NA,NA,0.751,69,T,T,4.234106505,0,0,0,2,0,0,0,0
+31,Thamnophis couchii,16.11,CRF3065,Cherry Creek,NA,Tuolumne,NA,NA,59.4,NA,NA,0.785,85.3,T,T,4.446174454,0,0,0,2,0,0,0,0
+32,Thamnophis couchii,16.111,CRF3066,Cherry Creek,NA,Tuolumne,NA,NA,62.7,NA,NA,0.731,122.8,T,T,4.810557016,0,0,0,2,0,0,0,0
+33,Thamnophis couchii,16.112,CRF3067,Cherry Creek,NA,Tuolumne,NA,NA,35.9,NA,NA,0.952,29,T,T,NA,0,0,0,2,0,0,0,0
+34,Thamnophis couchii,16.114,CRF3069,Cherry Creek,NA,Tuolumne,NA,NA,48.8,NA,NA,0.594,37.8,T,T,3.632309103,0,0,0,2,0,0,0,0
+35,Thamnophis couchii,16.115,CRF3070,Cherry Creek,NA,Tuolumne,NA,NA,41.5,NA,NA,0.917,58.8,T,T,4.074141855,0,0,0,2,0,0,0,0
+36,Thamnophis couchii,16.117,CRF3072,Cherry Creek,NA,Tuolumne,NA,NA,48.9,NA,NA,0.737,82.9,T,T,4.417635062,0,0,0,2,0,0,0,0
+37,Thamnophis couchii,16.119,CRF3074,Cherry Creek,NA,Tuolumne,NA,NA,25.8,NA,NA,0.977,21.9,T,T,3.086486637,0,0,0,2,0,0,0,0
+97,Thamnophis couchii,3.4,EDBjr21337,Antelope Creek,NA,Tehama,NA,NA,137.2,68.7,85.2,0.819,NA,T,T,NA,0,0,0,2,0,0,0,0
+96,Thamnophis couchii,3.39,EDBjr21338,Antelope Creek,NA,Tehama,NA,NA,147.6,67.2,85,0.702,1.97,T,T,0.678033543,0,0,0,2,0,0,0,0
+95,Thamnophis couchii,3.37,EDBjr21339,Antelope Creek,NA,Tehama,NA,NA,115.7,65.5,82.7,0.641,1.28,T,T,0.246860078,0,0,0,2,0,0,0,0
+94,Thamnophis couchii,3.36,EDBjr21340,Indian Creek,NA,Tehama,NA,NA,137.5,64.3,81.4,0.633,1.32,T,T,0.277631737,0,0,0,2,0,0,0,0
+93,Thamnophis couchii,3.35,EDBjr21341,Deer Creek and Beaver Creek,NA,Tehama,NA,NA,98.5,60,77.2,0.613,2.19,T,T,0.783901544,0,0,0,2,0,0,0,0
+92,Thamnophis couchii,3.34,EDBjr21342,Deer Creek and Beaver Creek,NA,Tehama,NA,NA,82.4,64.9,83,0.638,1.7,T,T,0.530628251,0,0,0,2,0,0,0,0
+91,Thamnophis couchii,3.33,EDBjr21343,Hat Creek,NA,Shasta,NA,NA,91.6,65.6,83.6,0.551,1.71,T,T,0.364643114,0,0,0,2,0,0,0,0
+90,Thamnophis couchii,3.32,EDBjr21344,Hat Creek,NA,Shasta,NA,NA,98.7,63,81.1,0.646,1.42,T,T,0.350656872,0,0,0,2,0,0,0,0
+89,Thamnophis couchii,3.31,EDBjr21345,Hat Creek,NA,Shasta,NA,NA,126.3,66.6,84.4,0.632,2.21,T,T,0.792992516,0,0,0,2,0,0,0,0
+88,Thamnophis couchii,3.3,EDBjr21346,Hat Creek,NA,Shasta,NA,NA,129.5,70,85.6,0.596,1.71,T,T,0.536493371,0,0,0,2,0,0,0,0
+108,Thamnophis couchii,4.37,EDBjr21365,N Battle Creek,NA,Shasta,NA,NA,23.5,38.8,NA,0.944,3.24,T,T,1.17557333,0,0,0,2,0,0,0,0
+109,Thamnophis couchii,4.38,EDBjr21366,N Battle Creek,NA,Shasta,NA,NA,117.9,65,NA,0.677,2.52,T,T,0.924258902,0,0,0,2,0,0,0,0
+110,Thamnophis couchii,4.39,EDBjr21367,N Battle Creek,NA,Shasta,NA,NA,5.3,22.6,NA,1.031,3.2,T,T,1.16315081,0,0,0,2,0,0,0,0
+111,Thamnophis couchii,4.4,EDBjr21368,N Battle Creek,NA,Shasta,NA,NA,62.2,55.9,NA,0.989,2.64,T,T,0.970778917,0,0,0,2,0,0,0,0
+112,Thamnophis couchii,4.41,EDBjr21369,N Battle Creek,NA,Shasta,NA,NA,43.8,48.1,NA,0.777,3.81,T,T,1.337629189,0,0,0,2,0,0,0,0
+113,Thamnophis couchii,4.42,EDBjr21370,N Battle Creek,NA,Shasta,NA,NA,42.5,47.3,NA,0.883,2.95,T,T,1.08180517,0,0,0,2,0,0,0,0
+114,Thamnophis couchii,4.44,EDBjr21371,Riverck Creek,NA,Shasta,NA,NA,44.5,49,NA,0.756,3.1,T,T,1.131402111,0,0,0,2,0,0,0,0
+115,Thamnophis couchii,4.45,EDBjr21372,Riverck Creek,NA,Shasta,NA,NA,58,52.9,NA,0.866,2.65,T,T,0.97455964,0,0,0,2,0,0,0,0
+98,Thamnophis couchii,4.14,EDBjr21388,Keleher,NA,Nevada,NA,NA,103.8,64.2,NA,0.722,6,T,T,1.791759469,0,0,0,2,0,0,0,0
+99,Thamnophis couchii,4.15,EDBjr21389,Keleher,NA,Nevada,NA,NA,202.5,74.4,NA,0.665,9.45,T,T,2.246014742,0,0,0,2,0,0,0,0
+100,Thamnophis couchii,4.16,EDBjr21390,Keleher,NA,Nevada,NA,NA,67.6,57.7,NA,0.629,4.5,T,T,1.504077397,0,0,0,2,0,0,0,0
+101,Thamnophis couchii,4.17,EDBjr21391,Keleher,NA,Nevada,NA,NA,147.9,71,NA,0.714,5.65,T,T,1.731655545,0,0,0,2,0,0,0,0
+102,Thamnophis couchii,4.18,EDBjr21392,Keleher,NA,Nevada,NA,NA,16.5,33.7,NA,0.99,4.84,T,T,1.576914721,0,0,0,2,0,0,0,0
+103,Thamnophis couchii,4.19,EDBjr21393,Keleher,NA,Nevada,NA,NA,18.5,38,NA,0.783,5.35,T,T,1.677096561,0,0,0,2,0,0,0,0
+104,Thamnophis couchii,4.2,EDBjr21394,Keleher,NA,Nevada,NA,NA,8.3,26.1,NA,1.019,4.54,T,T,1.512927012,0,0,0,2,0,0,0,0
+105,Thamnophis couchii,4.21,EDBjr21395,Keleher,NA,Nevada,NA,NA,6,25.3,NA,1.134,5.2,T,T,1.648658626,0,0,0,2,0,0,0,0
+106,Thamnophis couchii,4.22,EDBjr21396,Keleher,NA,Nevada,NA,NA,5.4,26.1,NA,1.079,4.42,T,T,1.486139696,0,0,0,2,0,0,0,0
+107,Thamnophis couchii,4.23,EDBjr21397,Keleher,NA,Nevada,NA,NA,6.5,24.8,NA,0.87,2.88,T,T,1.057790294,0,0,0,2,0,0,0,0
+116,Thamnophis couchii,4.49,EDBjr21414,Wishon,NA,Tulare,NA,NA,58.6,59.1,NA,0.904,74.5,T,T,4.310799125,0,0,0,2,0,0,0,0
+117,Thamnophis couchii,4.5,EDBjr21415,Wishon,NA,Tulare,NA,NA,57.3,52.6,NA,0.845,88,T,T,4.477336814,0,0,0,2,0,0,0,0
+118,Thamnophis couchii,4.52,EDBjr21416,Coy Flat,NA,Tulare,NA,NA,75.7,57.2,NA,0.701,70.5,T,T,4.25561271,0,0,0,2,0,0,0,0
+119,Thamnophis couchii,4.53,EDBjr21417,Grizzly Flat,NA,El Dorado,NA,NA,34.9,43.5,NA,0.751,47.7,T,T,3.864931398,0,0,0,2,0,0,0,0
+120,Thamnophis couchii,4.54,EDBjr21418,Grizzly Flat,NA,El Dorado,NA,NA,35.6,42.3,NA,0.98,80,T,T,4.382026635,0,0,0,2,0,0,0,0
+121,Thamnophis couchii,4.55,EDBjr21419,Grizzly Flat,NA,El Dorado,NA,NA,59.9,54.4,NA,0.6,18.6,T,T,2.923161581,0,0,0,2,0,0,0,0
+122,Thamnophis couchii,4.56,EDBjr21420,Grizzly Flat,NA,El Dorado,NA,NA,5.6,22,NA,1.1,102,T,T,4.624972813,0,0,0,2,0,0,0,0
+187,Thamnophis couchii,VC1,EDBjr21489,Wishon,NA,Tulare,NA,NA,5.6,18.6,25.4,1.324,40.7,T,T,3.706228092,0,0,0,2,0,0,0,0
+191,Thamnophis couchii,VC2,EDBjr21490,Wishon,NA,Tulare,NA,NA,4.8,19.3,26.4,1.531,74.5,T,T,4.310799125,0,0,0,2,0,0,0,0
+192,Thamnophis couchii,VC3,EDBjr21491,Wishon,NA,Tulare,NA,NA,4.5,18.8,26,1.383,45.8,T,T,3.824284091,0,0,0,2,0,0,0,0
+193,Thamnophis couchii,VC4,EDBjr21492,Wishon,NA,Tulare,NA,NA,5,19.1,25.9,1.442,100,T,T,NA,0,0,0,2,0,0,0,0
+194,Thamnophis couchii,VC5,EDBjr21493,Wishon,NA,Tulare,NA,NA,4.8,18.5,25.8,1.638,100,T,T,NA,0,0,0,2,0,0,0,0
+195,Thamnophis couchii,VC7,EDBjr21495,Wishon,NA,Tulare,NA,NA,4.9,18.7,25.5,1.417,74,T,T,4.304065093,0,0,0,2,0,0,0,0
+196,Thamnophis couchii,VC8,EDBjr21496,Wishon,NA,Tulare,NA,NA,5.5,18.8,26,1.412,69,T,T,4.234106505,0,0,0,2,0,0,0,0
+197,Thamnophis couchii,VC9,EDBjr21497,Wishon,NA,Tulare,NA,NA,4.3,18.8,25.8,1.242,63.2,T,T,4.146304301,0,0,0,2,0,0,0,0
+188,Thamnophis couchii,VC10,EDBjr21498,Wishon,NA,Tulare,NA,NA,4.4,18,24.7,1.415,98.6,T,T,4.591071262,0,0,0,2,0,0,0,0
+189,Thamnophis couchii,VC11,EDBjr21499,Wishon,NA,Tulare,NA,NA,5.4,18.8,25.9,1.486,100,T,T,NA,0,0,0,2,0,0,0,0
+190,Thamnophis couchii,VC12,EDBjr21500,Wishon,NA,Tulare,NA,NA,4.3,18.2,25.2,1.301,86,T,T,4.454347296,0,0,0,2,0,0,0,0
+151,Thamnophis couchii,5.62,EDBjr21587,Wishon,NA,Tulare,NA,NA,46.6,49,67.4,0.579,100,T,T,NA,0,0,0,2,0,0,0,0
+152,Thamnophis couchii,5.64,EDBjr21589,Deep Creek,NA,Fresno,NA,NA,6.6,24.2,33.1,1.061,100,T,T,NA,0,0,0,2,0,0,0,0
+153,Thamnophis couchii,5.65,EDBjr21590,Deep Creek,NA,Fresno,NA,NA,19.1,37.8,50.2,0.77,100,T,T,NA,0,0,0,2,0,0,0,0
+154,Thamnophis couchii,5.66,EDBjr21591,Deep Creek,NA,Fresno,NA,NA,35.4,42.2,55.6,0.848,100,T,T,4.537961436,0,0,0,2,0,0,0,0
+155,Thamnophis couchii,5.67,EDBjr21592,Deep Creek,NA,Fresno,NA,NA,46.7,45.8,NA,0.815,100,T,T,NA,0,0,0,2,0,0,0,0
+156,Thamnophis couchii,5.68,EDBjr21593,Deep Creek,NA,Fresno,NA,NA,5.3,25.2,33.9,1.136,NA,T,T,NA,0,0,0,2,0,0,0,0
+157,Thamnophis couchii,5.69,EDBjr21594,Deep Creek,NA,Fresno,NA,NA,12.2,32.7,44.4,0.749,100,T,T,NA,0,0,0,2,0,0,0,0
+158,Thamnophis couchii,5.7,EDBjr21595,Deep Creek,NA,Fresno,NA,NA,5.6,23.7,31.9,0.938,100,T,T,NA,0,0,0,2,0,0,0,0
+159,Thamnophis couchii,5.71,EDBjr21596,Deep Creek,NA,Fresno,NA,NA,3.9,19.3,25.6,1.342,100,T,T,NA,0,0,0,2,0,0,0,0
+160,Thamnophis couchii,5.73,EDBjr21598,Deep Creek,NA,Fresno,NA,NA,10.8,33,41.1,1.142,50,T,T,NA,0,0,0,2,0,0,0,0
+161,Thamnophis couchii,5.74,EDBjr21599,Deep Creek,NA,Fresno,NA,NA,38.6,48.2,63.3,0.649,100,T,T,NA,0,0,0,2,0,0,0,0
+162,Thamnophis couchii,5.77,EDBjr21602,Deep Creek,NA,Fresno,NA,NA,24.3,39.6,53.9,0.754,100,T,T,NA,0,0,0,2,0,0,0,0
+163,Thamnophis couchii,5.78,EDBjr21603,Deep Creek,NA,Fresno,NA,NA,29.4,45.3,59.5,0.78,86.9,T,T,4.464758032,0,0,0,2,0,0,0,0
+164,Thamnophis couchii,5.79,EDBjr21604,Deep Creek,NA,Fresno,NA,NA,25.6,41.8,56.2,0.871,100,T,T,NA,0,0,0,2,0,0,0,0
+165,Thamnophis couchii,5.8,EDBjr21605,Deep Creek,NA,Fresno,NA,NA,7.1,22.7,30.1,0.982,NA,T,T,NA,0,0,0,2,0,0,0,0
+123,Thamnophis couchii,5.107,EDBjr21628,Dogtown Creek,NA,El Dorado,NA,NA,3.8,21.2,27.7,1.218,100,T,T,NA,0,0,0,2,0,0,0,0
+124,Thamnophis couchii,5.108,EDBjr21629,Dogtown Creek,NA,El Dorado,NA,NA,8,27.8,36.3,1.295,100,T,T,NA,0,0,0,2,0,0,0,0
+125,Thamnophis couchii,5.109,EDBjr21630,Dogtown Creek,NA,El Dorado,NA,NA,4.9,22,29.4,1.475,100,T,T,NA,0,0,0,2,0,0,0,0
+126,Thamnophis couchii,5.139,EDBjr21945,Devil's Corral,NA,Lassen,NA,NA,13.3,33.1,43.9,0.649,NA,T,T,NA,0,0,0,2,0,0,0,0
+127,Thamnophis couchii,5.14,EDBjr21946,Devil's Corral,NA,Lassen,NA,NA,41.9,53,70.1,0.582,NA,T,T,NA,0,0,0,2,0,0,0,0
+128,Thamnophis couchii,5.141,EDBjr21947,Devil's Corral,NA,Lassen,NA,NA,16.4,36.8,49.3,0.764,NA,T,T,NA,0,0,0,2,0,0,0,0
+129,Thamnophis couchii,5.142,EDBjr21948,Devil's Corral,NA,Lassen,NA,NA,97.7,66.5,86,0.823,NA,T,T,NA,0,0,0,2,0,0,0,0
+130,Thamnophis couchii,5.143,EDBjr21949,Devil's Corral,NA,Lassen,NA,NA,53.4,53.5,66.3,0.644,NA,T,T,NA,0,0,0,2,0,0,0,0
+131,Thamnophis couchii,5.144,EDBjr21950,Devil's Corral,NA,Lassen,NA,NA,17.8,38.3,51.2,0.725,NA,T,T,NA,0,0,0,2,0,0,0,0
+132,Thamnophis couchii,5.145,EDBjr21951,Devil's Corral,NA,Lassen,NA,NA,41.1,50.2,67.7,0.603,NA,T,T,NA,0,0,0,2,0,0,0,0
+133,Thamnophis couchii,5.146,EDBjr21952,Devil's Corral,NA,Lassen,NA,NA,47,51.7,67.6,0.603,7.17,T,T,1.969905655,0,0,0,2,0,0,0,0
+134,Thamnophis couchii,5.147,EDBjr21953,Devil's Corral,NA,Lassen,NA,NA,20.5,39,NA,0.777,5.33,T,T,1.673351238,0,0,0,2,0,0,0,0
+135,Thamnophis couchii,5.148,EDBjr21954,Devil's Corral,NA,Lassen,NA,NA,15.3,35.5,43.5,0.715,7.76,T,T,2.048982334,0,0,0,2,0,0,0,0
+136,Thamnophis couchii,5.149,EDBjr21955,Devil's Corral,NA,Lassen,NA,NA,27.7,43,57.6,0.665,5.55,T,T,1.713797928,0,0,0,2,0,0,0,0
+137,Thamnophis couchii,5.15,EDBjr21956,Devil's Corral,NA,Lassen,NA,NA,5.4,26,NA,1.122,6.19,T,T,1.822935087,0,0,0,2,0,0,0,0
+138,Thamnophis couchii,5.151,EDBjr21957,Devil's Corral,NA,Lassen,NA,NA,13,34.4,45.9,0.722,9.5,T,T,2.251291799,0,0,0,2,0,0,0,0
+139,Thamnophis couchii,5.152,EDBjr21958,Devil's Corral,NA,Lassen,NA,NA,20,38.2,49.3,0.82,7.95,T,T,2.073171929,0,0,0,2,0,0,0,0
+140,Thamnophis couchii,5.195,EDBjr22063,Leoni Meadows,NA,El Dorado,NA,NA,50.2,52.8,70.4,0.657,100,T,T,4.605170186,0,0,0,2,0,0,0,0
+141,Thamnophis couchii,5.2,EDBjr22067,Leoni Meadows,NA,El Dorado,NA,NA,40.1,46.4,59.7,0.748,NA,T,T,4.605170186,0,0,0,2,0,0,0,0
+142,Thamnophis couchii,5.201,EDBjr22068,Leoni Meadows,NA,El Dorado,NA,NA,47.7,50.4,65.8,0.726,96.4,T,T,4.568506202,0,0,0,2,0,0,0,0
+143,Thamnophis couchii,5.202,EDBjr22069,Dogtown Creek,NA,El Dorado,NA,NA,25.8,40.2,52.9,0.689,23.1,T,T,3.139832618,0,0,0,2,0,0,0,0
+144,Thamnophis couchii,5.203,EDBjr22070,Dogtown Creek,NA,El Dorado,NA,NA,55.6,52.2,72.8,0.608,26,T,T,3.258096538,0,0,0,2,0,0,0,0
+145,Thamnophis couchii,5.204,EDBjr22071,Dogtown Creek,NA,El Dorado,NA,NA,44.8,47.4,NA,0.605,31.3,T,T,3.443618098,0,0,0,2,0,0,0,0
+146,Thamnophis couchii,5.205,EDBjr22072,Dogtown Creek,NA,El Dorado,NA,NA,33.3,46.5,64.9,0.703,75,T,T,NA,0,0,0,2,0,0,0,0
+147,Thamnophis couchii,5.206,EDBjr22073,Dogtown Creek,NA,El Dorado,NA,NA,90.8,64.7,83.6,0.608,51.1,T,T,NA,0,0,0,2,0,0,0,0
+148,Thamnophis couchii,5.207,EDBjr22074,Dogtown Creek,NA,El Dorado,NA,NA,15.3,35.5,48.7,0.853,20,T,T,2.995732274,0,0,0,2,0,0,0,0
+149,Thamnophis couchii,5.248,EDBjr22329,Pollock Pines,NA,El Dorado,NA,NA,20.2,40.6,52.9,0.536,61,T,T,4.110873864,0,0,0,2,0,0,0,0
+150,Thamnophis couchii,5.273,EDBjr22350,Pollock Pines,NA,El Dorado,NA,NA,34.2,46.5,62.4,0.57,43.8,T,T,3.779633817,0,0,0,2,0,0,0,0
+166,Thamnophis couchii,6.126,EDBjr22736,Leoni Meadows,NA,El Dorado,NA,NA,83.4,62.1,82.5,0.467,25,T,T,3.218875825,0,0,0,2,0,0,0,0
+169,Thamnophis couchii,6.13,EDBjr22737,Leoni Meadows,NA,El Dorado,NA,NA,65.9,56.8,73.6,0.704,42,T,T,3.737669618,0,0,0,2,0,0,0,0
+170,Thamnophis couchii,6.131,EDBjr22738,Leoni Meadows,NA,El Dorado,NA,NA,2.9,21.6,27.5,1.124,27.3,T,T,3.306886702,0,0,0,2,0,0,0,0
+171,Thamnophis couchii,6.132,EDBjr22739,Leoni Meadows,NA,El Dorado,NA,NA,5.7,23.8,31.2,1.123,50,T,T,NA,0,0,0,2,0,0,0,0
+172,Thamnophis couchii,6.133,EDBjr22740,Leoni Meadows,NA,El Dorado,NA,NA,5.6,28.4,37.6,0.926,50,T,T,NA,0,0,0,2,0,0,0,0
+167,Thamnophis couchii,6.128,EDBjr22787,Leoni Meadows,NA,El Dorado,NA,NA,133.3,67.8,87.7,0.719,47.5,T,T,3.860729711,0,0,0,2,0,0,0,0
+168,Thamnophis couchii,6.129,EDBjr22788,Leoni Meadows,NA,El Dorado,NA,NA,219.2,72.3,94.4,0.674,37.5,T,T,3.624340933,0,0,0,2,0,0,0,0
+173,Thamnophis couchii,6.182,EDBjr22866,Dogtown Creek,NA,El Dorado,NA,NA,127,69.4,88.7,0.763,39,T,T,3.663561646,0,0,0,2,0,0,0,0
+174,Thamnophis couchii,6.183,EDBjr22867,Dogtown Creek,NA,El Dorado,NA,NA,99.8,60.2,79.3,0.7,31.6,T,T,3.453157121,0,0,0,2,0,0,0,0
+175,Thamnophis couchii,6.226,EDBjr22944,Beauty Lk.,NA,El Dorado,NA,NA,78.2,60.5,88.6,0.581,6.3,T,T,1.840549633,0,0,0,2,0,0,0,0
+176,Thamnophis couchii,6.227,EDBjr22945,Beauty Lk.,NA,El Dorado,NA,NA,16.4,36.7,47.9,0.646,7.46,T,T,2.009555414,0,0,0,2,0,0,0,0
+198,Thamnophis couchii,ZB10,EDBjr23311,Dogtown Creek,NA,El Dorado,NA,NA,5.57,23.8,31.1,0.929,50,T,T,NA,0,0,0,2,0,0,0,0
+199,Thamnophis couchii,ZB11,EDBjr23312,Dogtown Creek,NA,El Dorado,NA,NA,5.59,23.9,30.3,0.864,50,T,T,NA,0,0,0,2,0,0,0,0
+177,Thamnophis couchii,7.013,EDBjr23506,N Fork Feather River,NA,Plumas,NA,NA,79,65.6,79.1,0.474,15.5,T,T,2.740840024,0,0,0,2,0,0,0,0
+178,Thamnophis couchii,7.034,EDBjr23513,Oligby Creek,NA,El Dorado,NA,NA,23.4,43.2,56.6,0.552,47,T,T,3.850147602,0,0,0,2,0,0,0,0
+179,Thamnophis couchii,7.036,EDBjr23515,Oligby Creek,NA,El Dorado,NA,NA,9.4,31.4,40.7,0.773,87.2,T,T,4.468204331,0,0,0,2,0,0,0,0
+181,Thamnophis couchii,7.043,EDBjr23517,Oligby Creek,NA,El Dorado,NA,NA,21.2,41.1,55.1,0.464,43.4,T,T,3.770459441,0,0,0,2,0,0,0,0
+182,Thamnophis couchii,7.044,EDBjr23518,Oligby Creek,NA,El Dorado,NA,NA,11.7,34.5,NA,0.597,100,T,T,NA,0,0,0,2,0,0,0,0
+183,Thamnophis couchii,7.045,EDBjr23519,Silver Creek,NA,El Dorado,NA,NA,11.5,34.2,45.3,0.62,17.5,T,T,2.862200881,0,0,0,2,0,0,0,0
+185,Thamnophis couchii,7.048,EDBjr23525,S Fork American River,NA,El Dorado,NA,NA,12.7,32.1,41.9,0.81,NA,T,T,NA,0,0,0,2,0,0,0,0
+186,Thamnophis couchii,7.049,EDBjr23526,N Fork Feather River,NA,Plumas,NA,NA,24.7,40.5,NA,0.811,8.12,T,T,2.094330154,0,0,0,2,0,0,0,0
+70,Thamnophis couchii,16.8,EJE138,Sawmill Lk.,NA,Nevada,NA,NA,7.8,NA,NA,0.741,19.8,T,T,2.985681938,0,0,0,2,0,0,0,0
+71,Thamnophis couchii,16.81,EJE139,Sawmill Lk.,NA,Nevada,NA,NA,4.4,NA,NA,1.488,44.1,T,T,3.786459782,0,0,0,2,0,0,0,0
+72,Thamnophis couchii,16.82,EJE140,Prairie Creek,NA,Nevada,NA,NA,64.4,NA,NA,0.746,3.91,T,T,1.363537374,0,0,0,2,0,0,0,0
+73,Thamnophis couchii,16.83,EJE141,Prairie Creek,NA,Nevada,NA,NA,138.3,NA,NA,0.758,15.5,T,T,2.740840024,0,0,0,2,0,0,0,0
+74,Thamnophis couchii,16.84,EJE142,Prairie Creek,NA,Nevada,NA,NA,33.7,NA,NA,0.65,2.96,T,T,1.085189268,0,0,0,2,0,0,0,0
+75,Thamnophis couchii,16.85,EJE143,Prairie Creek,NA,Nevada,NA,NA,57.8,NA,NA,0.734,2.88,T,T,1.057790294,0,0,0,2,0,0,0,0
+76,Thamnophis couchii,16.86,EJE144,Prairie Creek,NA,Nevada,NA,NA,54.9,NA,NA,0.786,3.27,T,T,1.184789985,0,0,0,2,0,0,0,0
+77,Thamnophis couchii,16.87,EJE145,Bowman Lk.,NA,Nevada,NA,NA,6.8,NA,NA,0.991,22,T,T,3.091042453,0,0,0,2,0,0,0,0
+78,Thamnophis couchii,16.89,EJE147,Bowman Lk.,NA,Nevada,NA,NA,8.4,NA,NA,0.836,3.85,T,T,1.348073148,0,0,0,2,0,0,0,0
+79,Thamnophis couchii,16.9,EJE148,Bowman Lk.,NA,Nevada,NA,NA,25.1,NA,NA,0.817,4.09,T,T,1.40854497,0,0,0,2,0,0,0,0
+80,Thamnophis couchii,16.91,EJE149,Bowman Lk.,NA,Nevada,NA,NA,4.1,NA,NA,1.088,6.4,T,T,1.85629799,0,0,0,2,0,0,0,0
+81,Thamnophis couchii,16.92,EJE150,Bowman Lk.,NA,Nevada,NA,NA,37.8,NA,NA,0.853,3.5,T,T,1.252762968,0,0,0,2,0,0,0,0
+82,Thamnophis couchii,16.94,EJE152,Faucherie Lk.,NA,Nevada,NA,NA,37.3,NA,NA,0.678,2.9,T,T,1.064710737,0,0,0,2,0,0,0,0
+83,Thamnophis couchii,16.95,EJE153,Faucherie Lk.,NA,Nevada,NA,NA,29.4,NA,NA,0.935,NA,T,T,NA,0,0,0,2,0,0,0,0
+84,Thamnophis couchii,16.96,EJE154,Faucherie Lk.,NA,Nevada,NA,NA,17.5,NA,NA,0.819,3.2,T,T,1.16315081,0,0,0,2,0,0,0,0
+85,Thamnophis couchii,16.97,EJE155,Faucherie Lk.,NA,Nevada,NA,NA,9.4,NA,NA,0.621,1.8,T,T,0.587786665,0,0,0,2,0,0,0,0
+86,Thamnophis couchii,16.98,EJE156,Faucherie Lk.,NA,Nevada,NA,NA,39,NA,NA,0.693,3.15,T,T,1.147402453,0,0,0,2,0,0,0,0
+87,Thamnophis couchii,16.99,EJE157,Faucherie Lk.,NA,Nevada,NA,NA,45,NA,NA,0.557,NA,T,T,NA,0,0,0,2,0,0,0,0
+26,Thamnophis couchii,16.1,EJE158,Faucherie Lk. Dam,NA,Nevada,NA,NA,56.8,NA,NA,0.833,8.6,T,T,2.151762203,0,0,0,2,0,0,0,0
+27,Thamnophis couchii,16.101,EJE159,Faucherie Lk. Dam,NA,Nevada,NA,NA,33.2,NA,NA,0.71,21.4,T,T,3.063390922,0,0,0,2,0,0,0,0
+28,Thamnophis couchii,16.102,EJE160,Faucherie Lk. Dam,NA,Nevada,NA,NA,9.4,NA,NA,0.913,21.7,T,T,3.077312261,0,0,0,2,0,0,0,0
+38,Thamnophis couchii,16.12,EJE161,Jackson Meadows Rivers,NA,Sierra,NA,NA,10.9,NA,NA,0.816,13.6,T,T,2.610069793,0,0,0,2,0,0,0,0
+39,Thamnophis couchii,16.122,EJE163,Jackson Meadows Rivers,NA,Sierra,NA,NA,49,NA,NA,0.688,3.7,T,T,1.30833282,0,0,0,2,0,0,0,0
+40,Thamnophis couchii,16.123,EJE164,Carr Lk.,NA,Nevada,NA,NA,41,NA,NA,0.683,3.1,T,T,1.131402111,0,0,0,2,0,0,0,0
+41,Thamnophis couchii,16.124,EJE165,Canyon Creek,NA,Nevada,NA,NA,32.6,NA,NA,0.711,3.65,T,T,1.294727168,0,0,0,2,0,0,0,0
+42,Thamnophis couchii,16.126,EJE167,Canyon Creek,NA,Nevada,NA,NA,7.7,NA,NA,1.09,4.08,T,T,1.406096988,0,0,0,2,0,0,0,0
+43,Thamnophis couchii,16.129,EJE170,Canyon Creek,NA,Nevada,NA,NA,9.1,NA,NA,0.904,3.26,T,T,1.181727195,0,0,0,2,0,0,0,0
+44,Thamnophis couchii,16.13,EJE171,Canyon Creek,NA,Nevada,NA,NA,6.3,NA,NA,0.886,1.7,T,T,NA,0,0,0,2,0,0,0,0
+45,Thamnophis couchii,16.131,EJE172,Canyon Creek,NA,Nevada,NA,NA,9.2,NA,NA,0.922,7.96,T,T,2.074429,0,0,0,2,0,0,0,0
+46,Thamnophis couchii,16.132,EJE173,Canyon Creek,NA,Nevada,NA,NA,7.9,NA,NA,1.118,4.5,T,T,1.504077397,0,0,0,2,0,0,0,0
+47,Thamnophis couchii,16.133,EJE174,Milton Rivers,NA,Nevada,NA,NA,21.7,NA,NA,0.832,3.21,T,T,1.166270937,0,0,0,2,0,0,0,0
+48,Thamnophis couchii,16.134,EJE175,Sawmill Lk.,NA,Nevada,NA,NA,11.8,NA,NA,0.971,7.35,T,T,1.994700313,0,0,0,2,0,0,0,0
+49,Thamnophis couchii,16.135,EJE176,Sawmill Lk.,NA,Nevada,NA,NA,9.1,NA,NA,0.946,3.75,T,T,1.32175584,0,0,0,2,0,0,0,0
+50,Thamnophis couchii,16.136,EJE177,Milton Rivers,NA,Nevada,NA,NA,16.6,NA,NA,0.835,6,T,T,1.791759469,0,0,0,2,0,0,0,0
+51,Thamnophis couchii,16.138,EJE179,Jackson Meadows Rivers,NA,Sierra,NA,NA,9.4,NA,NA,0.831,25,T,T,3.218875825,0,0,0,2,0,0,0,0
+52,Thamnophis couchii,16.139,EJE180,Jackson Meadows Rivers,NA,Sierra,NA,NA,14.3,NA,NA,0.914,8.3,T,T,2.116255515,0,0,0,2,0,0,0,0
+53,Thamnophis couchii,16.14,EJE181,S Fork Tuolumne River,NA,Tuolumne,NA,NA,6.9,NA,NA,1.012,35,T,T,NA,0,0,0,2,0,0,0,0
+54,Thamnophis couchii,16.141,EJE182,S Fork Tuolumne River,NA,Tuolumne,NA,NA,145.8,NA,NA,0.669,47.5,T,T,3.860729711,0,0,0,2,0,0,0,0
+55,Thamnophis couchii,16.145,EJE186,S Fork Tuolumne River,NA,Tuolumne,NA,NA,12.3,NA,NA,0.95,137.6,T,T,4.924350925,0,0,0,2,0,0,0,0
+56,Thamnophis couchii,16.147,EJE188,S Fork Tuolumne River,NA,Tuolumne,NA,NA,5.1,NA,NA,1.187,100,T,T,NA,0,0,0,2,0,0,0,0
+57,Thamnophis couchii,16.148,EJE189,Canyon Creek,NA,Nevada,NA,NA,8.4,NA,NA,0.972,22.2,T,T,3.100092289,0,0,0,2,0,0,0,0
+25,Thamnophis couchii,15.65,KDW598,NA,NA,Alpine Co.,NA,NA,77,NA,NA,0.751,17.4,T,T,2.856470206,0,0,0,2,0,0,0,0
+180,Thamnophis couchii,7.037,no collector id,N Fork Consumnes River,NA,El Dorado,NA,NA,252.7,85.4,110,0.533,10.9,T,T,2.388762789,0,0,0,2,0,0,0,0
+184,Thamnophis couchii,7.046,no collector id,Akin Powerhouse,NA,El Dorado,NA,NA,76.3,57,NA,0.632,81.5,T,T,4.40060302,0,0,0,2,0,0,0,0
