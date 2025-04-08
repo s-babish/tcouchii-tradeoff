@@ -54,9 +54,19 @@ These data sheets contain various information about the snakes used in all three
 
 ### scripts
 
--   01_C4P_dataprocessing.R - This file takes all the raw C4P data files (from data_raw/C4P) and processes them to determine amount of force exerted at each time point (normalized and scaled to muscle mass). It then calculates several metrics of interest for the transient contractions, including contraction amplitude, time to maximal contraction, etc., and generates a first derivative trace of the force curve (giving force/second) to determine the minimal and maximal rate of force change. The output files are used by file 02_C4P_analysis.R.
+-   01_C4P_dataprocessing.R - This file takes all the raw C4P data files (from data_raw/C4P) and processes them to determine amount of force exerted at each time point (normalized and scaled to muscle mass). It then calculates several metrics of interest for the transient contractions, including contraction amplitude, time to maximal contraction, etc., and generates a first derivative trace of the force curve (giving force/second) to determine the minimal and maximal rate of force change. The output files are used by file 02_C4P_analysis.R. Will eventually also remove outliers, still trying to figure out what method I feel comfortable with there.
 
--   04_Tetanus_dataprocessing.R - This file does basically the same thing as script #1, but for the tetanic contraction protocol data (Tetanus) instead of the transient contraction protocol data (C4P). The output files are used by file 05_Tetanus_analysis.R.
+-   02_C4P_analyses.R - In progress, does all the correlation analyses and linear regressions
+
+-   03_C4P_visualization.R - In progress, will create all C4P-related figures
+
+-   04_Tetanus_dataprocessing.R - This file does basically the same thing as script #1, but for the tetanic contraction protocol data (Tetanus) instead of the transient contraction protocol data (C4P). The output files are used by file 05_Tetanus_analysis.R. Will eventually remove outliers as well/
+
+-   02_Tetanus_analyses.R - In progress, does all the correlation analyses and linear regressions.
+
+-   06_Tetanus_visualization.R - In progress, will create all Tetanus-related figures
+
+-   Absolute nightmare that is the rheobase scripts will be dealt with eventually, after the above and the whole-animal stuff (you can tell I don't want to deal with them right now)
 
 ### IC50_analyses
 

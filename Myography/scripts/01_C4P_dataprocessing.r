@@ -286,3 +286,5 @@ for (file in files) {
 df = read.csv("OutFiles/C4P/test/Couchii_C4P_Force.csv")
 write.csv(t(df[order(df$Pulse, df$Snake, df$Muscle),]),
           "OutFiles/C4P/test/Couchii_C4P_Force_Sorted.csv")
+
+#maybe append the outlier removals here? ignoring them while I do my other tidying things

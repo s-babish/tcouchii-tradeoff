@@ -1,14 +1,10 @@
-setwd("C:/Users/sdbab/OneDrive - University of Nevada, Reno/UNR/tcouchii/Myography")
-
 #Libraries ----- 
 library(ggplot2)
 library(tidyverse)
 
-
 #Aggregate C4P Correlation Results ----
-c4p <- read.csv("Tcouchii_side_hustle/Couchii_C4P/output/Couchii_C4P.csv")
+c4p <- read.csv("OutFiles/C4P/test/Couchii_C4P_Metrics.csv")
 head(c4p)
-
 
 #set up matrix to store results
 c4p_corr <- matrix(nrow=22,ncol=8)
@@ -40,6 +36,8 @@ for (i in 1:nrow(c4p_corr)) {
     print(c4p_corr[i,c(1,2,3,5)])
   }
 }
+
+#**I want to save this table as a file, with p<0.05 indicated in a column somehow---
 
 #Splitting c4p data by pulse ----
 c4p_pulse1 <- c4p[c4p$Pulse == 1,]
@@ -124,6 +122,8 @@ for (col in 7:17) {
   }
 }
 
+#**want to store all the linear regression results somehow ----
+
 #IC50-Split pulse correlation results ----
 IC50c4p_corr_split <- matrix(nrow=88,ncol=9)
 colnames(IC50c4p_corr_split) <- c("Pulse","Param","CorrTest","Statistic", "df","p-value",
@@ -191,7 +191,8 @@ for (col in 7:17) {
 }
 
 #Repeat all c4p analyses without outliers ----
-#(will delete original eventually but want to compare results first)
+#(just ignoring this half at this point in my tidying and eventually will delete it 
+# bc outliers will be removed at the end of data processing)
 
 #remove outliers based on visual waveforms checks
 c4p_sub <- c4p %>% 
@@ -375,212 +376,3 @@ for (col in 7:17) {
            legend = bquote(r^2 == .(r2) * "," ~~ RMSE == .(rmse)))
   }
 }
-
-#MAMU-Tetanus correlation results ----
-tetanus <- read.csv("Tcouchii_side_hustle/Couchii_tetanus/output/Couchii_tetanus.csv")
-#remove the duplicate rows that are in here for some reason (note that this method only works bc
-# there's only one muscle from each snake, I checked):
-tetanus_sub <- tetanus[!duplicated(tetanus$Snake), ] %>% 
-  filter(!Snake %in% c("CRF3060","CRF3074","CRF3065","CRF3066","CRF2680","CRF2669","CRF2631","CRF2670")) 
-#removing outliers based on waveform analysis currently in myography_plots.R (down to 24 obs)
-head(tetanus_sub)
-
-#set up matrix to store results
-tetanus_corr <- matrix(nrow=20,ncol=8)
-colnames(tetanus_corr) <- c("Param","CorrTest","Statistic", "df","p-value",
-                            "Conf_int_LB","Conf_int_HB","CorEst")
-index = 1
-for (col in 4:13) {
-  #print(colnames(tetanus[col])) here to show when the loop breaks
-  pearson_corr <- cor.test(tetanus$MAMU,tetanus[,col], method = "pearson")
-  tetanus_corr[index,] <- c(colnames(tetanus[col]),"Pearson",pearson_corr$statistic,
-                        pearson_corr$parameter,pearson_corr$p.value,pearson_corr$conf.int[1],
-                        pearson_corr$conf.int[2],pearson_corr$estimate)
-                        
-  index = index + 1
-  
-  kendall_corr <- cor.test(tetanus$MAMU,tetanus[,col], method = "kendall")
-  tetanus_corr[index,] <- c(colnames(tetanus[col]),"Kendall",kendall_corr$statistic,
-                           NA,kendall_corr$p.value,NA, NA,kendall_corr$estimate)
-                             
-  index = index + 1
-}
-
-#make it print the ones with p<0.05
-for (i in 1:nrow(tetanus_corr)) {
-  if (tetanus_corr[i,5] < 0.05) {
-    print(tetanus_corr[i,c(1,2,3,5)])
-  }
-}
-
-#MAMU-tetanus linear regressions -----
-#linear regressions
-for (col in 4:13) {
-  plot(tetanus$MAMU,tetanus[,col],main = colnames(tetanus)[col], xlab = "TTX Resistance (MAMU)",
-       ylab = colnames(tetanus)[col])
-  model <- lm(tetanus[,col] ~ tetanus$MAMU)
-  rmse <- round(sqrt(mean(resid(model)^2)), 2)
-  coefs <- coef(model)
-  b0 <- round(coefs[1], 2)
-  b1 <- round(coefs[2],2)
-  r2 <- round(summary(model)$r.squared, 2)
-  eqn <- bquote(italic(y) == .(b0) + .(b1)*italic(x) * "," ~~ 
-                  r^2 == .(r2) * "," ~~ RMSE == .(rmse))
-  abline(model, lwd=2, col="darkred")
-  legend(x = "bottomright", bty = "n",
-         legend = bquote(r^2 == .(r2) * "," ~~ RMSE == .(rmse)))
-}
-
-#Correlation with IC50tet (copied from IC50analyses.R)----
-IC50tet <- tetanus
-IC50tet <- merge(IC50tet,IC50, by="Snake")
-IC50tet <- IC50tet[!is.na(IC50tet$IC50),]
-
-summary(IC50tet)
-#only 15 obs in this comparison
-
-#correlation metrics
-IC50tet_corr <- matrix(nrow=20,ncol=8)
-colnames(IC50tet_corr) <- c("Param","CorrTest","Statistic", "df","p-value",
-                            "Conf_int_LB","Conf_int_HB","CorEst")
-index = 1
-for (col in 4:13) {
-  #print(colnames(IC50tet[col])) here to show when the loop breaks
-  pearson_corr <- cor.test(IC50tet$MAMU,IC50tet[,col], method = "pearson")
-  IC50tet_corr[index,] <- c(colnames(IC50tet[col]),"Pearson",pearson_corr$statistic,
-                            pearson_corr$parameter,pearson_corr$p.value,pearson_corr$conf.int[1],
-                            pearson_corr$conf.int[2],pearson_corr$estimate)
-  
-  index = index + 1
-  
-  kendall_corr <- cor.test(IC50tet$MAMU,IC50tet[,col], method = "kendall")
-  IC50tet_corr[index,] <- c(colnames(IC50tet[col]),"Kendall",kendall_corr$statistic,
-                            NA,kendall_corr$p.value,NA, NA,kendall_corr$estimate)
-  
-  index = index + 1
-}
-
-#make it print the ones with p<0.05
-for (i in 1:nrow(IC50tet_corr)) {
-  if (IC50tet_corr[i,5] < 0.05) {
-    print(IC50tet_corr[i,c(1,2,3,5)])
-  }
-}
-
-#IC50-tetanus linear regressions ----
-for (col in 4:13) {
-  plot(IC50tet$IC50,IC50tet[,col],main = colnames(IC50tet)[col], xlab = " Muscle TTX Resistance/IC50 (MAMU)",
-       ylab = colnames(IC50tet)[col])
-  model <- lm(IC50tet[,col] ~ IC50tet$IC50)
-  rmse <- round(sqrt(mean(resid(model)^2)), 2)
-  coefs <- coef(model)
-  b0 <- round(coefs[1], 2)
-  b1 <- round(coefs[2],2)
-  r2 <- round(summary(model)$r.squared, 2)
-  eqn <- bquote(italic(y) == .(b0) + .(b1)*italic(x) * "," ~~ 
-                  r^2 == .(r2) * "," ~~ RMSE == .(rmse))
-  abline(model, lwd=2, col="darkred")
-  legend(x = "bottomright", bty = "n",
-         legend = bquote(r^2 == .(r2) * "," ~~ RMSE == .(rmse)))
-}
-
-#Repeat all tetanus results with subset without outliers (separate for now to compare values) ----
-#set up matrix to store results
-tetanus_sub_corr <- matrix(nrow=20,ncol=8)
-colnames(tetanus_sub_corr) <- c("Param","CorrTest","Statistic", "df","p-value",
-                            "Conf_int_LB","Conf_int_HB","CorEst")
-index = 1
-for (col in 4:13) {
-  #print(colnames(tetanus_sub[col])) here to show when the loop breaks
-  pearson_corr <- cor.test(tetanus_sub$MAMU,tetanus_sub[,col], method = "pearson")
-  tetanus_sub_corr[index,] <- c(colnames(tetanus_sub[col]),"Pearson",pearson_corr$statistic,
-                            pearson_corr$parameter,pearson_corr$p.value,pearson_corr$conf.int[1],
-                            pearson_corr$conf.int[2],pearson_corr$estimate)
-  
-  index = index + 1
-  
-  kendall_corr <- cor.test(tetanus_sub$MAMU,tetanus_sub[,col], method = "kendall")
-  tetanus_sub_corr[index,] <- c(colnames(tetanus_sub[col]),"Kendall",kendall_corr$statistic,
-                            NA,kendall_corr$p.value,NA, NA,kendall_corr$estimate)
-  
-  index = index + 1
-}
-
-#make it print the ones with p<0.05
-for (i in 1:nrow(tetanus_sub_corr)) {
-  if (tetanus_sub_corr[i,5] < 0.05) {
-    print(tetanus_sub_corr[i,c(1,2,3,5)])
-  }
-}
-
-#MAMU-tetanus_sub linear regressions 
-#linear regressions
-for (col in 4:13) {
-  plot(tetanus_sub$MAMU,tetanus_sub[,col],main = colnames(tetanus_sub)[col], xlab = "TTX Resistance (MAMU)",
-       ylab = colnames(tetanus_sub)[col])
-  model <- lm(tetanus_sub[,col] ~ tetanus_sub$MAMU)
-  rmse <- round(sqrt(mean(resid(model)^2)), 2)
-  coefs <- coef(model)
-  b0 <- round(coefs[1], 2)
-  b1 <- round(coefs[2],2)
-  r2 <- round(summary(model)$r.squared, 2)
-  eqn <- bquote(italic(y) == .(b0) + .(b1)*italic(x) * "," ~~ 
-                  r^2 == .(r2) * "," ~~ RMSE == .(rmse))
-  abline(model, lwd=2, col="darkred")
-  legend(x = "bottomright", bty = "n",
-         legend = bquote(r^2 == .(r2) * "," ~~ RMSE == .(rmse)))
-}
-
-#Correlation with IC50tet (copied from IC50analyses.R)
-IC50tet <- tetanus_sub
-IC50tet <- merge(IC50tet,IC50, by="Snake")
-IC50tet <- IC50tet[!is.na(IC50tet$IC50),]
-
-summary(IC50tet)
-#only 11 obs in this comparison
-
-#correlation metrics
-IC50tet_corr <- matrix(nrow=20,ncol=8)
-colnames(IC50tet_corr) <- c("Param","CorrTest","Statistic", "df","p-value",
-                            "Conf_int_LB","Conf_int_HB","CorEst")
-index = 1
-for (col in 4:13) {
-  #print(colnames(IC50tet[col])) here to show when the loop breaks
-  pearson_corr <- cor.test(IC50tet$MAMU,IC50tet[,col], method = "pearson")
-  IC50tet_corr[index,] <- c(colnames(IC50tet[col]),"Pearson",pearson_corr$statistic,
-                            pearson_corr$parameter,pearson_corr$p.value,pearson_corr$conf.int[1],
-                            pearson_corr$conf.int[2],pearson_corr$estimate)
-  
-  index = index + 1
-  
-  kendall_corr <- cor.test(IC50tet$MAMU,IC50tet[,col], method = "kendall")
-  IC50tet_corr[index,] <- c(colnames(IC50tet[col]),"Kendall",kendall_corr$statistic,
-                            NA,kendall_corr$p.value,NA, NA,kendall_corr$estimate)
-  
-  index = index + 1
-}
-
-#make it print the ones with p<0.05
-for (i in 1:nrow(IC50tet_corr)) {
-  if (IC50tet_corr[i,5] < 0.05) {
-    print(IC50tet_corr[i,c(1,2,3,5)])
-  }
-}
-
-#IC50-tetanus_sub linear regressions 
-for (col in 4:13) {
-  plot(IC50tet$IC50,IC50tet[,col],main = colnames(IC50tet)[col], xlab = " Muscle TTX Resistance/IC50 (MAMU)",
-       ylab = colnames(IC50tet)[col])
-  model <- lm(IC50tet[,col] ~ IC50tet$IC50)
-  rmse <- round(sqrt(mean(resid(model)^2)), 2)
-  coefs <- coef(model)
-  b0 <- round(coefs[1], 2)
-  b1 <- round(coefs[2],2)
-  r2 <- round(summary(model)$r.squared, 2)
-  eqn <- bquote(italic(y) == .(b0) + .(b1)*italic(x) * "," ~~ 
-                  r^2 == .(r2) * "," ~~ RMSE == .(rmse))
-  abline(model, lwd=2, col="darkred")
-  legend(x = "bottomright", bty = "n",
-         legend = bquote(r^2 == .(r2) * "," ~~ RMSE == .(rmse)))
-}
-#***some of these values changed, will compare them tomorrow ----
