@@ -1,4 +1,4 @@
-# C41P - Data analysis
+# C4P - Data analysis
 #   Protocol 1: Control Four Pulse (C4P) Experiment
 #   1st stimulus occurs at 5s (seconds)
 #   System delay is 4ms (miliseconds)
@@ -13,24 +13,21 @@
 # 4. Normalized force = (measuredF - baseF)*9.80665/(Muscle Mass in grams)
 #
 
-setwd("C:/Users/sdbab/OneDrive - University of Nevada, Reno/UNR/tcouchii/Myography")
+#Confirm working directory is main Myography folder (so we don't need to set it)
+getwd()
+
 # Get Snake Info - Species, Genotype etc.
-sinf = read.csv("Tcouchii_side_hustle/Scripts and datasheets/SnakeInfo-08.14.2019 (1).csv")
+sinf = read.csv("./data_raw/Snake_data_sheets/SnakeInfo-09.30.2020.csv")
 
 # Get Snake Muscle Masses
-smm = read.csv("Tcouchii_side_hustle/Scripts and datasheets/SnakeSkeletalMuscleMasses-08.14.2019 (1).csv")
+smm = read.csv("./data_raw/Snake_data_sheets/SnakeSkeletalMuscleMasses-9.28.2020.csv")
 # reset all missing muscle mass values to -1.0smm
 smm[is.na(smm)] <- 0.999
 
-dname = "Tcouchii_side_hustle/Couchii_C4P"
-# dname = "C:/Bobby/Data-CSV/p1c4pTest"
-setwd(dname)
+# Set up file to store summary information about metrics we calculate for each
+# pulse later
 
-x = strsplit(dname, "/")
-
-# Write / overwrite Column Headers for output summary file
-# had to manually make this file
-ofsum = paste("./output/", x[[1]][lengths(x)],  ".csv", sep = "")
+ofsum = "OutFiles/C4P/test/Couchii_C4P_Metrics.csv"
 hdrs <- c(
   "Species",
   "Snake",
@@ -63,8 +60,8 @@ write.table(
   row.names = FALSE,
   col.names = FALSE
 )
-# Output Force File
-ofF <- "./output/c4p1-force.csv"
+# Set up file to store force outputs
+ofF <- "OutFiles/C4P/test/Couchii_C4P_Force.csv"
 ofFhdr <- c(
   "Species",
   "MAMU",
@@ -87,9 +84,8 @@ write.table(
   row.names = FALSE,
   col.names = FALSE
 )
-# Output Force first derivative File
-#also had to manually make this one
-ofF1d <- "./output/c4p1-force1d.csv"
+# And make a file to store information on the first derivative of the force
+ofF1d <- "OutFiles/C4P/test/Couchii_C4P_Force_1d.csv"
 ofF1dhdr <- c(
   "Species",
   "MAMU",
@@ -113,14 +109,12 @@ write.table(
   col.names = FALSE
 )
 
-# get all data files
-files = list.files(path = ".", pattern = "csv")
+# get all data files (in data_raw folder)
+files = list.files(path = "data_raw/C4P/", pattern = "csv")
 q <- strsplit(files, "-")
-# snakes <- unlist(lapply(q,'[[',1))
-# muscles <- unlist(lapply(q,'[[',2))
-# osum <- data.frame(files,snakes,muscles)
 
-fC4P <- paste("./output/", "P1-C4PFiles",  ".csv", sep = "")
+#Set up a file just to track which snakes we've gone through
+fC4P <- "OutFiles/C4P/test/P1-C4PFiles.csv"
 write.table(
   t(c("File", "Snake", "Muscle", "Rater", "Mass(g)")),
   file = fC4P,
@@ -134,8 +128,10 @@ write.table(
   col.names = FALSE
 )
 
-#a lot of the stuff in here references rows that don't exist in my snake info file which is at least part of the reason i'm having so many issues
+#Now we go through each raw data file, calculate all our metrics, and append to
+# the storage files we made earlier
 for (file in files) {
+  #extracting info from the name of the file
   y <- strsplit(file, "-")
   snake <- trimws(y[[1]][1])
   # get Snake Info
@@ -159,9 +155,10 @@ for (file in files) {
     row.names = FALSE,
     col.names = FALSE
   )
-  ofdata <- paste("./output/", snake, "-", muscle, ".csv", sep = "")
-  raw = read.csv(file)
-  # Select all rows with stimulus > 1
+  
+  #actually read in the data file
+  raw = read.csv(paste("data_raw/C4P/",file, sep =""))
+  # Select all rows with stimulus > 1 (and filter out files without all 4 pulses)
   stmRows <- as.integer(rownames(raw[raw$Stimulus > 1.0,]))
   if (length(stmRows) < 4) {
     cat("File: ", file, "; Stim Rows: ", length(stmRows), "\n")
@@ -179,7 +176,7 @@ for (file in files) {
   for (sr in stmRows) {
     i <- i + 1
     meanF = mean(raw$Force..g.[sr - 1000:sr])
-    # muscWeight = smm[as.factor(snake),muscle] / 1000
+    #calculate force, scaled by muscle mass
     rspF <-
       (raw$Force..g.[stmRows[1]:(stmRows[1] + 1499)] - meanF) * (0.00980665 /
                                                                    MusMassg)
@@ -193,6 +190,7 @@ for (file in files) {
       rater,
       rspF
     )
+    #save calculated force (scaled and normalized to baseline) to file
     write.table(
       t(oFline),
       file = ofF,
@@ -229,14 +227,22 @@ for (file in files) {
       row.names = FALSE,
       col.names = FALSE
     )
+    #Calculate all other metrics
+    #max force:
     maxF <- max(rspF)
+    #time to max force:
     t100p <- min(which(rspF >= maxF))
     # convert all times to ms from tenth of a ms
+    #time from 10% to max force
     t10p <- min(which(rspF > 0.1 * maxF))
+    #time from 50% to max force
     t50p <-
       t100p + min(which(rspF[t100p:length(rspF)] <= 0.5 * maxF))
+    #maximum rate of change (from earlier F/s calcs)
     maxF1d <- max(rspF1d)
+    #minimum rate of change
     minF1d <- min(rspF1d)
+    #not sure what these two are
     t1dmax <- min(which(rspF1d >= maxF1d)) * 50
     t1dmin <- min(which(rspF1d <= minF1d)) * 50
     sumLine = c(
@@ -259,6 +265,7 @@ for (file in files) {
       (t1dmin - t1dmax) / 10,
       sMAMU
     )
+    #save these summary stats
     write.table(
       t(sumLine),
       file = ofsum,
@@ -274,34 +281,9 @@ for (file in files) {
   }
 }
 
-df = read.csv("./output/c4p1-force.csv")
-# soff <- off[order(off$Pulse,off$Snake.Muscle),]
-# toff <- t(soff)
-# write.csv(toff, "./output/c4p1-force-rpt.csv")
-write.csv(t(df[order(df$Pulse, df$Snake, df$Muscle),]),
-          "./output/c4p1-force-rpt.csv")
-# Create reports by species and pulse
-df <- df[order(df$Pulse, df$Species, df$Snake, df$Muscle), ]
-for (p in unique(df$Pulse)) {
-  for (s in levels(df$Species)) {
-    write.csv(df[which(df$Pulse == p &
-                          df$Species == s),], paste0("./output/p1C4P-Force-P",
-                                                     p, "-", s, ".csv"))
-  }
-}
+#now do some formatting and add a little bit of information to the file
+# we just wrote
 
-df = read.csv("./output/c4p1-force1d.csv")
+df = read.csv("OutFiles/C4P/test/Couchii_C4P_Force.csv")
 write.csv(t(df[order(df$Pulse, df$Snake, df$Muscle),]),
-          "./output/c4p1-force1d-rpt.csv")
-df <- df[order(df$Pulse, df$Species, df$Snake, df$Muscle), ]
-for (p in unique(df$Pulse)) {
-  for (s in levels(df$Species[which(df$Pulse == p)])) {
-    write.csv(df[which(df$Pulse == p &
-                          df$Species == s),], paste0("./output/p1C4P-Force1d-P",
-                                                     p, "-", s, ".csv"))
-  }
-}
-
-# plot(rspF)
-# plot(rspF1d,type="l")
-# scatter.smooth(x=1:29, y=rspF1d)
+          "OutFiles/C4P/test/Couchii_C4P_Force_Sorted.csv")
