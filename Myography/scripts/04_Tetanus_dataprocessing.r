@@ -1,5 +1,5 @@
-# TetanusP3 - Data analysis
-#   Protocol 3: One 2sec pulse
+# TetanusP2 - Data processing
+#   Protocol 2: One 2sec pulse
 # 1st stimulus occurs at 0.5s (seconds)
 # System delay is 4ms (miliseconds)
 # Pulsewidth is 500.0us (microseconds)
@@ -12,23 +12,23 @@
 # 3. Data of interest - 30,000 (3 secs) from start of pulse
 # 4. Normalized force = (measuredF - baseF)*9.80665/(Muscle Mass in grams)
 #
-setwd("C:/Users/sdbab/OneDrive - University of Nevada, Reno/UNR/tcouchii/Myography")
+
 # Get Snake Info - Species, Genotype etc.
-sinf = read.csv("Tcouchii_side_hustle/Scripts and datasheets/SnakeInfo-08.14.2019 (1).csv")
+sinf = read.csv("./data_raw/Snake_data_sheets/SnakeInfo-09.30.2020.csv")
 
 # Get Snake Muscle Masses
-smm = read.csv("Tcouchii_side_hustle/Scripts and datasheets/SnakeSkeletalMuscleMasses-08.14.2019 (1).csv")
-# reset all missing muscle mass values to 0.999
+smm = read.csv("./data_raw/Snake_data_sheets/SnakeSkeletalMuscleMasses-9.28.2020.csv")
+# reset all missing muscle mass values to -1.0smm
 smm[is.na(smm)] <- 0.999
 
-dname = "Tcouchii_side_hustle/Couchii_tetanus"
-# dname = "C:/Bobby/Data-CSV/p3Tetanus"
-setwd(dname)
+# dname = "Tcouchii_side_hustle/Couchii_tetanus"
+# # dname = "C:/Bobby/Data-CSV/p3Tetanus"
+# setwd(dname)
+# 
+# x = strsplit(dname, "/")
 
-x = strsplit(dname, "/")
-
-# Write / overwrite Column Headers for output summary file
-ofsum = paste("./output/", x[[1]][lengths(x)],  ".csv", sep = "")
+# Set up file for output summary metrics (as we did with C4P)
+ofsum = "OutFiles/Tetanus/test/Couchii_Tetanus_Metrics.csv"
 hdrs <-
   c(
     "Species",
@@ -59,8 +59,9 @@ write.table(
   row.names = FALSE,
   col.names = FALSE
 )
-#
-ofF <- "./output/p3Tetanus-force.csv"
+
+#set up output file for force data
+ofF <- "OutFiles/Tetanus/test/Couchii_Tetanus_Force.csv"
 ofFhdr <-
   c(
     "Species",
@@ -82,8 +83,9 @@ write.table(
   row.names = FALSE,
   col.names = FALSE
 )
-#
-ofF1d <- "./output/p3Tetanus-force1d.csv"
+
+#Set up file for first derivative of force results
+ofF1d <- "OutFiles/Tetanus/test/Couchii_Tetanus_Force_1d.csv"
 ofF1dhdr <-
   c(
     "Species",
@@ -105,15 +107,12 @@ write.table(
   row.names = FALSE,
   col.names = FALSE
 )
-#
-# get all data files
-files = list.files(path = ".", pattern = "csv")
-q <- strsplit(files, "-")
-# snakes <- unlist(lapply(q,'[[',1))
-# muscles <- unlist(lapply(q,'[[',2))
-# osum <- data.frame(files,snakes,muscles)
 
-fTet <- paste("./output/", "P3-TetanusFiles",  ".csv", sep = "")
+# Make a list of all the raw data files
+files = list.files(path = "data_raw/Tetanus/", pattern = "csv")
+
+#Set up a file to track which files we've gone through
+fTet <- "OutFiles/Tetanus/test/P2-TetanusFiles.csv"
 write.table(
   t(c("File", "Snake", "Muscle", "Mass(g)")),
   file = fTet,
@@ -127,31 +126,39 @@ write.table(
   col.names = FALSE
 )
 
+#Now we go through each raw data file, calculate all our metrics, and append to
+# the storage files we made earlier
 for (file in files) {
   y <- strsplit(file, "-")
+  #Extract info from the name of the file
+  
   snake <- trimws(y[[1]][1])
   # get Snake Info
   sSpecies <- as.character(sinf$Species[which(sinf$Snake == snake)])
   sMAMU <- as.character(sinf$MAMU[which(sinf$Snake == snake)])
+  
   # get Muscle Mass
   muscle <- trimws(y[[1]][2])
   sMusMassg <- smm[which(smm$SnakeID == snake), muscle] / 1000
-  # write.table(
-  #   t(c(file, snake, muscle, sMusMassg)),
-  #   file = fTet,
-  #   append = TRUE,
-  #   quote = TRUE,
-  #   sep = ",",
-  #   eol = "\n",
-  #   na = "NA",
-  #   dec = ".",
-  #   row.names = FALSE,
-  #   col.names = FALSE
-  # )
   
-  ofdata <- paste("./output/", snake, "-", muscle, ".csv", sep = "")
-  raw = read.csv(file)
-  # Select all rows with stimulus > 1
+  write.table(
+    t(c(file, snake, muscle, sMusMassg)),
+    file = fTet,
+    append = TRUE,
+    quote = TRUE,
+    sep = ",",
+    eol = "\n",
+    na = "NA",
+    dec = ".",
+    row.names = FALSE,
+    col.names = FALSE
+  )
+  
+  #ofdata <- paste("./output/", snake, "-", muscle, ".csv", sep = "")
+  #Actually read in the data file
+  raw = read.csv(paste("data_raw/Tetanus/",file, sep =""))
+  
+  # Select all rows with stimulus > 1 (and filter out rows with insufficient stimulus)
   stmRows <- as.integer(rownames(raw[raw$Stimulus > 1.0, ]))
   if (length(stmRows) < 99) {
     cat("File: ", file, "; Stim Rows: ", length(stmRows), "\n")
@@ -170,19 +177,20 @@ for (file in files) {
     sMusMassg,
     rspF
   )
-  # write.table(
-  #   t(oFline),
-  #   file = ofF,
-  #   append = TRUE,
-  #   quote = TRUE,
-  #   sep = ",",
-  #   eol = "\n",
-  #   na = "NA",
-  #   dec = ".",
-  #   row.names = FALSE,
-  #   col.names = FALSE
-  # )
+  write.table(
+    t(oFline),
+    file = ofF,
+    append = TRUE,
+    quote = TRUE,
+    sep = ",",
+    eol = "\n",
+    na = "NA",
+    dec = ".",
+    row.names = FALSE,
+    col.names = FALSE
+  )
   #  Low pass 200Hz filter -> pick every 30th entry & convert to per sec
+  # This will give us our first derivative file
   rspF1d <- diff(rspF[1:600 * 50]) * 200
   oF1dline <- c(
     sSpecies,
@@ -204,6 +212,7 @@ for (file in files) {
     row.names = FALSE,
     col.names = FALSE
   )
+  #Calculating all the summary stats (again, just like the C4P script)
   tmf <- max(round(rspF, 0)) - 10
   tmmin = min(which(rspF >= tmf))
   tmmax <- max(which(rspF >= tmf))
@@ -247,22 +256,8 @@ for (file in files) {
   )
 }
 
-
-#this splits by species which is unnecessary for me obviously
-
-# df = read.csv("./output/p3tetanus-force.csv")
-# df <- df[order(df$Species, df$Snake, df$Muscle),]
-# for (s in unique(df$Species)) {
-#   write.csv(df[which(df$Species == s), ], paste0("./output/p3Tetanus-Force-", s, ".csv"))
-# }
-# 
-# df = read.csv("./output/p3tetanus-force1d.csv")
-# df <- df[order(df$Species, df$Snake, df$Muscle),]
-# for (s in unique(df$Species)) {
-#   write.csv(df[which(df$Species == s), ], paste0("./output/p3Tetanus-Force1d-", s, ".csv"))
-# }
-
-#
-# plot(rspF)
-# plot(rspF1d,type="l")
-# scatter.smooth(x=1:29, y=rspF1d)
+#not really anything to sort here but I'm still making a flipped version to maybe 
+# use for analyses (a bit slow because of the size of the file)
+df = read.csv("OutFiles/Tetanus/test/Couchii_Tetanus_Force.csv")
+write.csv(t(df[order(df$Snake, df$Muscle),]),
+          "OutFiles/Tetanus/test/Couchii_Tetanus_Force_Sorted.csv")

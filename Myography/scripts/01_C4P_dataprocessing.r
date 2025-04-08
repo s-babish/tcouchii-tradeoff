@@ -1,4 +1,4 @@
-# C4P - Data analysis
+# C4P - Data processing
 #   Protocol 1: Control Four Pulse (C4P) Experiment
 #   1st stimulus occurs at 5s (seconds)
 #   System delay is 4ms (miliseconds)
@@ -111,7 +111,6 @@ write.table(
 
 # get all data files (in data_raw folder)
 files = list.files(path = "data_raw/C4P/", pattern = "csv")
-q <- strsplit(files, "-")
 
 #Set up a file just to track which snakes we've gone through
 fC4P <- "OutFiles/C4P/test/P1-C4PFiles.csv"

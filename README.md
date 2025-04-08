@@ -10,9 +10,11 @@ This folder contains all the data and scripts associated with the muscle-level a
 
 #### C4P
 
-All the C4P data are named with the Snake CollPreNo ID, the muscle number (some snakes had multiple muscles dissected out and tested on, and the pulse number (1 through 4). This naming is essential to the functioning of the script 01_C4P_dataprocessing.R and should not be changed. The data has 4 columns: Time (s), Force (g), Position (mm), and Stimulus (?).
+All the C4P data files are named with the Snake CollPreNo ID, the muscle number (some snakes had multiple muscles dissected out and tested on, and the pulse number (1 through 4). This naming is essential to the functioning of the script 01_C4P_dataprocessing.R and should not be changed. The data has 4 columns: Time (s), Force (g), Position (mm), and Stimulus (?).
 
 #### Tetanus
+
+All the Tetanus data files are named with the Snake CollPreNo ID, the muscle number (some snakes had multiple muscles dissected out and tested on, and which repeat of the protocol it was (1 or 2). This naming is essential to the functioning of the script 04_Tetanus_dataprocessing.R and should not be changed. The data has 4 columns: Time (s), Force (g), Position (mm), and Stimulus (?).
 
 #### Rheobase
 
@@ -38,11 +40,23 @@ These data sheets contain various information about the snakes used in all three
 
 #### Tetanus
 
+-   Couchii_Tetanus_Force.csv contains the force output of the muscles, scaled to muscle mass and normalized to baseline
+
+-   Couchii_Tetanus_Force_Sorted.csv contains the same information as the above file, just sorted and rotated to be better used by the later analyses
+
+-   Couchii_Tetanus_Force_1d.csv contains the first derivative of the force data (from every 200th reading)
+
+-   Couchii_Tetanus_Metrics.csv contains the key summary stats for each tetanic contraction, including base force, contraction amplitude, contraction duration, and more
+
+-   P1-TetanusFiles.csv contains a list of the raw data files that contributed to the above files; it is not directly used for anything but may prove informative or useful
+
 #### Rheobase
 
 ### scripts
 
 -   01_C4P_dataprocessing.R - This file takes all the raw C4P data files (from data_raw/C4P) and processes them to determine amount of force exerted at each time point (normalized and scaled to muscle mass). It then calculates several metrics of interest for the transient contractions, including contraction amplitude, time to maximal contraction, etc., and generates a first derivative trace of the force curve (giving force/second) to determine the minimal and maximal rate of force change. The output files are used by file 02_C4P_analysis.R.
+
+-   04_Tetanus_dataprocessing.R - This file does basically the same thing as script #1, but for the tetanic contraction protocol data (Tetanus) instead of the transient contraction protocol data (C4P). The output files are used by file 05_Tetanus_analysis.R.
 
 ### IC50_analyses
 
