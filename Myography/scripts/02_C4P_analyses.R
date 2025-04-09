@@ -6,7 +6,6 @@
 # are written to .csvs
 
 #Libraries ----- 
-library(ggplot2)
 library(tidyverse)
 
 #Aggregate C4P Correlation Results ----
@@ -48,23 +47,6 @@ head(c4p)
 # }
 # 
 # write.csv(c4p_corr,"OutFiles/C4P/test/Couchii_C4P_MAMU_corr.csv")
-
-#Comparing between pulses out of curiosity ----
-#make long version of data:
-c4p_long <- c4p %>% 
-  select(Snake, Pulse:DiffFChgMaxToMin.ms.) %>% 
-  pivot_longer(cols = BaseF.N.g.:DiffFChgMaxToMin.ms., 
-               names_to = "variable", values_to = "value")
-c4p_long$Pulse <- as.factor(c4p_long$Pulse)
-
-pulse_boxes <- ggplot(c4p_long, aes(Pulse, value, fill = Pulse)) +
-  geom_boxplot(outlier.shape = NA, na.rm = T) +
-  facet_wrap (. ~ variable, scales = 'free', shrink = T) +
-  xlab('') +
-  ylab('')
-pulse_boxes
-#all this tells me is that at least visually all the pulses are the same, so I won't waste time comparing 
-# differences between pulses between MAMUs or IC50s
 
 #MAMU-Split pulse correlation results ----
 c4p_corr_split <- matrix(nrow=88,ncol=10)

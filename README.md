@@ -22,6 +22,10 @@ All the Tetanus data files are named with the Snake CollPreNo ID, the muscle num
 
 These data sheets contain various information about the snakes used in all three of these experiments, and are in this folder because all three analyses draw on this information. The most important information in these files is snake MAMU and muscle masses for the muscles used in the various analyses, the former of which is integral to the analyses and the latter of which is necessary for all data processing (scaling results to muscle mass).
 
+#### IC50
+
+IC50 data, currently unorganized except IC50.csv, which has the final results for all the IC50 analyses and isn't really raw data but is staying there until I have the code to create it and can actually treat it as an outfile.
+
 ### data_processed
 
 ### OutFiles
@@ -30,7 +34,7 @@ These data sheets contain various information about the snakes used in all three
 
 -   Couchii_C4P_Force.csv contains the force output of the muscles, scaled to muscle mass and normalized to baseline
 
--   Couchii_C4P_Force_Sorted.csv contains the same information as the above file, just sorted and rotated to be better used by the later analyses
+-   Couchii_C4P_Force_Sorted.csv contains the same information as the above file, just sorted and rotated to be better used by the later analyses (except actually I don't think I need it? needs confirmed)
 
 -   Couchii_C4P_Force_1d.csv contains the first derivative of the force data (from every 200th reading)
 
@@ -42,7 +46,7 @@ These data sheets contain various information about the snakes used in all three
 
 -   Couchii_Tetanus_Force.csv contains the force output of the muscles, scaled to muscle mass and normalized to baseline
 
--   Couchii_Tetanus_Force_Sorted.csv contains the same information as the above file, just sorted and rotated to be better used by the later analyses
+-   Couchii_Tetanus_Force_Sorted.csv contains the same information as the above file, just sorted and rotated to be better used by the later analyses (except I may not actually use it, need to confirm)
 
 -   Couchii_Tetanus_Force_1d.csv contains the first derivative of the force data (from every 200th reading)
 
@@ -56,13 +60,13 @@ These data sheets contain various information about the snakes used in all three
 
 -   01_C4P_dataprocessing.R - This file takes all the raw C4P data files (from data_raw/C4P) and processes them to determine amount of force exerted at each time point (normalized and scaled to muscle mass). It then calculates several metrics of interest for the transient contractions, including contraction amplitude, time to maximal contraction, etc., and generates a first derivative trace of the force curve (giving force/second) to determine the minimal and maximal rate of force change. The output files are used by file 02_C4P_analysis.R. Will eventually also remove outliers, still trying to figure out what method I feel comfortable with there.
 
--   02_C4P_analyses.R - In progress, does all the correlation analyses and linear regressions
+-   02_C4P_analyses.R - Does correlation analyses (Kendall's tau and Pearson's correlation) between C4P metrics and both MAMU and IC50. Also does basic linear regressions and calculates RMSE and R\^2. Creates .csvs with the correlation values (Couchii_C4P_X_corr_split.csv) and the regression parameters (Couchii_C4P_X_lm.csv) in OutFiles.
 
--   03_C4P_visualization.R - In progress, will create all C4P-related figures
+-   03_C4P_visualization.R - Creates all C4P-related (publishable) figures. Includes boxplots comparing contraction metrics across pulses, line plots comparing them at an individual level across pulses, trace plots of the contraction force and force derivative broken up by pulses, and the same trace plots with all 4 pulses aggregated.
 
 -   04_Tetanus_dataprocessing.R - This file does basically the same thing as script #1, but for the tetanic contraction protocol data (Tetanus) instead of the transient contraction protocol data (C4P). The output files are used by file 05_Tetanus_analysis.R. Will eventually remove outliers as well/
 
--   02_Tetanus_analyses.R - In progress, does all the correlation analyses and linear regressions.
+-   04_Tetanus_analyses.R - Does correlation analyses (Kendall's tau and Pearson's correlation) between tetanus metrics and both MAMU and IC50. Also does basic linear regressions and calculates RMSE and R\^2. Creates .csvs with the correlation values (Couchii_Tetanus_X_corr.csv) and the regression parameters (Couchii_Tetanus_X_lm.csv) in OutFiles.
 
 -   06_Tetanus_visualization.R - In progress, will create all Tetanus-related figures
 

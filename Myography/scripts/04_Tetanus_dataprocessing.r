@@ -69,7 +69,7 @@ ofFhdr <-
     "Muscle",
     "MAMU",
     "MusMassg",
-    (1:30000) / 10000
+    format((1:30000) / 10000, scientific = F)
   )
 write.table(
   t(ofFhdr),
@@ -259,10 +259,64 @@ for (file in files) {
 #not really anything to sort here but I'm still making a flipped version to maybe 
 # use for analyses (a bit slow because of the size of the file)
 df = read.csv("OutFiles/Tetanus/test/Couchii_Tetanus_Force.csv")
-write.csv(t(df[order(df$Snake, df$Muscle),]),
-          "OutFiles/Tetanus/test/Couchii_Tetanus_Force_Sorted.csv")
+#write.csv(t(df[order(df$Snake, df$Muscle),]),
+#          "OutFiles/Tetanus/test/Couchii_Tetanus_Force_Sorted.csv")
 
-tetanus_sub <- tetanus[!duplicated(tetanus$Snake), ] %>% 
-  filter(!Snake %in% c("CRF3060","CRF3074","CRF3065","CRF3066","CRF2680","CRF2669","CRF2631","CRF2670")) 
-#removing outliers based on waveform analysis currently in myography_plots.R (down to 24 obs)
-head(tetanus_sub)
+#filter out outliers/invalid data based on waveform ----
+# library(ggplot2)
+# library(tidyverse)
+# 
+# #some muscles likely tore themselves or had other issues based on waveform, 
+# # and there's few enough runs I can filter those out manually instead of writing
+# # some sort of algorithm to recognize bad waveforms
+# 
+# #need to plot only 5 snakes at a time for colors to be distinguishable
+# #(i promise i'm aware of how incredibly cursed this method is, please forgive me)
+# plot_IDs_1 <- ggplot(subset(tet_force_long, 
+#                             Snake %in% c("CRF2630","CRF2631","CRF2633", "CRF2669","CRF2670")),
+#                      aes(x = time, y = force, color = Snake)) +
+#   geom_line() 
+# plot_IDs_1
+# #lots of bad ones, 2669 and 2631 both look ripped and 2670 is a bit small
+# 
+# plot_IDs_2 <- ggplot(subset(tet_force_long, 
+#                             Snake %in% c("CRF2671", "CRF2672", "CRF2673", "CRF2674", "CRF2675")),
+#                      aes(x = time, y = force, color = Snake)) +
+#   geom_line() 
+# plot_IDs_2
+# #all look fine, though the normalization is horrid
+# #2675 is the tall outlier, contrary to bobby's suggestion it's actually on the smaller side (11 mg)
+# 
+# plot_IDs_3 <- ggplot(subset(tet_force_long, 
+#                             Snake %in% c("CRF2676", "CRF2677", "CRF2678", "CRF2679", "CRF2680")),
+#                      aes(x = time, y = force, color = Snake)) +
+#   geom_line() 
+# plot_IDs_3
+# #CRF2680 ripped
+# 
+# plot_IDs_4 <- ggplot(subset(tet_force_long, 
+#                             Snake %in% c("CRF2681", "CRF3051", "CRF3052", "CRF3055", "CRF3056")),
+#                      aes(x = time, y = force, color = Snake)) +
+#   geom_line() 
+# plot_IDs_4
+# #all fine (except maybe 2681)
+# 
+# plot_IDs_5 <- ggplot(subset(tet_force_long, 
+#                             Snake %in% c("CRF3065", "CRF3066", "CRF3070", "CRF3074")),
+#                      aes(x = time, y = force, color = Snake)) +
+#   geom_line() 
+# plot_IDs_5
+# #3074 totally wrong, 3065 and 3066 also look bad
+# 
+# plot_IDs_6 <- ggplot(subset(tet_force_long, 
+#                             Snake %in% c("CRF3058", "CRF3059", "CRF3060", "CRF3061", "CRF3064")),
+#                      aes(x = time, y = force, color = Snake)) +
+#   geom_line() 
+# plot_IDs_6
+# #3060 has weird decay
+# tet_force_long_sub <- tet_force_long %>% 
+#   filter(!Snake %in% c("CRF3060","CRF3074","CRF3065","CRF3066","CRF2680","CRF2669","CRF2631","CRF2670")) 
+# #%>% filter(Snake != "CRF2675")
+# 
+# #save this file
+# #write.csv(tet_force_long_sub, "data_processed/tetanus_no_outliers.csv")
