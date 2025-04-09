@@ -261,3 +261,8 @@ for (file in files) {
 df = read.csv("OutFiles/Tetanus/test/Couchii_Tetanus_Force.csv")
 write.csv(t(df[order(df$Snake, df$Muscle),]),
           "OutFiles/Tetanus/test/Couchii_Tetanus_Force_Sorted.csv")
+
+tetanus_sub <- tetanus[!duplicated(tetanus$Snake), ] %>% 
+  filter(!Snake %in% c("CRF3060","CRF3074","CRF3065","CRF3066","CRF2680","CRF2669","CRF2631","CRF2670")) 
+#removing outliers based on waveform analysis currently in myography_plots.R (down to 24 obs)
+head(tetanus_sub)

@@ -284,7 +284,11 @@ for (file in files) {
 # we just wrote
 
 df = read.csv("OutFiles/C4P/test/Couchii_C4P_Force.csv")
-write.csv(t(df[order(df$Pulse, df$Snake, df$Muscle),]),
-          "OutFiles/C4P/test/Couchii_C4P_Force_Sorted.csv")
+df<-t(df[order(df$Pulse, df$Snake, df$Muscle),])
 
 #maybe append the outlier removals here? ignoring them while I do my other tidying things
+#remove outliers ----
+c4p_sub <- df %>% 
+  filter(!Snake %in% c("CRF3066", "CRF2677", "CRF2671", "CRF2669"))
+
+#write.csv(c4p_sub,"OutFiles/C4P/test/Couchii_C4P_Force_Cleaned.csv")
