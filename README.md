@@ -28,6 +28,8 @@ IC50 data, currently unorganized except IC50.csv, which has the final results fo
 
 ### data_processed
 
+This folder might end up deleted for all but rheobase; more likely, the force and force-1d files may end up here because they're more data than results and so should be in a data folder, but that's tbd.
+
 ### OutFiles
 
 #### C4P
@@ -68,7 +70,7 @@ IC50 data, currently unorganized except IC50.csv, which has the final results fo
 
 -   04_Tetanus_analyses.R - Does correlation analyses (Kendall's tau and Pearson's correlation) between tetanus metrics and both MAMU and IC50. Also does basic linear regressions and calculates RMSE and R\^2. Creates .csvs with the correlation values (Couchii_Tetanus_X_corr.csv) and the regression parameters (Couchii_Tetanus_X_lm.csv) in OutFiles.
 
--   06_Tetanus_visualization.R - In progress, will create all Tetanus-related figures
+-   06_Tetanus_visualization.R - Creates all tetanus-related figures, including traces of the force and the first derivative of the force. Ideally it will eventually plot the traces as fitted to the sigmoidal equation from REdC, but that isn't working right now.
 
 -   Absolute nightmare that is the rheobase scripts will be dealt with eventually, after the above and the whole-animal stuff (you can tell I don't want to deal with them right now)
 
@@ -78,4 +80,20 @@ This will ideally eventually be spread out between other folders, but it's all i
 
 ## tradeoff_modeling
 
-This folder contains all the data and code associated with the whole-animal trade-off analyses performed by Babish et al. (it's unorganized right now but I'm going to fix it I promise, one thing at a time)
+This folder contains all the data and code associated with the whole-animal trade-off analyses performed by Babish et al. Miscellaneous research design scripts I plan to pull from and eventually remove are just chucked in the top level of the folder at the moment.
+
+### data_raw
+
+This file contains the data files the rest of the project draws from. couchiionlydata.csv contains old data collected by EDBIII and his lab, and some old data collected by CRF and his lab. summer24couchii.csv contains the additional data collected by SDB and CRF in 2024. old_MAMUs.csv is used to populate MAMU data for some of the individuals that are missing MAMUs in the main datafile(s). couchiiwithoutresistance.csv and fastcouchiineonates.csv were reference files that will probably be deleted, and multispeciesdata.csv was used for a different version of this modeling and may be removed (unless we decide to include that information in the manuscript for comparison).
+
+### OutFiles
+
+This file will have data with information about models, maybe? For now it exists as a just-in-case.
+
+### scripts
+
+-   01_datamanipulation.R - This script merges the raw data frames, scales the data in preparation for modeling, and does some data exploration that was used to determine the models used in script 2. I may or may not do some imputing as well, I want to ask some people with more experience about it first.
+
+-   02_modeling.R - This script runs GLMs, GLMMs (eventually, once I fill in locality information and standardize it), and path models on the whole-animal trade-off data.
+
+-   03_visualization.R - This script will eventually make whatever plots I want for this section, I haven't decided what those look like yet so for now it's empty.

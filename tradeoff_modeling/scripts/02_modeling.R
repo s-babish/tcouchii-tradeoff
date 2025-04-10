@@ -1,12 +1,10 @@
+#This script makes GLMs (and eventually GLMMs) and path models to explore 
+# the effects of various variables, including MAMU, on sprint speed
 
 #need to move the working directory because the default for this R project is 
 # in the Myography folder but I don't want to make a new project just for this
 setwd('../tradeoff_modeling')
 getwd()
-
-#Reading in data ----
-couchiidat <- read.csv("data_raw/couchiionlydata.csv")
-newdat <- read.csv("tradeoff_modeling/summer24couchii.csv")
 
 # Libraries: -------
 library(tidyverse)
@@ -19,83 +17,13 @@ library(sjPlot)
 library(lavaan)
 library(lavaanPlot)
 
-#1: Data formatting ----
-couchiidat <- couchiidat %>% 
-  bind_rows(newdat) %>% 
-  select(species, INDIV, CollPreNo, locality, County, mass_g, Sex,
-         SVL_cm, TL_cm, baseline_ms, MAMU) %>% 
-  mutate ( #misc small changes
-    MAMU = as.double(MAMU),
-    species = as.factor(species),
-    log_MAMU = log(MAMU),
-    Sex = as.factor(Sex)
-  )
-
-#Making a scaled data-frame for modeling:
-scaledat <- couchiidat %>% 
-  select(species, INDIV, mass_g, SVL_cm, TL_cm, baseline_ms, MAMU, log_MAMU, Sex) %>% 
-  mutate(
-    mass_g = scale(mass_g, center = F)[,1],
-    SVL_cm = scale(SVL_cm, center = F)[,1],
-    TL_cm = scale(TL_cm, center = F)[,1],
-    MAMU = scale(MAMU, center = F)[,1],
-    log_MAMU = scale(log_MAMU, center = F)[,1] 
-    #feels odd to scale something that's already logged, but I'll compare 
-    #using it to using regular MAMU scaled (because it would also feel wrong
-    #to scale all but one variable)
-  )
-
-#2: Data exploration -----
-#2A: Looking at data itself -----
-
-#examine dataset:
-summary(couchiidat)
-inspect_types(couchiidat)
-
-datinfo <- inspect_cat(couchiidat)
-show_plot(datinfo)
-#I don't expect to be able to use any of these for modeling, maybe locality once
-# I go back through it later
-
-par(mfrow = c(2,1))
-hist(couchiidat$MAMU)
-#this is definitely going to cause some problems, I'll experiment with log-
-# transforming it in some of the models
-hist(couchiidat$log_MAMU)
-#that's much more workable, even if it'll make interpretation slightly harder
-hist(couchiidat$mass_g)
-#squite skewed
-hist(couchiidat$SVL_cm)
-# not quite normal but not too skewed
-hist(couchiidat$baseline_ms)
-#also about as expected
-
-#2B: Plotting for possible interactions ----
-# first, look at relationship between MAMU and speed 
-ggplot(couchiidat, aes(MAMU, baseline_ms))+
-  geom_point() + geom_smooth(method='lm')
-ggplot(couchiidat, aes(log_MAMU, baseline_ms))+
-  geom_point() + geom_smooth(method='lm')
-#both of these show lovely flat lines
-
-ggplot(couchiidat, aes(SVL_cm, baseline_ms))+
-  geom_point() + geom_smooth(method='lm')
-
-#I know Chris wants to keep those fast neonates but i don't know how we'll justify
-# the negative association of SVL and speed - maybe motivation?
-
-ggplot(couchiidat, aes(mass_g, baseline_ms))+
-  geom_point() + geom_smooth(method='lm')
-
-#same thing, weird relationship here
-
-#3: GLMs and GLMMs -----
-#3A: Selecting distribution and link function using GLMs -----
+#GLMs and GLMMs -----
+#1: Selecting distribution and link function using GLMs -----
 # I don't know if this is theoretically supported, but I wanted to start by
 # selecting distribution and link functions with simpler GLMs before adding in
 # random effects
 
-#3Ai: Normal distribution (for baseline): ----
+#1A: Normal distribution (for baseline): ----
 glm_norm <- glm(baseline_ms ~ log_MAMU + SVL_cm*mass_g, 
                 family = gaussian(link = "identity"), data = scaledat)
 summary(glm_norm)
@@ -113,7 +41,7 @@ simulateResiduals(glm_norm_log, plot = T)
 #quantile plot is worse, residual deviance slightly closer to null deviance and 
 # therefore worse but not terribly so
 
-#3Aii: Gamma distribution: -----
+#1B: Gamma distribution: -----
 #First I'll check the default gamma link function, the inverse
 glm_gamma_inv <- glm(baseline_ms ~ log_MAMU + SVL_cm*mass_g, 
                      family = Gamma(link = "inverse"), data = scaledat)
@@ -151,7 +79,7 @@ plot_model(glm_gamma_log, type = "est", show.values = T,
            transform = "exp")
 #more sensible results here
 
-#3Aiii: Inverse Gaussian: ----
+#1C: Inverse Gaussian: ----
 #The gamma distribution wasn't a bad fit, but it could clearly be improved upon,
 # so we'll check out the inverse gaussian distribution last
 #first just using the default link function, 1/mu^2
@@ -185,11 +113,11 @@ testResiduals(glm_invg_log_res)
 #gamma with log link seems the best for this dataset, based just on AIC since 
 # they all have quantile issues
 
-#3B: GLMMs ----
+#2: GLMMs ----
 #I nuked these because the dataset is currently empty of things that would make
 # sense as random effects; once i fix the locality section i'll do these
 
-#4: Path models -----
+#3: Path models -----
 path1 = '
   baseline_ms ~ log_MAMU 
   baseline_ms ~ SVL_cm 
