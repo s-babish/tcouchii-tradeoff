@@ -60,6 +60,8 @@ This folder might end up deleted for all but rheobase; more likely, the force an
 
 ### scripts
 
+-   00_sample+mapping_comparison.R - This script may not last, but for now it exists to map the samples we used in the various myography experiments (I wanted an idea of where they came from) and compiles a list of which samples were used for which experiments (because annoyingly there were very different individuals used for each experiment and there's not huge overlap)).
+
 -   01_C4P_dataprocessing.R - This file takes all the raw C4P data files (from data_raw/C4P) and processes them to determine amount of force exerted at each time point (normalized and scaled to muscle mass). It then calculates several metrics of interest for the transient contractions, including contraction amplitude, time to maximal contraction, etc., and generates a first derivative trace of the force curve (giving force/second) to determine the minimal and maximal rate of force change. The output files are used by file 02_C4P_analysis.R. Will eventually also remove outliers, still trying to figure out what method I feel comfortable with there.
 
 -   02_C4P_analyses.R - Does correlation analyses (Kendall's tau and Pearson's correlation) between C4P metrics and both MAMU and IC50. Also does basic linear regressions and calculates RMSE and R\^2. Creates .csvs with the correlation values (Couchii_C4P_X_corr_split.csv) and the regression parameters (Couchii_C4P_X_lm.csv) in OutFiles.
@@ -72,7 +74,21 @@ This folder might end up deleted for all but rheobase; more likely, the force an
 
 -   06_Tetanus_visualization.R - Creates all tetanus-related figures, including traces of the force and the first derivative of the force. Ideally it will eventually plot the traces as fitted to the sigmoidal equation from REdC, but that isn't working right now.
 
--   Absolute nightmare that is the rheobase scripts will be dealt with eventually, after the above and the whole-animal stuff (you can tell I don't want to deal with them right now)
+-   Absolute nightmare that is the rheobase scripts will be dealt with eventually, after the above and the whole-animal stuff (you can tell I don't want to deal with them right now) (also the ones staring with P will have that changed once they're fixed to make this one cohesive pipeline)
+
+    -   P1_Rheobase_processing.py takes in the raw rheobase data files and processes them to an intermediate (stored in data_processed)
+
+    -   P2_Rheobase_compilation.py takes the output from the previous step and produces the file "megareport.csv" (currently unsorted in OutFiles)
+
+    -   P3_Rheobase_sorting.R takes the megareport and sorts the data into outfiles by pulse length (and also scales the force data for each individual). Outputs for this are currently stored in the Force_scaled folder of the outfiles (and maybe could also be processed data tbh). They currently have the format TPA_pulse width but I should change that because I don't do anything with temperature
+
+    -   X1_Rheobase_sigmoidal.R - The current problem script, theoretically fits a sigmoidal curve to the scaled force data obtained from script P3. What I'm meeting with Paul to troubleshoot.
+
+    -   X2_Rheobase_analyses.R - Currently barely does anything, will eventually compute stats for rheobase outputs once I have sigmoidal fits to compute stats from
+
+    -   X3_Rheobase_visualization.R - Will make the rheobase plots (mostly whatever Bobby suggested), another work in progress shelved until I get actually good rheobase sigmoidal fits
+
+-   "Unused" folder that contains things I got from Bobby that I don't think I need but don't want to delete just yet
 
 ### IC50_analyses
 

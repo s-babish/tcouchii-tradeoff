@@ -44,8 +44,12 @@ my_row_number_list = [33562,66893,100224,133560,166891,200228,233558,266894,3002
 experiment_list=[]
 experiment_dict={}
 my_stimulus=()
-my_dir='C:/Users/sdbab/Downloads/Tcouchii_side_hustle/Tcouchii_side_hustle/Couchii_Rheobase'
-for filename in os.listdir(my_dir):
+
+## I will make this not absolute path once I refresh myself on how paths work in
+# python, if I'm correct and my starting dir is where i run the script from I 
+# need to figure out how to back up and go back down levels
+my_dir='C:/Users/sdbab/Documents/myo_main/Myography/data_raw/Rheobase'
+
 	if filename.endswith(".dat.csv"):
 		m = re.search('((^\S+?)-(\S+?))-(\D+)(\d+)', filename)
 		experiment=str(m.group(1))
@@ -61,6 +65,8 @@ print(unique)
 ### SECOND STEP -- for each unique experiment (snake-muscle combination) get all the files, calculate the pulse width for each experiment and order the files by the pulse width
 for each_experiment in unique:
 	experiment_file_list=[]
+	#same with the path for these outfiles, need to figure that out (going to put them in data_processed, which i also need to go back
+	# and change for the c4p and tetanus processed force data)
 	outfile_name=each_experiment + '.rheobase.csv'
 	outfile=open(outfile_name, 'w')
 	outfile.write("SnakeID,Muscle,Stimulus(mA),Pulse_Width(us),Max_Force(g)\n")

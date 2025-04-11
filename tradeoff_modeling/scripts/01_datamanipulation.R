@@ -18,10 +18,10 @@ library(inspectdf)
 library(ggplot2)
 library(DHARMa)
 library(SuppDists)
-library(lme4)
-library(sjPlot)
-library(lavaan)
-library(lavaanPlot)
+# library(lme4)
+# library(sjPlot)
+# library(lavaan)
+# library(lavaanPlot)
 
 #1: Data formatting ----
 couchiidat <- couchiidat %>% 
@@ -48,6 +48,8 @@ scaledat <- couchiidat %>%
     #using it to using regular MAMU scaled (because it would also feel wrong
     #to scale all but one variable)
   )
+
+#** need to write this to file or else why did I do it in here ----
 
 #2: Data exploration -----
 #2A: Looking at data itself -----
@@ -92,3 +94,4 @@ ggplot(couchiidat, aes(mass_g, baseline_ms))+
   geom_point() + geom_smooth(method='lm')
 
 #same thing, weird relationship here
+

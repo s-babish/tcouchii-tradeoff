@@ -1,4 +1,4 @@
-﻿##!/usr/bin/env python
+##!/usr/bin/env python
 ### Created by Julie Allen Ph.D. and Robert Eugene del Carlo
 ### Compile all *.rheobase.csv report files from rheobase_analysis.py
 ##  Input File format:
@@ -47,6 +47,7 @@ experiment_list=[]
 experiment_dict={}
 my_stimulus=()
 my_temp=()
+#same deal, need to remind myself about python paths and fix throughout
 my_dir='C:/Users/sdbab/Downloads/Tcouchii_side_hustle/Tcouchii_side_hustle/Couchii_Rheobase'
 
 skip = '\n'
