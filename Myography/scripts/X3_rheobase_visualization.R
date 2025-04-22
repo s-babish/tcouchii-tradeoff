@@ -7,11 +7,11 @@ library(viridis)
 pulse_l <- c(50,100,200,500,1000,10000,50000)
 i=1
 
-keydf <- read.csv("TPA-sigmoidal-rpt.csv")
+keydf <- read.csv("OutFiles/Rheobase/Sigmoidal/TPA-sigmoidal-rpt.csv")
 keydf <- keydf[,c(7,11)]
 
 for (i in 1:length(pulse_l)) {
-  infile <- toString(paste("TPA_",pulse_l[i],".csv", sep=""))
+  infile <- toString(paste("OutFiles/Rheobase/Force_scaled/TPA_",pulse_l[i],".csv", sep=""))
   df <- read.csv(infile)
   df <- df[,c(-1)] #remove index line
   dose_labels = df$Dose
@@ -25,13 +25,15 @@ for (i in 1:length(pulse_l)) {
       values_to = "scaled_force"
     ) %>% 
     mutate(
-      Snake = sub("_[^_]+$", "", Snake),
+      Snake = sub("_.*", "", Snake),
       MAMU = 0
     ) %>% 
     rows_update(distinct(keydf), by = "Snake", unmatched = "ignore") #pull in MAMU
   
   plot <- ggplot(df_long, aes(x = Dose, y = scaled_force, group = Snake, color = MAMU)) +
-    geom_smooth(se = F) + 
+    #geom_smooth(se = F) + 
+    geom_point() +
+    geom_line(aes(group = Snake)) +
     scale_color_viridis(option = "viridis") +
     scale_x_continuous(labels = dose_labels, breaks = 0:15) +
     ggtitle(toString(paste("Rheobase, pulse length ", pulse_l[i], "us"))) +
