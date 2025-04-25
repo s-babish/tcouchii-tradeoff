@@ -50,22 +50,19 @@ plot2 <- ggplot(tet_force_long,aes(x=time,y=force, group = Snake, color = MAMU))
 plot2
 
 #Alternative alternative that fits bobby's equation:
-#none of this works right now but i am not in the mood to figure it out
-# plot3 <- ggplot(tet_force_long,aes(x=time,y=force, group = Snake, color = MAMU))+
-#   geom_smooth(method="nls",
-#               formula=y~A2 + (A1 * A2) / (1 + exp((log(x) - log(x0)) / dx)), # this is an nls argument
-#               method.args = list(start=c(A1 = 1, A2 = 1, x0 = 400, dx = 1)), # this too
-#               se=FALSE) +
-#   scale_color_viridis(option = "viridis")
-# plot3
-# 
-# drc_formula <- force~A2 + (A1 * A2) / (1 + exp((log(time) - log(x0)) / dx))
+#this might work better if i scale the tetanus force outputs
+plot3 <- ggplot(tet_force_long,aes(x=time,y=force, group = Snake, color = MAMU))+
+  geom_smooth(method="nls",
+              formula=y~A2 + (A1 - A2) / (1 + exp((log(x) - log(exp(p0))) / dx)), # this is an nls argument
+              method.args = list(start=c(A1 = 0, A2 = 3000, p0 = 6, dx = 1)), # this too
+              data = tet_force_long,
+              se=FALSE) +
+  scale_color_viridis(option = "viridis") +
+  scale_x_continuous(limits = c(0,10000))
+plot3
 
-# tetanus_models <- tet_force_long %>%
-#   group_by(Snake) %>%
-#   do(fit = nlsLM(MMformula,., start = list(A2 = )))
-# MMmodels %>% tidy(fit)
-
+#still isn't fitting the ones further off from the given start values but it's
+# an improvement for sure (and limiting x-vals helped a lot)
 
 #**Variant including error bars ----
 

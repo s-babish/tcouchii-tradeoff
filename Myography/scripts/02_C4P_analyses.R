@@ -120,6 +120,9 @@ for (col in 7:17) {
     legend(x = "bottomright", bty = "n",
            legend = bquote(r^2 == .(r2) * "," ~~ RMSE == .(rmse)))
     i=i+1
+    par(mfrow=c(2,2))
+    plot(model)
+    par(mfrow=c(1,1))
   }
 }
 
