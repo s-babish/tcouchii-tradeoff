@@ -51,6 +51,7 @@ head(c4p)
 # 
 # write.csv(c4p_corr,"OutFiles/C4P/test/Couchii_C4P_MAMU_corr.csv")
 
+
 #MAMU-Split pulse correlation results ----
 c4p_corr_split <- matrix(nrow=44,ncol=10)
 colnames(c4p_corr_split) <- c("Pulse","Param","CorrTest","Statistic", "df","p-value",
@@ -83,6 +84,41 @@ for (i in 1:nrow(c4p_corr_split)) {
 #MAMU-split pulse linear regressions -----
 par(mfrow=c(2,2))
 
+#Check for normality in data subset and transform as needed ----
+for (col in 7:17) {
+  for (pulse in 1:4) {
+    df <- c4p[c4p$Pulse == pulse,]
+    df[complete.cases(df[,18]),]
+    print(pulse)
+    print(colnames(df)[col])
+    print(shapiro.test(df[,col]))
+  }
+}
+
+#DifFChg, ToFChgMax, FMinRateOfCHg, FMaxRateOfChg, ContrAmpl, and BaseF not normal
+# cols 7, 8, 13, 14, 15, 17 need log transformed
+
+c4p_log <- c4p
+logcols <- c(7,8,13,14,15,17)
+
+for (col in logcols) {
+ 
+  c4p_log[,col] <- log(abs(c4p[,col]))
+  colnames(c4p_log)[col] <- paste0("Log",colnames(c4p)[col])
+}
+
+#re-check for normality 
+for (col in 7:17) {
+  for (pulse in 1:4) {
+    df <- c4p_log[c4p_log$Pulse == pulse,]
+    df[complete.cases(df[,18]),]
+    print(pulse)
+    print(colnames(df)[col])
+    print(shapiro.test(df[,col]))
+  }
+}
+#*didn't work for ToFChgMax, need to talk to stats person ----
+
 #write function to extract p value
 overall_p <- function(my_model) {
   f <- summary(my_model)$fstatistic
@@ -100,7 +136,7 @@ colnames(c4p_MAMU_reg) <- c("Metric","Pulse","RMSE","R2","B0","B1", "p")
 i=1
 for (col in 7:17) {
   for (pulse in 1:4) {
-    df <- c4p[c4p$Pulse == pulse,]
+    df <- c4p_log[c4p_log$Pulse == pulse,]
     df[complete.cases(df[,18]),]
     plot(df$MAMU,df[,col],main = paste0("Pulse", pulse, colnames(df)[col]), 
          xlab = "TTX Resistance (MAMU)",
@@ -124,9 +160,6 @@ for (col in 7:17) {
     legend(x = "bottomright", bty = "n",
            legend = bquote(r^2 == .(r2) * "," ~~ RMSE == .(rmse)))
     i=i+1
-    par(mfrow=c(2,2))
-    plot(model)
-    par(mfrow=c(1,1))
   }
 }
 
@@ -169,6 +202,46 @@ for (i in 1:nrow(IC50c4p_corr_split)) {
 #IC50-split pulse linear regressions -----
 par(mfrow=c(2,2))
 
+#Check for normality in data subset and transform as needed ----
+for (col in 7:17) {
+  for (pulse in 1:4) {
+    df <- c4p[c4p$Pulse == pulse,]
+    df <- merge(df,IC50, by="Snake")
+    df <- df[!is.na(df$IC50),]
+    
+    print(pulse)
+    print(colnames(df)[col])
+    print(shapiro.test(df[,col]))
+  }
+}
+
+#DifFChg, ToFChgMin, ToFChgMax, and BaseF not normal
+# cols 7, 15, 16, 17 need log transformed
+
+c4p_log <- c4p
+logcols <- c(7,15,16,17)
+
+for (col in logcols) {
+  
+  c4p_log[,col] <- log(abs(c4p[,col]))
+  colnames(c4p_log)[col] <- paste0("Log",colnames(c4p)[col])
+}
+
+#re-check for normality 
+for (col in 7:17) {
+  for (pulse in 1:4) {
+    df <- c4p_log[c4p_log$Pulse == pulse,]
+    df <- merge(df,IC50, by="Snake")
+    df <- df[!is.na(df$IC50),]
+    
+    print(pulse)
+    print(colnames(df)[col])
+    print(shapiro.test(df[,col]))
+  }
+}
+
+#again didn't work for ToFChgMax 
+
 #storage matrix again
 c4p_IC50_reg <- matrix(nrow = 44,ncol = 7)
 colnames(c4p_IC50_reg) <- c("Metric","Pulse","RMSE","R2","B0","B1","p")
@@ -177,7 +250,7 @@ j=1
 #same process as for the MAMUs
 for (col in 7:17) {
   for (pulse in 1:4) {
-    df <- c4p[c4p$Pulse == pulse,]
+    df <- c4p_log[c4p_log$Pulse == pulse,]
     df <- merge(df,IC50, by="Snake")
     df <- df[!is.na(df$IC50),]
     plot(df$IC50,df[,col],main = paste0("Pulse", pulse, colnames(df)[col]), 
@@ -199,7 +272,8 @@ for (col in 7:17) {
     abline(model, lwd=2, col="darkred")
     legend(x = "bottomright", bty = "n",
            legend = bquote(r^2 == .(r2) * "," ~~ RMSE == .(rmse)))
-    
+    #plot(model)
+    #par(mfrow=c(1,1))
     j=j+1
   }
 }

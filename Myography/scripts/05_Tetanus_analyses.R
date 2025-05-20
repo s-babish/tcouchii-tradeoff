@@ -42,6 +42,29 @@ for (i in 1:nrow(tetanus_corr)) {
 #write.csv(tetanus_corr, "OutFiles/Tetanus/test/Couchii_Tetanus_MAMU_corr.csv")
 
 #MAMU-tetanus linear regressions -----
+#check for normality ----
+for (col in 4:13) {
+    print(colnames(tetanus)[col])
+    print(shapiro.test(tetanus[,col]))
+}
+
+#DifFChg, ToFChgMin, FMinRateOfCHg, FMaxRateOfChg, ContrAmpl, and BaseF not normal
+# cols 4,5,6,7,9,10,12,13 need log transformed; might as well log transform all of them?
+
+tetanus_log <- tetanus
+
+for (col in 4:13) {
+  tetanus_log[,col] <- log(abs(tetanus[,col]))
+  colnames(tetanus_log)[col] <- paste0("Log",colnames(tetanus)[col])
+}
+
+#re-check for normality 
+for (col in 4:13) {
+  print(colnames(tetanus_log)[col])
+  print(shapiro.test(tetanus_log[,col]))
+}
+#didn't work for ToFChgMin, DiffFChg, made ToFChgMax non-normal
+
 #write function to extract p value
 overall_p <- function(my_model) {
   f <- summary(my_model)$fstatistic
@@ -55,10 +78,10 @@ colnames(tetanus_MAMU_reg) <- c("Metric","RMSE","R2","B0","B1","p")
 
 i=1
 for (col in 4:13) {
-  plot(tetanus$MAMU,tetanus[,col],main = colnames(tetanus)[col], xlab = "TTX Resistance (MAMU)",
-       ylab = colnames(tetanus)[col])
+  plot(tetanus_log$MAMU,tetanus_log[,col],main = colnames(tetanus_log)[col], xlab = "TTX Resistance (MAMU)",
+       ylab = colnames(tetanus_log)[col])
   
-  model <- lm(tetanus[,col] ~ tetanus$MAMU)
+  model <- lm(tetanus_log[,col] ~ tetanus_log$MAMU)
   rmse <- round(sqrt(mean(resid(model)^2)), 2)
   coefs <- coef(model)
   b0 <- round(coefs[1], 2)
@@ -66,7 +89,7 @@ for (col in 4:13) {
   r2 <- round(summary(model)$r.squared, 2)
   p <- overall_p(model)
   
-  tetanus_MAMU_reg[i,] <- c(colnames(tetanus)[col],rmse,r2,b0,b1,p)
+  tetanus_MAMU_reg[i,] <- c(colnames(tetanus_log)[col],rmse,r2,b0,b1,p)
   
   eqn <- bquote(italic(y) == .(b0) + .(b1)*italic(x) * "," ~~ 
                   r^2 == .(r2) * "," ~~ RMSE == .(rmse))
@@ -87,6 +110,28 @@ IC50tet <- IC50tet[!is.na(IC50tet$IC50),]
 
 summary(IC50tet)
 #only 15 obs in this comparison
+
+#check for normality ----
+for (col in 4:13) {
+  print(colnames(IC50tet)[col])
+  print(shapiro.test(IC50tet[,col]))
+}
+
+# cols 4,7,8,9 need log transformed
+
+IC50tet_log <- IC50tet
+
+for (col in c(4,7,8,9)) {
+  IC50tet_log[,col] <- log(abs(IC50tet[,col]))
+  colnames(IC50tet_log)[col] <- paste0("Log",colnames(IC50tet)[col])
+}
+
+#re-check for normality 
+for (col in 4:13) {
+  print(colnames(IC50tet_log)[col])
+  print(shapiro.test(IC50tet_log[,col]))
+}
+#didn't work for To50pct, X10to50
 
 #correlation metrics
 IC50tet_corr <- matrix(nrow=10,ncol=9)
@@ -121,10 +166,10 @@ colnames(tetanus_IC50_reg) <- c("Metric","RMSE","R2","B0","B1","p")
 
 j=1
 for (col in 4:13) {
-  plot(IC50tet$IC50,IC50tet[,col],main = colnames(IC50tet)[col], xlab = " Muscle TTX Resistance/IC50 (MAMU)",
-       ylab = colnames(IC50tet)[col])
+  plot(IC50tet_log$IC50,IC50tet_log[,col],main = colnames(IC50tet_log)[col], xlab = " Muscle TTX Resistance/IC50 (MAMU)",
+       ylab = colnames(IC50tet_log)[col])
   
-  model <- lm(IC50tet[,col] ~ IC50tet$IC50)
+  model <- lm(IC50tet_log[,col] ~ IC50tet_log$IC50)
   rmse <- round(sqrt(mean(resid(model)^2)), 2)
   coefs <- coef(model)
   b0 <- round(coefs[1], 2)
@@ -132,7 +177,7 @@ for (col in 4:13) {
   r2 <- round(summary(model)$r.squared, 2)
   p <- overall_p(model)
   
-  tetanus_IC50_reg[j,] <- c(colnames(IC50tet)[col],rmse,r2,b0,b1,p)
+  tetanus_IC50_reg[j,] <- c(colnames(IC50tet_log)[col],rmse,r2,b0,b1,p)
   
   eqn <- bquote(italic(y) == .(b0) + .(b1)*italic(x) * "," ~~ 
                   r^2 == .(r2) * "," ~~ RMSE == .(rmse))
