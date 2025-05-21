@@ -1,6 +1,7 @@
 library(tidyverse)
 library(ggplot2)
 library(viridis)
+library(ggforce)
 
 #Scaled force vs time (separated by pulse length) -----
 #vector with all pulse length options for iterating (excluding files with no or few snakes)
@@ -168,3 +169,54 @@ rheobase_sigmoidal_plot %>%
 
 #IC50 plots (data formatted in analyses script for now) -----
 plot(x0 ~ IC50, data = IC50dat)
+
+#plots for norm and bobby ----
+#storage dataframe
+all_rheo <- data.frame(
+  Snake = character(),
+  scaled_force = double(),
+  pulse_length = integer(),
+  MAMU = double()
+)
+
+for (i in 1:length(pulse_l)) {
+  infile <- toString(paste("OutFiles/Rheobase/Force_scaled/TPA_",pulse_l[i],".csv", sep=""))
+  df <- read.csv(infile)
+  df <- df[,c(-1)] #remove index line
+  dose_labels = df$Dose
+  df_long <- df %>%
+    pivot_longer(
+      cols = -Dose,
+      names_to = "Snake",
+      values_to = "scaled_force"
+    ) %>% 
+    mutate(
+      Snake = sub("_.*", "", Snake),
+      pulse_length = pulse_l[i],
+      MAMU = 0
+    ) %>% 
+    rows_update(distinct(keydf), by = "Snake", unmatched = "ignore") %>% #pull in MAMU
+    mutate(
+      pulse_length = as.factor(pulse_length)
+    )
+  all_rheo <- rbind(all_rheo,df_long)
+}
+
+for (page in 1:6) {
+plot <- ggplot(all_rheo, aes(x = Dose, y = scaled_force, group = pulse_length, color = pulse_length)) +
+  geom_point() + 
+  facet_wrap_paginate(~ Snake, ncol = 3, nrow = 2, page = page) +
+  geom_smooth(method = "nls",
+              method.args = list(formula = y ~ (-1)/(1 + exp((log(x)-log(x0))/dx)) + 1,
+                                 start = list(x0 = 60 , dx = 1)
+                                 # ,
+                                 # control = nls.lm.control(maxiter = 1024, maxfev = 1024),
+                                 # lower = c(0,-Inf), upper = c(600,Inf), algorithm = "port"
+              ),
+              data = all_rheo,
+              se = FALSE) +
+  scale_color_viridis(discrete = T) +
+  xlab("Current (mA)") + 
+  ylab("Proportion of maximal force")
+print(plot)
+}

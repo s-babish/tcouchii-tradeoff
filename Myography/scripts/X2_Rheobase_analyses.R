@@ -24,6 +24,7 @@ lm1 <- lm(x0 ~ MAMU, data = rheodat)
 summary(lm1)
 plot(lm1)
 
+
 #still no effect, as expected
 
 #Correlation test 
