@@ -3,7 +3,7 @@ library(tidyverse)
 library(lmtest)
 
 #Runs stats on the x0 results from fitting sigmoidal curves to rheobase data
-rheodat <- read.csv("OutFiles/Rheobase/Sigmoidal/test/Sigmoidal-rpt.csv")
+rheodat <- read.csv("OutFiles/Rheobase/Sigmoidal/test2/Sigmoidal-rpt.csv")
 rheodat$pulse_length <- as.factor(rheodat$pulse_length)
 
 #anova on x0 values between pulses ----
@@ -14,23 +14,38 @@ rheo_tukey <- TukeyHSD(rheo_anova)
 rheo_tukey
 #no differences in x0 between any of the groups (at least not when combined)
 
-# MAMU vs x0 ----
+rheo_anova2 <- aov(maxF ~ pulse_length, data = rheodat)
+summary(rheo_anova2)
+
+rheo_tukey2 <- TukeyHSD(rheo_anova2)
+rheo_tukey2
+#10000 and 50000 absolutely different from everything, and from eachother
+
+# MAMU vs x0 and max force ----
 summary(glm(x0 ~ MAMU*pulse_length, data = rheodat))
 #not related to either variable
 #just trying to cover my bases so I don't get roasted for not doing the "right" stats
+
+summary(glm(maxF ~ MAMU*pulse_length, data = rheodat))
+#only related to pulse length, not MAMU or any interaction
+summary(glm(maxF ~ MAMU, data = rheodat))
+#slightly more suggestive when there's no pulse length splitting,
+# but not nearly significant still
 
 #forget pulse length and just look at the plain data
 lm1 <- lm(x0 ~ MAMU, data = rheodat)
 summary(lm1)
 plot(lm1)
-
-
 #still no effect, as expected
 
 #Correlation test 
 pearson_corr <- cor.test(rheodat$MAMU, rheodat$x0, method = "pearson")
 pearson_corr
 #not at all correlated
+
+force_corr <- cor.test(rheodat$MAMU, rheodat$maxF, method = "pearson")
+force_corr
+#not correlated either
 
 # MAMU vs change between pulse lengths (delta x0)
 #drop the first row, pick just the columns we care about, arrange by snake and
@@ -47,11 +62,11 @@ deltadat
 
 summary(glm(deltax0 ~ MAMU*pulse_length, data = deltadat))
 
-rheo_anova2 <- aov(deltax0 ~ pulse_length, data = deltadat)
-summary(rheo_anova2)
+rheo_anova3 <- aov(deltax0 ~ pulse_length, data = deltadat)
+summary(rheo_anova3)
 
-rheo_tukey2 <- TukeyHSD(rheo_anova2)
-rheo_tukey2
+rheo_tukey3 <- TukeyHSD(rheo_anova3)
+rheo_tukey3
 #big difference in 5000-10000 and 10000-50000
 
 #do some plotting to look at this
@@ -91,6 +106,11 @@ unique(IC50dat[!is.na(IC50dat$IC50), 1])
 IC50_glm <- glm(x0 ~ IC50*pulse_length, data = IC50dat)
 plot(IC50_glm)
 summary(IC50_glm)
+
+IC50_force <- glm(maxF ~ IC50*pulse_length, data = IC50dat)
+summary(IC50_force)
+plot(IC50_force)
+#not great residuals for this but I'll worry about it later
 
 #residuals are heteroskedastic (but not with the 600 outlier removed)
 bptest(IC50_glm)

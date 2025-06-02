@@ -14,7 +14,7 @@ keydf <- keydf[,c(7,11)]
 for (i in 1:length(pulse_l)) {
   infile <- toString(paste("OutFiles/Rheobase/Force_scaled/TPA_",pulse_l[i],".csv", sep=""))
   df <- read.csv(infile)
-  df <- df[,c(-1)] #remove index line
+  df <- df[-17,c(-1)] #remove index line
   dose_labels = df$Dose
   df_long <- df %>%
     mutate (
@@ -32,9 +32,9 @@ for (i in 1:length(pulse_l)) {
     rows_update(distinct(keydf), by = "Snake", unmatched = "ignore") #pull in MAMU
   
   plot <- ggplot(df_long, aes(x = Dose, y = scaled_force, group = Snake, color = MAMU)) +
-    geom_smooth(se = F) + 
-    #geom_point() +
-    #geom_line(aes(group = Snake)) +
+    #geom_smooth(se = F) + 
+    geom_point() +
+    geom_line(aes(group = Snake)) +
     scale_color_viridis(option = "viridis") +
     scale_x_continuous(labels = dose_labels, breaks = 0:15) +
     ggtitle(toString(paste("Rheobase, pulse length ", pulse_l[i], "us"))) +
@@ -173,16 +173,45 @@ plot(x0 ~ IC50, data = IC50dat)
 #plots for norm and bobby ----
 #storage dataframe
 all_rheo <- data.frame(
+  Dose = double(),
   Snake = character(),
   scaled_force = double(),
   pulse_length = integer(),
   MAMU = double()
 )
 
+#another dataframe for the max force plot I'm going to make after this
+max_forces <- data.frame(
+  Ind = character(),
+  max_force = double(),
+  pulse_length = integer(),
+  MAMU = double(),
+  Snake = character()
+)
+
 for (i in 1:length(pulse_l)) {
-  infile <- toString(paste("OutFiles/Rheobase/Force_scaled/TPA_",pulse_l[i],".csv", sep=""))
+  infile <- toString(paste("OutFiles/Rheobase/Force_scaled/test/TPA_",pulse_l[i],".csv", sep=""))
   df <- read.csv(infile)
-  df <- df[,c(-1)] #remove index line
+  
+  #deal with max values first, to use later
+  max_long <- df[17,c(-1,-2)] %>% 
+    pivot_longer(
+      everything(),
+      names_to = "Ind",
+      values_to = "max_force"
+    ) %>% 
+    mutate(
+      Snake = sub("_.*", "", Ind),
+           pulse_length = pulse_l[i],
+           MAMU = 0
+    ) %>% 
+    rows_update(distinct(keydf), by = "Snake", unmatched = "ignore") %>% #pull in MAMU
+  mutate(
+    pulse_length = as.factor(pulse_length)
+    )
+  max_forces <- rbind(max_forces,max_long)
+  
+  df <- df[-17,-1] #remove index line and maxes
   dose_labels = df$Dose
   df_long <- df %>%
     pivot_longer(
@@ -197,7 +226,8 @@ for (i in 1:length(pulse_l)) {
     ) %>% 
     rows_update(distinct(keydf), by = "Snake", unmatched = "ignore") %>% #pull in MAMU
     mutate(
-      pulse_length = as.factor(pulse_length)
+      pulse_length = as.factor(pulse_length),
+      Dose = as.numeric(Dose)
     )
   all_rheo <- rbind(all_rheo,df_long)
 }
@@ -207,7 +237,7 @@ plot <- ggplot(all_rheo, aes(x = Dose, y = scaled_force, group = pulse_length, c
   geom_point() + 
   facet_wrap_paginate(~ Snake, ncol = 3, nrow = 2, page = page) +
   geom_smooth(method = "nls",
-              method.args = list(formula = y ~ (-1)/(1 + exp((log(x)-log(x0))/dx)) + 1,
+              method.args = list(formula = y ~  1 + (-1) / (1 + (x / x0)^dx),
                                  start = list(x0 = 60 , dx = 1)
                                  # ,
                                  # control = nls.lm.control(maxiter = 1024, maxfev = 1024),
@@ -220,3 +250,41 @@ plot <- ggplot(all_rheo, aes(x = Dose, y = scaled_force, group = pulse_length, c
   ylab("Proportion of maximal force")
 print(plot)
 }
+
+#strength-duration curve with max force instead of 50%
+#general view
+
+max_forces %>% ggplot( aes(x=pulse_length, y=max_force, fill=pulse_length)) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) +
+  ggtitle("Rheobase max force vs pulse width") +
+  xlab("Pulse width (us)")
+
+#this is the reverse of what we expected as far as i can tell, it certainly
+# isn't the strength-duration curve we wanted
+
+#group individuals
+max_forces %>% ggplot( aes(x=pulse_length, y=max_force, color=Ind, group = Ind),
+                                    show.legend=F) +
+  geom_point(show.legend = F) +
+  geom_line(show.legend=F)
+
+# Integrate MAMU into plots ----
+max_forces %>% 
+  ggplot(aes(MAMU, max_force, color = as.factor(pulse_length)))+
+  geom_point()
+
+#vaguely looks like contraction strength is weaker for the more resistant
+# snakes at higher pulse lengths, which i guess is neat?
+#need to run stats on this stuff now
+
+max_forces %>% 
+  ggplot(aes(MAMU, max_force))+
+  geom_point() + 
+  facet_wrap(~as.factor(pulse_length))
+#okay not so much when it's pulled out like this

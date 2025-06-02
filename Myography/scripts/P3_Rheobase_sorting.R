@@ -1,5 +1,5 @@
 #read in megareport.csv
-megareport <- read.csv("possibly_useful_for_Sage/Megareport_to_pw_sorted_PERL/megareport.csv")
+megareport <- read.csv("OutFiles/Rheobase/megareport.csv")
 
 #get list of unique pulse values 
 pulse_u <- sort(unique(megareport$Pulse_Width_us))
@@ -9,13 +9,13 @@ stim_u <- sort(unique(megareport$Stimulus_mA))
 #make list of first two columns (ID and muscle number) with hyphens
  #(will be column headers later)
   #currently also including temp number (meaningless) to make sure other code runs
-id_list <- unique(paste(megareport$SnakeID,"_",megareport$Muscle,"_10",sep=""))
+id_list <- unique(paste(megareport$SnakeID,"_",megareport$Muscle,sep=""))
 
 #add column so this is actually useful for searching
-megareport$IndID <- paste(megareport$SnakeID,"_",megareport$Muscle,"_10",sep="")
+megareport$IndID <- paste(megareport$SnakeID,"_",megareport$Muscle,sep="")
 
 #split megareport into list of dataframes by pulse width
-dfs <- split( megareport, f = megareport$Pulse_Width_us)
+dfs <- split(megareport, f = megareport$Pulse_Width_us)
 
 #loop through all pulse widths
 for (i in 1:length(pulse_u)) {
@@ -23,9 +23,9 @@ for (i in 1:length(pulse_u)) {
   pulsedf <- dfs[[i]]
   
   #make output dataframe
-  output <- data.frame(matrix(ncol=0,nrow=16))
-  #add on Dose column (with 0 for y-intercept)
-  output <- cbind(output, Dose = c(0,stim_u))
+  output <- data.frame(matrix(ncol=0,nrow=17))
+  #add on Dose column (with 0 for y-intercept and spot to save max force value)
+  output <- cbind(output, Dose = c(0,stim_u,"max"))
   
   #initialize vector to assign column names
   colnames <- c("Dose")
@@ -43,7 +43,7 @@ for (i in 1:length(pulse_u)) {
       forces_scaled <- forces/maxforce
       
       #add a (0,0) point to the beginning of the vector
-      forces_vector <- c(0,forces_scaled)
+      forces_vector <- c(0,forces_scaled,maxforce)
       
       #add this specimen's data to output dataframe
       output <- cbind(output,ind = forces_vector)
@@ -57,9 +57,10 @@ for (i in 1:length(pulse_u)) {
   
   #for debugging
   print(pulse_u[i])
+  print(output)
   
   #write output file (into OutFiles directory, which the next code chunk wants)
-  filename = paste("OutFiles/TPA_",pulse_u[i],".csv", sep="")
+  filename = paste("OutFiles/Rheobase/Force_scaled/test/TPA_",pulse_u[i],".csv", sep="")
   write.csv(output, file = filename)
 }
 
