@@ -4,8 +4,8 @@ library(tidyverse)
 library(viridis)
 
 #load data ----
-c4p_stats <- read.csv("OutFiles/C4P/test/Couchii_C4P_Metrics.csv")
-c4p_raw <- read.csv("OutFiles/C4P/test/Couchii_C4P_Force.csv")
+c4p_stats <- read.csv("OutFiles/C4P/Couchii_C4P_Metrics.csv")
+c4p_raw <- read.csv("OutFiles/C4P/Couchii_C4P_Force_Cleaned.csv")
 
 #Comparing C4P stats between pulses (box plots) ----
 #make long version of data:
@@ -51,7 +51,8 @@ c4p_long <- c4p_raw %>%
   ) %>% 
   mutate(
     time = as.numeric(gsub("X","", time))
-  )
+  ) %>% 
+  drop_na()
 
 #Plot each pulse one at a time using subset()
 pulse1 <- ggplot(subset(c4p_long, Pulse == 1), aes(x = time, y = force, group = Snake)) +
@@ -89,14 +90,14 @@ c4p_long <- c4p_long %>%
   )
 
 plot_all <- ggplot(c4p_long, aes(x = time_seq, y = force, group = Snake)) +
-  geom_line() +
+  geom_smooth() +
   labs(x = "Time (s)", y = "Normalized Force")
 plot_all
 
 #Now recreate the trace plots for the first derivatives (Force/s) ----
 #I suspect these plots will look better once I do my outlier removal
 #Also I could calculate the derivative more frequently back in script 1
-c4p_1d <- read.csv("OutFiles/C4P/test/Couchii_C4P_Force_1d.csv")
+c4p_1d <- read.csv("OutFiles/C4P/Couchii_C4P_Force_1d_Cleaned.csv")
 
 c4p_1d_long <- c4p_1d %>% 
   pivot_longer(
@@ -106,7 +107,8 @@ c4p_1d_long <- c4p_1d %>%
   ) %>% 
   mutate(
     time = as.numeric(gsub("X","", time))
-  )
+  ) %>% 
+  drop_na()
 
 #Plot each pulse one at a time using subset()
 pulse1 <- ggplot(subset(c4p_1d_long, Pulse == 1), aes(x = time, y = force, group = Snake)) +

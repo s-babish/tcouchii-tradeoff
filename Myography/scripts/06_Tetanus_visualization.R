@@ -5,7 +5,7 @@ library(viridis)
 
 #Plotting tetanus results -----
 #First plot will plot all results separately ----
-tet_force <- read.csv("OutFiles/Tetanus/test/Couchii_Tetanus_Force.csv")
+tet_force <- read.csv("OutFiles/Tetanus/Couchii_Tetanus_Force.csv")
 
 #this file has the force output of the muscle, in N/g (grams of muscle), for 
 # 1000 points pre-stimulus>1 to 30000 points after stimulus
@@ -68,7 +68,7 @@ plot3
 
 #Plotting tetanus derivative results ----
 #basically the same process as the regular tetanus plots
-tet_force1d <- read.csv("OutFiles/Tetanus/test/Couchii_Tetanus_Force_1d.csv")
+tet_force1d <- read.csv("OutFiles/Tetanus/Couchii_Tetanus_Force_1d.csv")
 
 #It went through low pass 200Hz filter -> pick every 30th entry & convert to /s
 #aka there are 600 F/s measurements
@@ -92,3 +92,15 @@ plot
 #that one individual is so messed up - CRF3074; i'm excluding them
 #this is another plot that will read way better once i can average it
 
+#testing metrics ----
+tet_metrics <- read.csv("OutFiles/Tetanus/Couchii_Tetanus_Metrics.csv")
+colnames(tet_metrics)
+tet_metrics$Snake
+tet_force$Snake
+
+for (row in 1:nrow(tet_force)) {
+  plot(1:30000,tet_force[row,c(6:ncol(tet_force))])
+  abline(h=tet_metrics[row,5])
+  abline(h=tet_metrics[row,14])
+  title(main = tet_force$Snake[row])
+}

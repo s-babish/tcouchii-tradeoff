@@ -5,6 +5,7 @@ library(lmtest)
 #Runs stats on the x0 results from fitting sigmoidal curves to rheobase data
 rheodat <- read.csv("OutFiles/Rheobase/Sigmoidal/test2/Sigmoidal-rpt.csv")
 rheodat$pulse_length <- as.factor(rheodat$pulse_length)
+rheodat <- rheodat[-1,-1]
 
 #anova on x0 values between pulses ----
 rheo_anova <- aov(x0 ~ pulse_length, data = rheodat)
@@ -12,14 +13,37 @@ summary(rheo_anova)
 
 rheo_tukey <- TukeyHSD(rheo_anova)
 rheo_tukey
-#no differences in x0 between any of the groups (at least not when combined)
+#10000 is different from some of the others (100 and 50000)
 
+#EC10 ----
+ec10_anova <- aov(EC10 ~ pulse_length, data = rheodat)
+summary(ec10_anova)
+
+ec10_tukey <- TukeyHSD(ec10_anova)
+ec10_tukey
+#all the same 
+
+#EC90 ----
+#remove overly large ec90 values
+rheodat <- rheodat %>% 
+  filter(EC90<1000)
+
+ec90_anova <- aov(EC90 ~ pulse_length, rheodat)
+summary(ec90_anova)
+
+ec90_tukey <- TukeyHSD(ec90_anova)
+ec90_tukey
+#lots of differences here but not with any clear trend so i won't trust it until
+# cleaning issues in the raw data
+
+#(but for now, it says 10000 is different from th eothers, the others are all identical )
+#max force between pulses ----
 rheo_anova2 <- aov(maxF ~ pulse_length, data = rheodat)
 summary(rheo_anova2)
 
 rheo_tukey2 <- TukeyHSD(rheo_anova2)
 rheo_tukey2
-#10000 and 50000 absolutely different from everything, and from eachother
+#10000 and 50000 absolutely different from everything, and from each other
 
 # MAMU vs x0 and max force ----
 summary(glm(x0 ~ MAMU*pulse_length, data = rheodat))

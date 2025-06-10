@@ -125,9 +125,9 @@ for (j in 1:length(pulse_l)) {
 # force data, I think the sub-0 values are messing with it
 
 
-#pulse width vs x0 ------
+#pulse width vs x0/EC50 ------
 #renaming to make more sense for what we're doing here
-rheobase_sigmoidal_plot <- read.csv("OutFiles/Rheobase/Sigmoidal/test/Sigmoidal-rpt.csv")
+rheobase_sigmoidal_plot <- read.csv("OutFiles/Rheobase/Sigmoidal/test2/Sigmoidal-rpt.csv")
 #remove rows we don't want
 rheobase_sigmoidal_plot <- rheobase_sigmoidal_plot[-1,-1]
 
@@ -142,7 +142,7 @@ rheobase_sigmoidal_plot %>% ggplot( aes(x=pulse_length, y=x0, fill=pulse_length)
     legend.position="none",
     plot.title = element_text(size=11)
   ) +
-  ggtitle("Rheobase x0 vs pulse width") +
+  ggtitle("Rheobase EC50 vs pulse width") +
   xlab("Pulse width (us)")
 
 #ANOVA and Tukey's confirm the pulses have statistically equivalent x0 values
@@ -158,14 +158,68 @@ rheobase_sigmoidal_plot %>% ggplot( aes(x=pulse_length, y=x0, color=X),
   geom_line(show.legend=F)
 
 # Integrate MAMU into plots ----
-rheobase_sigmoidal_plot %>% 
-  ggplot(aes(MAMU, x0, color = as.factor(pulse_length)))+
-  geom_point()
+#commented out because i don't like these lol
+# rheobase_sigmoidal_plot %>% 
+#   ggplot(aes(MAMU, x0, color = as.factor(pulse_length)))+
+#   geom_point()
+# 
+# rheobase_sigmoidal_plot %>% 
+#   ggplot(aes(MAMU, x0))+
+#   geom_point() + 
+#   facet_wrap(~as.factor(pulse_length))
+
+#pulse width vs EC10 -----
+rheobase_sigmoidal_plot$pulse_length <- as.factor(rheobase_sigmoidal_plot$pulse_length)
+
+rheobase_sigmoidal_plot %>% ggplot( aes(x=pulse_length, y=EC10, fill=pulse_length)) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) +
+  ggtitle("Rheobase EC10 vs pulse width") +
+  xlab("Pulse width (us)")
+
+#group individuals
+rheobase_sigmoidal_plot$pulse_length <- as.numeric(rheobase_sigmoidal_plot$pulse_length)
+
+rheobase_sigmoidal_plot %>% ggplot( aes(x=pulse_length, y=EC10, color=X),
+                                    show.legend=F) +
+  geom_point(show.legend = F) +
+  scale_x_continuous(labels = pulse_l, breaks = 1:7) +
+  geom_line(show.legend=F)
+
+#pulse width vs EC90 -----
+#some EC90 values are way too big, remove those
+rheobase_sigmoidal_plot$pulse_length <- as.factor(rheobase_sigmoidal_plot$pulse_length)
 
 rheobase_sigmoidal_plot %>% 
-  ggplot(aes(MAMU, x0))+
-  geom_point() + 
-  facet_wrap(~as.factor(pulse_length))
+  filter(EC90<1000) %>% 
+  ggplot( aes(x=pulse_length, y=EC90, fill=pulse_length)) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) +
+  ggtitle("Rheobase EC90 vs pulse width") +
+  xlab("Pulse width (us)")
+
+#group individuals
+rheobase_sigmoidal_plot$pulse_length <- as.numeric(rheobase_sigmoidal_plot$pulse_length)
+
+rheobase_sigmoidal_plot %>% 
+  filter(EC90<1000) %>% 
+  ggplot( aes(x=pulse_length, y=EC90, color=X),
+                                    show.legend=F) +
+  geom_point(show.legend = F) +
+  scale_x_continuous(labels = pulse_l, breaks = 1:7) +
+  geom_line(show.legend=F)
+
+#same as it previously was with spike at 10000 but no real trends
 
 #IC50 plots (data formatted in analyses script for now) -----
 plot(x0 ~ IC50, data = IC50dat)
@@ -174,6 +228,7 @@ plot(x0 ~ IC50, data = IC50dat)
 #storage dataframe
 all_rheo <- data.frame(
   Dose = double(),
+  Ind = character(),
   Snake = character(),
   scaled_force = double(),
   pulse_length = integer(),
@@ -216,11 +271,11 @@ for (i in 1:length(pulse_l)) {
   df_long <- df %>%
     pivot_longer(
       cols = -Dose,
-      names_to = "Snake",
+      names_to = "Ind",
       values_to = "scaled_force"
     ) %>% 
     mutate(
-      Snake = sub("_.*", "", Snake),
+      Snake = sub("_.*", "", Ind),
       pulse_length = pulse_l[i],
       MAMU = 0
     ) %>% 
@@ -235,13 +290,10 @@ for (i in 1:length(pulse_l)) {
 for (page in 1:6) {
 plot <- ggplot(all_rheo, aes(x = Dose, y = scaled_force, group = pulse_length, color = pulse_length)) +
   geom_point() + 
-  facet_wrap_paginate(~ Snake, ncol = 3, nrow = 2, page = page) +
+  facet_wrap_paginate(~ Ind, ncol = 3, nrow = 2, page = page) +
   geom_smooth(method = "nls",
               method.args = list(formula = y ~  1 + (-1) / (1 + (x / x0)^dx),
-                                 start = list(x0 = 60 , dx = 1)
-                                 # ,
-                                 # control = nls.lm.control(maxiter = 1024, maxfev = 1024),
-                                 # lower = c(0,-Inf), upper = c(600,Inf), algorithm = "port"
+                                 start = list(x0 = 40 , dx = 1)
               ),
               data = all_rheo,
               se = FALSE) +
@@ -249,6 +301,89 @@ plot <- ggplot(all_rheo, aes(x = Dose, y = scaled_force, group = pulse_length, c
   xlab("Current (mA)") + 
   ylab("Proportion of maximal force")
 print(plot)
+}
+
+#plot each set of raw data individually, one sheet per snake ----
+#i can't figure out how to make facet_wrap_paginate work well for odd numbers so i'm
+# adding a fake variable to each set just to give each snake 8 "pulse lengths"
+
+#also they don't all have data for all plots
+
+#best i can think of is removing all the 0,0 observations and then adding one
+# for each dataset (removing so there's no double data to mess up curve fitting)
+
+no_0_rheo <- all_rheo[all_rheo$Dose != 0,]
+fake_base <- matrix(
+  c(
+    0,"Ind",0,"Snake",0,"MAMU",
+    0,"Ind",0,"Snake",50,"MAMU",
+    0,"Ind",0,"Snake",100,"MAMU",
+    0,"Ind",0,"Snake",200,"MAMU",
+    0,"Ind",0,"Snake",500,"MAMU",
+    0,"Ind",0,"Snake",1000,"MAMU",
+    0,"Ind",0,"Snake",10000,"MAMU",
+    0,"Ind",0,"Snake",50000,"MAMU"
+  ),
+  nrow= 8,
+  ncol = 6,
+  byrow=T,
+  
+)
+
+colnames(fake_base) <- c("Dose","Ind","scaled_force","Snake","pulse_length","MAMU")
+fake_base<- as.data.frame(fake_base)
+
+fake_zeros <- data.frame(
+  Dose = double(),
+  Ind = character(),
+  scaled_force = double(),
+  Snake = character(),
+  pulse_length = integer(),
+  MAMU = double()
+)
+
+inds <- unique(all_rheo$Ind)
+
+for(ind in inds){
+  fake_ind <- fake_base %>% 
+    mutate(
+      Dose = as.numeric(Dose),
+      Ind = ind,
+      scaled_force = as.numeric(scaled_force),
+      Snake =  sub("_.*", "", Ind),
+      MAMU = 0, #this should be fine for plotting purposes
+      pulse_length = as.factor(pulse_length)
+    )
+  fake_zeros <- rbind(fake_zeros,fake_ind)
+}
+
+all_rheo_w_fake <- rbind(no_0_rheo,fake_zeros)
+all_rheo_w_fake <- all_rheo_w_fake[order(all_rheo_w_fake$Ind, all_rheo_w_fake$pulse_length,all_rheo_w_fake$Dose),]
+
+#now make a page of plots for each snake
+for (page in 1:34) {
+  plot <- ggplot(all_rheo_w_fake, aes(x = Dose, y = scaled_force, 
+                               group = interaction(Ind,pulse_length), 
+                               color = pulse_length)) +
+    geom_point(
+      # aes(x = Dose, y = scaled_force, 
+      #             group = interaction(Snake,pulse_length))
+      ) + 
+    facet_wrap_paginate(~ Ind + pulse_length, ncol = 4, nrow = 2, page = page) +
+    geom_smooth(method = "nls",
+                method.args = list(formula = y ~  1 + (-1) / (1 + (x / x0)^dx),
+                                   start = list(x0 = 60 , dx = 1)
+                                   # ,
+                                   # control = nls.lm.control(maxiter = 1024, maxfev = 1024),
+                                   # lower = c(0,-Inf), upper = c(600,Inf), algorithm = "port"
+                ),
+                data = all_rheo_w_fake, #don't want to fit one for the fake plot
+                se = FALSE) +
+    scale_color_viridis(discrete = T) +
+    xlab("Current (mA)") + 
+    ylab("Proportion of maximal force")
+  print(plot)
+  ggsave(paste("OutFiles/Rheobase/plots/rheo_",sort(unique(all_rheo$Ind))[page],".png",sep=""),dpi=300)
 }
 
 #strength-duration curve with max force instead of 50%

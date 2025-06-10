@@ -28,7 +28,7 @@ smm[is.na(smm)] <- 0.999
 # x = strsplit(dname, "/")
 
 # Set up file for output summary metrics (as we did with C4P)
-ofsum = "OutFiles/Tetanus/test/Couchii_Tetanus_Metrics.csv"
+ofsum = "OutFiles/Tetanus/Couchii_Tetanus_Metrics_test.csv"
 hdrs <-
   c(
     "Species",
@@ -37,13 +37,15 @@ hdrs <-
     "BaseF(N/g)",
     "ContrAmpl(N/g)",
     "To10pct(ms)",
-    "To50pct(ms)",
+    "MaxTo50pct(ms)",
     "10to50pct(ms)",
     "FMaxRateOfChg(N/g/s)",
     "FMinRateOfChg(N/g/s)",
     "ToFChgMax(ms)",
     "ToFChgMin(ms)",
     "DiffFChgMaxToMin(ms)",
+    "ForceAtEnd",
+    "DiffFMaxToEnd",
     "MAMU",
     "MusMassg"
   )
@@ -61,7 +63,7 @@ write.table(
 )
 
 #set up output file for force data
-ofF <- "OutFiles/Tetanus/test/Couchii_Tetanus_Force.csv"
+ofF <- "OutFiles/Tetanus/Couchii_Tetanus_Force.csv"
 ofFhdr <-
   c(
     "Species",
@@ -85,7 +87,7 @@ write.table(
 )
 
 #Set up file for first derivative of force results
-ofF1d <- "OutFiles/Tetanus/test/Couchii_Tetanus_Force_1d.csv"
+ofF1d <- "OutFiles/Tetanus/Couchii_Tetanus_Force_1d.csv"
 ofF1dhdr <-
   c(
     "Species",
@@ -93,7 +95,7 @@ ofF1dhdr <-
     "Muscle",
     "MAMU",
     "MusMassg",
-    (1:599) / 200
+    (1:2399) / 200
   )
 write.table(
   t(ofF1dhdr),
@@ -112,7 +114,7 @@ write.table(
 files = list.files(path = "data_raw/Tetanus/", pattern = "csv")
 
 #Set up a file to track which files we've gone through
-fTet <- "OutFiles/Tetanus/test/P2-TetanusFiles.csv"
+fTet <- "OutFiles/Tetanus/P2-TetanusFiles.csv"
 write.table(
   t(c("File", "Snake", "Muscle", "Mass(g)")),
   file = fTet,
@@ -189,9 +191,9 @@ for (file in files) {
     row.names = FALSE,
     col.names = FALSE
   )
-  #  Low pass 200Hz filter -> pick every 30th entry & convert to per sec
+  #  Low pass 200Hz filter -> pick every 25th entry & convert to per sec
   # This will give us our first derivative file
-  rspF1d <- diff(rspF[1:600 * 50]) * 200
+  rspF1d <- diff(rspF[1:1200 * 25]) * 200
   oF1dline <- c(
     sSpecies,
     snake,
@@ -213,18 +215,20 @@ for (file in files) {
     col.names = FALSE
   )
   #Calculating all the summary stats (again, just like the C4P script)
-  tmf <- max(round(rspF, 0)) - 10
-  tmmin = min(which(rspF >= tmf))
-  tmmax <- max(which(rspF >= tmf))
-  maxF <- mean(rspF[tmmin:tmmax])
-  t100p <- round((tmmin + tmmax) / 2)
-  # convert all times to ms from tenth of a ms
-  t10p <- min(which(rspF > 0.1 * maxF))
-  t50p <- t100p + min(which(rspF[t100p:length(rspF)] <= 0.5 * maxF))
-  maxF1d <- max(rspF1d)
-  minF1d <- min(rspF1d)
-  t1dmax <- min(which(rspF1d >= maxF1d)) * 50
-  t1dmin <- min(which(rspF1d <= minF1d)) * 50
+  tmf <- max(round(rspF, 0)) - 1 #because of some variation in data, getting max from this
+  tmmin = min(which(rspF >= tmf)) #first time we hit that value
+  tmmax <- max(which(rspF >= tmf)) #second time we hit that plateau
+  maxF <- mean(rspF[tmmin:tmmax]) #mean force between the ends of that plateau
+  t100p <- round((tmmin + tmmax) / 2) #midpoint of the plateau for time
+  t10p <- min(which(rspF > 0.1 * maxF)) #time to 10% of max
+  t50p <- t100p + min(which(rspF[t100p:length(rspF)] <= 0.5 * maxF)) #time from max to 50% down
+  maxF1d <- max(rspF1d) #max rate of change
+  minF1d <- min(rspF1d) #min rate of change
+  t1dmax <- min(which(rspF1d >= maxF1d)) * 25 #converting times based on how frequently we sampled for the derivative
+  t1dmin <- min(which(rspF1d <= minF1d)) * 25
+  endF <- rspF[20000] #stimulus cuts off at this time stamp, so getting force here
+  difMaxToEndF <- maxF - endF #calc how much the muscle fatigued
+  
   sumLine = c(
     sSpecies,
     snake,
@@ -239,6 +243,8 @@ for (file in files) {
     t1dmax / 10,
     t1dmin / 10,
     (t1dmin - t1dmax) / 10,
+    endF,
+    difMaxToEndF,
     sMAMU,
     sMusMassg
   )
@@ -258,7 +264,7 @@ for (file in files) {
 
 #not really anything to sort here but I'm still making a flipped version to maybe 
 # use for analyses (a bit slow because of the size of the file)
-df = read.csv("OutFiles/Tetanus/test/Couchii_Tetanus_Force.csv")
+#df = read.csv("OutFiles/Tetanus/Couchii_Tetanus_Force.csv")
 #write.csv(t(df[order(df$Snake, df$Muscle),]),
 #          "OutFiles/Tetanus/test/Couchii_Tetanus_Force_Sorted.csv")
 

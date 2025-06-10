@@ -190,3 +190,72 @@ for (col in 4:13) {
 
 #write to outfile
 #write.csv(tetanus_IC50_reg,"OutFiles/Tetanus/test/Couchii_Tetanus_IC50_lm.csv")
+
+#tetanus/transient contractions comparison (just max values) ----
+c4p <- read.csv("OutFiles/C4P/Couchii_C4P_Metrics.csv")
+#remove outliers ID'd at end of script 1 
+c4p <- c4p %>% 
+  filter(!Snake %in% c("CRF3066", "CRF2677", "CRF2671", "CRF2669")) %>% 
+  group_by(Snake) %>% 
+  slice(which.max(ContrAmpl)) %>%  #only keep highest pulse contraction 
+  mutate(
+    transient_max = ContrAmpl
+  )
+tetanus <- tetanus %>% 
+  mutate(
+    tetanic_max = ContrAmpl.N.g. #renaming to make it easier once they're merged
+  )
+head(c4p)
+head(tetanus)
+
+isometric_dat <- merge(c4p,tetanus,by = "Snake") #only 19 snakes with both
+isometric_dat <- merge(isometric_dat, IC50, by = "Snake") #only have this for 9 snakes
+head(isometric_dat)
+
+isometric_dat <- isometric_dat %>% 
+  mutate(
+    twitch_tet_ratio = transient_max/tetanic_max
+  ) %>% 
+  filter(
+    !Snake %in% c("CRF3064") #filtered bc it's an outlier based on +-2sd
+  )
+
+# mean(isometric_dat$twitch_tet_ratio)
+# max(isometric_dat$twitch_tet_ratio)
+# sd(isometric_dat$twitch_tet_ratio)
+# #it's 2 sd outside the mean so can ignore it as an outlier
+
+MAMU_corr <- cor.test(isometric_dat$MAMU.x,isometric_dat$twitch_tet_ratio, method = "pearson")
+MAMU_corr #nvm i can't read, not correlated at all
+shapiro.test(isometric_dat$twitch_tet_ratio)
+
+model <- lm(isometric_dat$twitch_tet_ratio ~ isometric_dat$MAMU.x)
+rmse <- round(sqrt(mean(resid(model)^2)), 2)
+coefs <- coef(model)
+b0 <- round(coefs[1], 2)
+b1 <- round(coefs[2],2)
+r2 <- round(summary(model)$r.squared, 2)
+p <- overall_p(model)
+
+plot(isometric_dat$MAMU.x, isometric_dat$twitch_tet_ratio)
+abline(model, lwd=2, col="darkred")
+legend(x = "bottomright", bty = "n",
+       legend = bquote(r^2 == .(r2) * "," ~~ RMSE == .(rmse))
+       )
+
+IC50_corr <- cor.test(isometric_dat$IC50,isometric_dat$twitch_tet_ratio, method = "pearson")
+IC50_corr #unsurprisingly this is also uncorrelated 
+
+model2 <- lm(isometric_dat$twitch_tet_ratio ~ isometric_dat$IC50)
+rmse <- round(sqrt(mean(resid(model2)^2)), 2)
+coefs <- coef(model2)
+b0 <- round(coefs[1], 2)
+b1 <- round(coefs[2],2)
+r2 <- round(summary(model2)$r.squared, 2)
+p <- overall_p(model2)
+
+plot(isometric_dat$IC50, isometric_dat$twitch_tet_ratio)
+abline(model2, lwd=2, col="darkred")
+legend(x = "bottomright", bty = "n",
+       legend = bquote(r^2 == .(r2) * "," ~~ RMSE == .(rmse))
+)

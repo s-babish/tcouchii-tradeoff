@@ -27,7 +27,7 @@ smm[is.na(smm)] <- 0.999
 # Set up file to store summary information about metrics we calculate for each
 # pulse later
 
-ofsum = "OutFiles/C4P/test/Couchii_C4P_Metrics.csv"
+ofsum = "OutFiles/C4P/Couchii_C4P_Metrics.csv"
 hdrs <- c(
   "Species",
   "Snake",
@@ -39,7 +39,7 @@ hdrs <- c(
   "ContrAmpl",
   "ToMaxF(ms)",
   "To10pct(ms)",
-  "To50pct(ms)",
+  "MaxTo50pct(ms)",
   "10to50pct(ms)",
   "FMaxRateOfChg(N/g/s)",
   "FMinRateOfChg(N/g/s)",
@@ -61,7 +61,7 @@ write.table(
   col.names = FALSE
 )
 # Set up file to store force outputs
-ofF <- "OutFiles/C4P/test/Couchii_C4P_Force.csv"
+ofF <- "OutFiles/C4P/Couchii_C4P_Force.csv"
 ofFhdr <- c(
   "Species",
   "MAMU",
@@ -85,7 +85,7 @@ write.table(
   col.names = FALSE
 )
 # And make a file to store information on the first derivative of the force
-ofF1d <- "OutFiles/C4P/test/Couchii_C4P_Force_1d.csv"
+ofF1d <- "OutFiles/C4P/Couchii_C4P_Force_1d.csv"
 ofF1dhdr <- c(
   "Species",
   "MAMU",
@@ -94,7 +94,7 @@ ofF1dhdr <- c(
   "Snake",
   "Muscle",
   "Rater",
-  (1:29) / 200
+  (1:59) / 200
 )
 write.table(
   t(ofF1dhdr),
@@ -113,7 +113,7 @@ write.table(
 files = list.files(path = "data_raw/C4P/", pattern = "csv")
 
 #Set up a file just to track which snakes we've gone through
-fC4P <- "OutFiles/C4P/test/P1-C4PFiles.csv"
+fC4P <- "OutFiles/C4P/P1-C4PFiles.csv"
 write.table(
   t(c("File", "Snake", "Muscle", "Rater", "Mass(g)")),
   file = fC4P,
@@ -202,8 +202,8 @@ for (file in files) {
       row.names = FALSE,
       col.names = FALSE
     )
-    #  Low pass 200Hz filter -> pick every 50th entry and convert to Force / Sec
-    rspF1d <- diff(rspF[1:30 * 50]) * 200
+    #  Low pass 200Hz filter -> pick every 50th entry and convert to Force / Sec (changed to every 25th, was [1:30 * 50])
+    rspF1d <- diff(rspF[1:60 * 25]) * 200
     oF1dline <- c(
       sSpecies,
       sMAMU,
@@ -231,19 +231,18 @@ for (file in files) {
     maxF <- max(rspF)
     #time to max force:
     t100p <- min(which(rspF >= maxF))
-    # convert all times to ms from tenth of a ms
-    #time from 10% to max force
+    #time to 10% force
     t10p <- min(which(rspF > 0.1 * maxF))
-    #time from 50% to max force
+    #time from max force to 50% down
     t50p <-
       t100p + min(which(rspF[t100p:length(rspF)] <= 0.5 * maxF))
     #maximum rate of change (from earlier F/s calcs)
     maxF1d <- max(rspF1d)
     #minimum rate of change
     minF1d <- min(rspF1d)
-    #not sure what these two are
-    t1dmax <- min(which(rspF1d >= maxF1d)) * 50
-    t1dmin <- min(which(rspF1d <= minF1d)) * 50
+    #times where we hit those values (multiplied to correct for how frequently we calculated the derivative)
+    t1dmax <- min(which(rspF1d >= maxF1d)) * 25
+    t1dmin <- min(which(rspF1d <= minF1d)) * 25
     sumLine = c(
       sSpecies,
       snake,
@@ -283,7 +282,7 @@ for (file in files) {
 #now do some formatting and add a little bit of information to the file
 # we just wrote
 
-df = read.csv("OutFiles/C4P/test/Couchii_C4P_Force.csv")
+df = read.csv("OutFiles/C4P/Couchii_C4P_Force.csv")
 #df<-t(df[order(df$Pulse, df$Snake, df$Muscle),])
 
 #remove outliers ----
@@ -337,8 +336,13 @@ library(tidyverse)
 # plot_IDs_4
 # #all pretty much fine
 # 
-# #filter out identified outliers and save file
-# df <- df %>% 
-#   filter(!Snake %in% c("CRF3066", "CRF2677", "CRF2671", "CRF2669"))
-# 
-# #write.csv(df,"OutFiles/C4P/test/Couchii_C4P_Force_Cleaned.csv")
+#filter out identified outliers and save file
+df <- df %>%
+  filter(!Snake %in% c("CRF3066", "CRF2677", "CRF2671", "CRF2669"))
+
+write.csv(df,"OutFiles/C4P/Couchii_C4P_Force_Cleaned.csv")
+
+df<-read.csv("OutFiles/C4P/Couchii_C4P_Force_1d.csv")
+df <- df %>%
+  filter(!Snake %in% c("CRF3066", "CRF2677", "CRF2671", "CRF2669"))
+write.csv(df,"OutFiles/C4P/Couchii_C4P_Force_1d_Cleaned.csv")
