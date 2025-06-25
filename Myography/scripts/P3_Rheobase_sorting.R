@@ -1,5 +1,9 @@
+#change this value according to which dataset you're working with
+foldername <- "P"
+
 #read in megareport.csv
-megareport <- read.csv("OutFiles/Rheobase/megareport.csv")
+mega <- toString(paste("OutFiles/Rheobase/",foldername,"/megareport.csv", sep=""))
+megareport <- read.csv(mega)
 
 #get list of unique pulse values 
 pulse_u <- sort(unique(megareport$Pulse_Width_us))
@@ -33,7 +37,8 @@ for (i in 1:length(pulse_u)) {
   #loop through each individual
   for (ind in id_list) {
     #pull out max force from each stimulus value
-    forces <- pulsedf[pulsedf$IndID == ind,6]
+    subdf <- pulsedf[pulsedf$IndID == ind,]
+    forces <- subdf$Max_Force_g
     
     #some of them don't have all the data for some reason, so ditch those
     if (length(forces) == 15) {
@@ -60,12 +65,13 @@ for (i in 1:length(pulse_u)) {
   print(output)
   
   #write output file (into OutFiles directory, which the next code chunk wants)
-  filename = paste("OutFiles/Rheobase/Force_scaled/test/TPA_",pulse_u[i],".csv", sep="")
+  filename = toString(paste("OutFiles/Rheobase/",foldername,"/Force_scaled/Rheo_",
+                            pulse_u[i],".csv", sep=""))
   write.csv(output, file = filename)
 }
 
 #output:
-#files TPA_pulse.csv
+#files Rheo_pulse.csv
 #first column is unique stimulus values
 #subsequent columns are max force of each individual at those different
  #levels of stimulus, scaled to max out of them all (so ranging from 0-1)

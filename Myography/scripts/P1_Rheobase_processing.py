@@ -35,6 +35,8 @@ from decimal import *
 import statistics
 import re
 import os
+import sys
+from pathlib import Path
 
 my_stimulus_print_out=[10,20,30,40,50,60,70,80,90,100,200,300,400,500,600]
 my_row_number_list = [33562,66893,100224,133560,166891,200228,233558,266894,300225,333561,366891,400227,433557,466893,500229]
@@ -48,8 +50,10 @@ my_stimulus=()
 ## I will make this not absolute path once I refresh myself on how paths work in
 # python, if I'm correct and my starting dir is where i run the script from I 
 # need to figure out how to back up and go back down levels
-my_dir='C:/Users/sdbab/Documents/myo_main/Myography/data_raw/Rheobase'
+folder = sys.argv[1]
+my_dir='C:/Users/sdbab/Documents/myo_main/Myography/data_raw/Rheobase/' + folder
 
+for filename in os.listdir(my_dir):
 	if filename.endswith(".dat.csv"):
 		m = re.search('((^\S+?)-(\S+?))-(\D+)(\d+)', filename)
 		experiment=str(m.group(1))
@@ -62,12 +66,15 @@ print("all the unique experiments are: ")
 unique=set(experiment_list)
 print(unique)
 
+## get parent path to save in data_processed folder
+parent_path = str(Path(__file__).parents[1])
+
 ### SECOND STEP -- for each unique experiment (snake-muscle combination) get all the files, calculate the pulse width for each experiment and order the files by the pulse width
 for each_experiment in unique:
 	experiment_file_list=[]
 	#same with the path for these outfiles, need to figure that out (going to put them in data_processed, which i also need to go back
 	# and change for the c4p and tetanus processed force data)
-	outfile_name=each_experiment + '.rheobase.csv'
+	outfile_name = parent_path + '/data_processed/Rheobase/' + folder + '/' + each_experiment + '.rheobase.csv'
 	outfile=open(outfile_name, 'w')
 	outfile.write("SnakeID,Muscle,Stimulus(mA),Pulse_Width(us),Max_Force(g)\n")
 	print("unique experiment :" + each_experiment)
@@ -103,7 +110,8 @@ for each_experiment in unique:
 						protocol=m.group(4)
 						indicated=int(m.group(5))
 						pulsewidth=int((indicated - 1)/10)
-						with open(filename) as csvfile:
+						infile_name = parent_path + '/data_raw/Rheobase/' + folder + '/' + filename
+						with open(infile_name) as csvfile:
 							reader=csv.DictReader(csvfile)
 							sum_stim = Decimal(0)
 							stim=[]

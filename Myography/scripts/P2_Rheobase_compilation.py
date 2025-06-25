@@ -1,6 +1,6 @@
 ##!/usr/bin/env python
 ### Created by Julie Allen Ph.D. and Robert Eugene del Carlo
-### Compile all *.rheobase.csv report files from rheobase_analysis.py
+### Compile all *.rheobase.csv report files from rheobase_processing.py
 ##  Input File format:
 ##
 ##		ID			Muscle	Stimulus(mA)	Pulse_With(us)	temperature(ºC)	(Max Force)(N)
@@ -38,6 +38,8 @@ import re
 import os
 import pandas as pd
 import numpy as np
+import sys 
+from pathlib import Path
 
 my_stimulus_print_out=[10,20,30,40,50,60,70,80,90,100,200,300,400,500,600]
 my_row_number_list = [33562,66893,100224,133560,166891,200228,233558,266894,300225,333561,366891,400227,433557,466893,500229]
@@ -48,7 +50,11 @@ experiment_dict={}
 my_stimulus=()
 my_temp=()
 #same deal, need to remind myself about python paths and fix throughout
-my_dir='C:/Users/sdbab/Downloads/Tcouchii_side_hustle/Tcouchii_side_hustle/Couchii_Rheobase'
+folder = sys.argv[1]
+my_dir='C:/Users/sdbab/Documents/myo_main/Myography/data_processed/Rheobase/' + folder
+
+#save parent path again 
+parent_path = str(Path(__file__).parents[1])
 
 skip = '\n'
 output_list=[]
@@ -64,8 +70,9 @@ muscle_list=[]
 stim_list=[]
 PW_list=[]
 for each_report in OLS:
-	if(os.path.isfile(each_report)):
-		report = pd.read_csv(each_report, header=0, index_col=False)
+	report_path = my_dir + '/' + each_report
+	if(os.path.isfile(report_path)):
+		report = pd.read_csv(report_path, header=0, index_col=False)
 		snake = set(report['SnakeID'])
 		snake_list.append(snake)
 		musc = set(report['Muscle'])
@@ -110,7 +117,7 @@ analysis_order=[]
 #upwl.tolist()
 for PW in upwl:
 	PW=str(PW)
-	pwfile_name = 'Rheobase_' + PW + 'us.csv'
+	pwfile_name = parent_path + '/OutFiles/Rheobase/' + folder + '/Rheobase_' + PW + 'us.csv'
 	pwfile=open(pwfile_name, 'w')
 	pw_sorted_file_list.append(pwfile_name)
 	my_out_row_number_list=str(my_out_row_number_list)
@@ -121,7 +128,8 @@ for PW in upwl:
 	headers = header1 + "\n" + header2
 	pwfile.write(headers)
 	for each_report in OLS:
-		read = pd.read_csv(each_report, header=0, index_col=False)
+		report_path = my_dir + '/' + each_report
+		read = pd.read_csv(report_path, header=0, index_col=False)
 		snake = read['SnakeID']
 		SIL.extend(snake)
 USIL=set(SIL)
@@ -149,10 +157,12 @@ print(analysis_order,skip)
 print("The total number of files to compile is: ")
 print(len(analysis_order),skip)
 
-megareport=open('megareport.csv', 'w')
+outfile_name = parent_path + '/OutFiles/Rheobase/' + folder + '/megareport.csv' 
+megareport=open(outfile_name, 'w')
 megareport.write("SnakeID,Muscle,Stimulus_mA,Pulse_Width_us,Max_Force_g\n")
 for j in analysis_order:
-	report = pd.read_csv(j, header=0, index_col=False)
+	midfile = parent_path + '/data_processed/Rheobase/' + folder + '/' + j
+	report = pd.read_csv(midfile, header=0, index_col=False)
 	report.to_csv(megareport, header=0, index=False, lineterminator='\n')
 
 # print("All reports have been compiled into the megareport. The data will be sorted by pulse width (us) and reported in the following files: ")

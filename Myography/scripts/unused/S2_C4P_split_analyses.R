@@ -31,7 +31,7 @@ for (i in 1:nrow(c4p_corr_split)) {
 #MAMU-split pulse linear regressions -----
 par(mfrow=c(2,2))
 
-#Check for normality in data subset and transform as needed ----
+#Check for normality in data subset and transform as needed 
 for (col in 7:17) {
   for (pulse in 1:4) {
     df <- c4p[c4p$Pulse == pulse,]

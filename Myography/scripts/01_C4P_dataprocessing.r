@@ -16,6 +16,9 @@
 #Confirm working directory is main Myography folder (so we don't need to set it)
 getwd()
 
+#set folder for dataset we're working with
+foldername <- "EPN"
+
 # Get Snake Info - Species, Genotype etc.
 sinf = read.csv("./data_raw/Snake_data_sheets/SnakeInfo-09.30.2020.csv")
 
@@ -27,7 +30,7 @@ smm[is.na(smm)] <- 0.999
 # Set up file to store summary information about metrics we calculate for each
 # pulse later
 
-ofsum = "OutFiles/C4P/Couchii_C4P_Metrics.csv"
+ofsum = toString(paste("OutFiles/C4P/",foldername,"/",foldername,"_C4P_Metrics.csv", sep = ""))
 hdrs <- c(
   "Species",
   "Snake",
@@ -61,7 +64,7 @@ write.table(
   col.names = FALSE
 )
 # Set up file to store force outputs
-ofF <- "OutFiles/C4P/Couchii_C4P_Force.csv"
+ofF <- toString(paste("OutFiles/C4P/",foldername,"/",foldername,"_C4P_Force.csv", sep = ""))
 ofFhdr <- c(
   "Species",
   "MAMU",
@@ -85,7 +88,7 @@ write.table(
   col.names = FALSE
 )
 # And make a file to store information on the first derivative of the force
-ofF1d <- "OutFiles/C4P/Couchii_C4P_Force_1d.csv"
+ofF1d <- toString(paste("OutFiles/C4P/",foldername,"/",foldername,"_C4P_Force_1d.csv", sep = ""))
 ofF1dhdr <- c(
   "Species",
   "MAMU",
@@ -110,10 +113,10 @@ write.table(
 )
 
 # get all data files (in data_raw folder)
-files = list.files(path = "data_raw/C4P/", pattern = "csv")
+files = list.files(path = toString(paste("data_raw/C4P/",foldername,"/",sep="")), pattern = "csv")
 
 #Set up a file just to track which snakes we've gone through
-fC4P <- "OutFiles/C4P/P1-C4PFiles.csv"
+fC4P <- toString(paste("OutFiles/C4P/",foldername,"/",foldername,"_P1_C4PFiles.csv", sep = ""))
 write.table(
   t(c("File", "Snake", "Muscle", "Rater", "Mass(g)")),
   file = fC4P,
@@ -156,7 +159,7 @@ for (file in files) {
   )
   
   #actually read in the data file
-  raw = read.csv(paste("data_raw/C4P/",file, sep =""))
+  raw = read.csv(paste("data_raw/C4P/",foldername,"/",file, sep =""))
   # Select all rows with stimulus > 1 (and filter out files without all 4 pulses)
   stmRows <- as.integer(rownames(raw[raw$Stimulus > 1.0,]))
   if (length(stmRows) < 4) {
@@ -280,69 +283,69 @@ for (file in files) {
 }
 
 #now do some formatting and add a little bit of information to the file
-# we just wrote
+# we just wrote; only for the couchii and not set up for foldername format
 
-df = read.csv("OutFiles/C4P/Couchii_C4P_Force.csv")
-#df<-t(df[order(df$Pulse, df$Snake, df$Muscle),])
-
-#remove outliers ----
-library(ggplot2)
-library(tidyverse)
-
-# #get dataframe in format to actually plot (stats format =/= plot format)
-# c4p_long <- df %>% 
-#   pivot_longer(
-#     cols = starts_with("X"),
-#     names_to = "time",
-#     values_to = "force"
-#   ) %>% 
-#   mutate(
-#     time = as.numeric(gsub("X","", time))
-#   )
+# df = read.csv("OutFiles/C4P/Couchii_C4P_Force.csv")
+# #df<-t(df[order(df$Pulse, df$Snake, df$Muscle),])
 # 
-# #There's definitely a better way to do this, but I just manually split them so 
-# # the colors were actually distinguishable and I can decide what the problem ones
-# # are (i.e. which ones look like they tore and/or were normalized poorly)
-# plot_IDs_1 <- ggplot(subset(c4p_long, Snake %in% c("CRF2630", "CRF2631", "CRF2633", 
-#                                                    "CRF2669", "CRF2670", "CRF2671", 
-#                                                    "CRF2672", "CRF2673", "CRF2674")),
-#                      aes(x = time, y = force, color = Snake)) +
-#   geom_line() 
-# plot_IDs_1
-# #2671 and 2669 don't seem to have really contracted
+# #remove outliers ----
+# library(ggplot2)
+# library(tidyverse)
 # 
-# plot_IDs_2 <- ggplot(subset(c4p_long, Snake %in% c("CRF2676", "CRF2677", "CRF2678", 
-#                                                    "CRF2679", "CRF2680", "CRF2681", 
-#                                                    "CRF3051", "CRF3052", "CRF3055")),
-#                      aes(x = time, y = force, color = Snake)) +
-#   geom_line() 
-# plot_IDs_2
-# #all seem fine enough, some are slower to respond than others
-# #actually 2677 should go based on how choppy it is; i think lots of these muscles were small and thus normalized fuzzily
+# # #get dataframe in format to actually plot (stats format =/= plot format)
+# # c4p_long <- df %>% 
+# #   pivot_longer(
+# #     cols = starts_with("X"),
+# #     names_to = "time",
+# #     values_to = "force"
+# #   ) %>% 
+# #   mutate(
+# #     time = as.numeric(gsub("X","", time))
+# #   )
+# # 
+# # #There's definitely a better way to do this, but I just manually split them so 
+# # # the colors were actually distinguishable and I can decide what the problem ones
+# # # are (i.e. which ones look like they tore and/or were normalized poorly)
+# # plot_IDs_1 <- ggplot(subset(c4p_long, Snake %in% c("CRF2630", "CRF2631", "CRF2633", 
+# #                                                    "CRF2669", "CRF2670", "CRF2671", 
+# #                                                    "CRF2672", "CRF2673", "CRF2674")),
+# #                      aes(x = time, y = force, color = Snake)) +
+# #   geom_line() 
+# # plot_IDs_1
+# # #2671 and 2669 don't seem to have really contracted
+# # 
+# # plot_IDs_2 <- ggplot(subset(c4p_long, Snake %in% c("CRF2676", "CRF2677", "CRF2678", 
+# #                                                    "CRF2679", "CRF2680", "CRF2681", 
+# #                                                    "CRF3051", "CRF3052", "CRF3055")),
+# #                      aes(x = time, y = force, color = Snake)) +
+# #   geom_line() 
+# # plot_IDs_2
+# # #all seem fine enough, some are slower to respond than others
+# # #actually 2677 should go based on how choppy it is; i think lots of these muscles were small and thus normalized fuzzily
+# # 
+# # plot_IDs_3 <- ggplot(subset(c4p_long, Snake %in% c("CRF3058", "CRF3059", "CRF3060", 
+# #                                                    "CRF3061", "CRF3064", "CRF3065", 
+# #                                                    "CRF3066", "CRF3069", "CRF3070")),
+# #                      aes(x = time, y = force, color = Snake)) +
+# #   geom_line() 
+# # plot_IDs_3
+# # #3066 way too big
+# # 
+# # plot_IDs_4 <- ggplot(subset(c4p_long, Snake %in% c("CRF3074", "CRF3211", "EJE164",  
+# #                                                    "EJE186", "CRF2675", "CRF3056", 
+# #                                                    "CRF3072")),
+# #                      aes(x = time, y = force, color = Snake)) +
+# #   geom_line() 
+# # plot_IDs_4
+# # #all pretty much fine
+# # 
+# #filter out identified outliers and save file
+# df <- df %>%
+#   filter(!Snake %in% c("CRF3066", "CRF2677", "CRF2671", "CRF2669"))
 # 
-# plot_IDs_3 <- ggplot(subset(c4p_long, Snake %in% c("CRF3058", "CRF3059", "CRF3060", 
-#                                                    "CRF3061", "CRF3064", "CRF3065", 
-#                                                    "CRF3066", "CRF3069", "CRF3070")),
-#                      aes(x = time, y = force, color = Snake)) +
-#   geom_line() 
-# plot_IDs_3
-# #3066 way too big
+# write.csv(df,"OutFiles/C4P/Couchii_C4P_Force_Cleaned.csv")
 # 
-# plot_IDs_4 <- ggplot(subset(c4p_long, Snake %in% c("CRF3074", "CRF3211", "EJE164",  
-#                                                    "EJE186", "CRF2675", "CRF3056", 
-#                                                    "CRF3072")),
-#                      aes(x = time, y = force, color = Snake)) +
-#   geom_line() 
-# plot_IDs_4
-# #all pretty much fine
-# 
-#filter out identified outliers and save file
-df <- df %>%
-  filter(!Snake %in% c("CRF3066", "CRF2677", "CRF2671", "CRF2669"))
-
-write.csv(df,"OutFiles/C4P/Couchii_C4P_Force_Cleaned.csv")
-
-df<-read.csv("OutFiles/C4P/Couchii_C4P_Force_1d.csv")
-df <- df %>%
-  filter(!Snake %in% c("CRF3066", "CRF2677", "CRF2671", "CRF2669"))
-write.csv(df,"OutFiles/C4P/Couchii_C4P_Force_1d_Cleaned.csv")
+# df<-read.csv("OutFiles/C4P/Couchii_C4P_Force_1d.csv")
+# df <- df %>%
+#   filter(!Snake %in% c("CRF3066", "CRF2677", "CRF2671", "CRF2669"))
+# write.csv(df,"OutFiles/C4P/Couchii_C4P_Force_1d_Cleaned.csv")
