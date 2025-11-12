@@ -1,10 +1,10 @@
 #Libraries -----
-library(tidyverse)
-library(minpack.lm)
+# library(tidyverse)
+# library(minpack.lm)
 
 #Load (some) data ----
 #give folder name (change according to dataset you're using)
-foldername <- "P"
+foldername <- "T"
 
 # Get Snake Info
 sinf = read.csv("./data_raw/Snake_data_sheets/SnakeInfo-09.30.2020.csv")
@@ -30,8 +30,8 @@ for (i in 1:length(pulse_l)) {
   
   #save max values and then drop them from the fitting
   maxes <- df[17,-1]
-  df <- df[1:(nrow(df)-1),2:ncol(df)]
-  
+  df <- df[1:10,2:ncol(df)] #drop everything from >= 200mA
+  # df <- df[1:16,2:ncol(df)] #old one for full sigmoidal
   
   #realized in the process of doing this that the reason this hasn't been working 
   # is that the parameters are backwards! I hate it here!
@@ -110,7 +110,8 @@ for (i in 1:length(pulse_l)) {
   result <- rbind(result,maxslope,ec10,ec90,range.10.90,maxes)
   rownames(result) <- c("x0","dx","maxslope","EC10","EC90","range1090","maxF")
   
-  filename <- toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/",pulse_l[i],
+  #changed to save in Sigmoidal_sub folder bc truncating >= 200mA
+  filename <- toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal_sub/",pulse_l[i],
                              "_Sigmoidal.csv", sep=""))
   write.csv(t(result), filename)
   
@@ -132,7 +133,7 @@ for (i in 1:length(pulse_l)) {
   rdf$DtColl <- as.character(sinf$Date_Collected[match(rdf$Snake, sinf$Snake)])
   rdf$DInBet <- as.character(sinf$Days_in_Between[match(rdf$Snake, sinf$Snake)])
   
-  filename2 <- toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/",pulse_l[i],
+  filename2 <- toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal_sub/",pulse_l[i],
                               "_Sigmoidal-rpt.csv", sep=""))
   write.csv(rdf, filename2,row.names = F)
 }
@@ -143,7 +144,7 @@ rheobase_sigmoidal <- matrix(ncol=ncol(rdf)+1)
 colnames(rheobase_sigmoidal)<-c(colnames(rdf),"pulse_length")
 
 for (i in 1:length(pulse_l)) {
-  infile <- toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/",
+  infile <- toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal_sub/",
                            pulse_l[i],"_Sigmoidal-rpt.csv", sep=""))
   df <- read.csv(infile)
   df_pulseID <- df %>% 
@@ -155,7 +156,7 @@ for (i in 1:length(pulse_l)) {
   rheobase_sigmoidal <- rbind(rheobase_sigmoidal,df_pulseID)
 }
 
-outfile <- toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv", sep=""))
+outfile <- toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal_sub/Sigmoidal-rpt.csv", sep=""))
 write.csv(rheobase_sigmoidal, outfile)
 
 #log the current values (x) ----

@@ -5,16 +5,19 @@
 library(ggplot2)
 library(tidyverse)
 
+#set folder name
+foldername <- "WT_elegans"
+
 #MAMU-Tetanus correlation results ----
-tetanus <- read.csv("OutFiles/Tetanus/test/Couchii_Tetanus_Metrics.csv")
+tetanus <- read.csv(paste("OutFiles/Tetanus/",foldername,"/",foldername,"_Tetanus_Metrics.csv",sep=""))
 #remove the duplicate rows that are in here for some reason (note that this method only works bc
 # there's only one muscle from each snake, I checked):
 tetanus <- tetanus[!duplicated(tetanus$Snake), ] 
 
-#remove outliers ID'd at end of script 4
-tetanus <- tetanus %>% 
-  filter(!Snake %in% c("CRF3060","CRF3074","CRF3065","CRF3066","CRF2680","CRF2669","CRF2631","CRF2670")) %>% 
-  filter(Snake != "CRF2675")
+# #remove outliers ID'd at end of script 4 (for couchii only)
+# tetanus <- tetanus %>% 
+#   filter(!Snake %in% c("CRF3060","CRF3074","CRF3065","CRF3066","CRF2680","CRF2669","CRF2631","CRF2670")) %>% 
+#   filter(Snake != "CRF2675")
 
 #set up matrix to store results
 tetanus_corr <- matrix(nrow=10,ncol=9)
@@ -39,7 +42,7 @@ for (i in 1:nrow(tetanus_corr)) {
   }
 }
 
-#write.csv(tetanus_corr, "OutFiles/Tetanus/test/Couchii_Tetanus_MAMU_corr.csv")
+#write.csv(tetanus_corr, paste("OutFiles/Tetanus/",foldername,"/",foldername,"_Tetanus_MAMU_corr.csv", sep = ""))
 
 #MAMU-tetanus linear regressions -----
 #check for normality ----
@@ -78,7 +81,8 @@ colnames(tetanus_MAMU_reg) <- c("Metric","RMSE","R2","B0","B1","p")
 
 i=1
 for (col in 4:13) {
-  plot(tetanus_log$MAMU,tetanus_log[,col],main = colnames(tetanus_log)[col], xlab = "TTX Resistance (MAMU)",
+  plot(tetanus_log$MAMU,tetanus_log[,col],main = colnames(tetanus_log)[col], 
+       xlab = "TTX Resistance (MAMU)",
        ylab = colnames(tetanus_log)[col])
   
   model <- lm(tetanus_log[,col] ~ tetanus_log$MAMU)
@@ -166,7 +170,8 @@ colnames(tetanus_IC50_reg) <- c("Metric","RMSE","R2","B0","B1","p")
 
 j=1
 for (col in 4:13) {
-  plot(IC50tet_log$IC50,IC50tet_log[,col],main = colnames(IC50tet_log)[col], xlab = " Muscle TTX Resistance/IC50 (MAMU)",
+  plot(IC50tet_log$IC50,IC50tet_log[,col],main = colnames(IC50tet_log)[col], 
+       xlab = " Muscle TTX Resistance/IC50 (MAMU)",
        ylab = colnames(IC50tet_log)[col])
   
   model <- lm(IC50tet_log[,col] ~ IC50tet_log$IC50)
@@ -192,10 +197,10 @@ for (col in 4:13) {
 #write.csv(tetanus_IC50_reg,"OutFiles/Tetanus/test/Couchii_Tetanus_IC50_lm.csv")
 
 #tetanus/transient contractions comparison (just max values) ----
-c4p <- read.csv("OutFiles/C4P/Couchii_C4P_Metrics.csv")
+c4p <- read.csv(toString(paste("OutFiles/Tetanus/",foldername,"/",foldername,"_Tetanus_Metrics.csv",sep="")))
 #remove outliers ID'd at end of script 1 
 c4p <- c4p %>% 
-  filter(!Snake %in% c("CRF3066", "CRF2677", "CRF2671", "CRF2669")) %>% 
+  #filter(!Snake %in% c("CRF3066", "CRF2677", "CRF2671", "CRF2669")) %>% 
   group_by(Snake) %>% 
   slice(which.max(ContrAmpl)) %>%  #only keep highest pulse contraction 
   mutate(
@@ -215,9 +220,9 @@ head(isometric_dat)
 isometric_dat <- isometric_dat %>% 
   mutate(
     twitch_tet_ratio = transient_max/tetanic_max
-  ) %>% 
-  filter(
-    !Snake %in% c("CRF3064") #filtered bc it's an outlier based on +-2sd
+  # ) %>% 
+  # filter(
+  #   !Snake %in% c("CRF3064") #filtered bc it's an outlier based on +-2sd
   )
 
 # mean(isometric_dat$twitch_tet_ratio)
@@ -259,3 +264,45 @@ abline(model2, lwd=2, col="darkred")
 legend(x = "bottomright", bty = "n",
        legend = bquote(r^2 == .(r2) * "," ~~ RMSE == .(rmse))
 )
+
+#compare between genotypes ----
+library(dunn.test)
+genotypes <- genotypes <- c("WT_elegans","WT_sirtalis","LVNV","EPN","P","T")
+tet_metrics <- matrix(ncol=18)
+colnames(tet_metrics) <- c("Species", "Snake","Muscle" ,"BaseF.N.g." , "ContrAmpl.N.g.",
+                           "To10pct.ms." ,"MaxTo50pct.ms.","X10to50pct.ms.",
+                           "FMaxRateOfChg.N.g.s.","FMinRateOfChg.N.g.s.", "ToFChgMax.ms.",
+                           "ToFChgMin.ms." ,"DiffFChgMaxToMin.ms.", "ForceAtEnd",
+                           "DiffFMaxToEnd" ,  "MAMU",  "MusMassg" , "Genotype")
+for (type in genotypes) {
+  foldername = type
+  geno_metrics <- read.csv(paste("OutFiles/Tetanus/",foldername,"/",foldername,
+                                 "_Tetanus_Metrics.csv",sep="")) %>% 
+    mutate(
+      Genotype = foldername
+    )
+  
+  tet_metrics <- rbind(tet_metrics,geno_metrics)
+}
+tet_metrics <- tet_metrics[-1,] %>% 
+  filter(
+    MusMassg != 0.000999 #only keeping the first pulse
+  )
+
+dunn_outputs <- matrix(ncol = 4)
+colnames(dunn_outputs) <- c("Metric","Comparison","Z","p-value")
+
+for (col in 4:15) {
+  comparison <- kruskal.test(tet_metrics[,col] ~ tet_metrics$Genotype)
+  print(colnames(tet_metrics)[col])
+  print(comparison)
+  
+  dunn <- c(colnames(tet_metrics)[col],dunn.test(tet_metrics[,col], g = tet_metrics$Genotype, 
+                                                 kw = T, method = "bonferroni",
+                                                 table = T, list = F))
+  dunn_mat <- matrix(c(rep(colnames(tet_metrics)[col],each=15),dunn$comparisons,dunn$Z,dunn$P),ncol=4)
+  colnames(dunn_mat) <- c("Metric","Comparison","Z","p-value")
+  dunn_outputs <- rbind(dunn_outputs,dunn_mat)
+}
+
+write.csv(dunn_outputs[-1,],"OutFiles/Tetanus/Geno_dunn_comparisons.csv",row.names=F)

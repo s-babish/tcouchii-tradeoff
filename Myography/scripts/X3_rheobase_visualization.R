@@ -1,7 +1,7 @@
-# library(tidyverse)
-# library(ggplot2)
-# library(viridis)
-# library(ggforce)
+library(tidyverse)
+library(ggplot2)
+library(viridis)
+library(ggforce)
 
 #set according to dataset 
 foldername <- "WT_elegans"
@@ -425,3 +425,262 @@ ggsave(paste("OutFiles/Rheobase/",foldername,"/plots/",foldername,"_EC50.png",se
 #   geom_point() + 
 #   facet_wrap(~as.factor(pulse_length))
 # #okay not so much when it's pulled out like this
+
+#loop through EC50 plots for each genotype
+genotypes <- c("LVNV","WT_sirtalis","EPN","P","T","WT_elegans","WT_hammondii")
+pulse_l <- c(50,100,200,500,1000,5000)
+
+for (type in genotypes) {
+  foldername = type
+  
+  rheobase_sigmoidal_plot <- read.csv(toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal_sub/Sigmoidal-rpt.csv",sep=""))) %>% 
+    filter(pulse_length %in% c(50,100,200,500,1000,5000))
+  
+  #general view
+  rheobase_sigmoidal_plot$pulse_length <- as.factor(rheobase_sigmoidal_plot$pulse_length)
+  
+  ec50 <- rheobase_sigmoidal_plot %>% ggplot( aes(x=pulse_length, y=x0, fill=pulse_length)) +
+    geom_boxplot() +
+    scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    geom_jitter(color="black", size=0.4, alpha=0.9) +
+    theme(
+      legend.position="none",
+      plot.title = element_text(size=11)
+    ) +
+    ggtitle(paste(foldername,"Rheobase EC50 vs pulse width",sep=" ")) +
+    xlab("Pulse width (us)")
+  print(ec50)
+  ggsave(paste("OutFiles/Rheobase/",foldername,"/plots/",foldername,"_EC50_sub200.png",sep=""),dpi=300)
+  
+  rheobase_sigmoidal_plot$pulse_length <- as.numeric(rheobase_sigmoidal_plot$pulse_length)
+  
+  ind_ec50 <- rheobase_sigmoidal_plot %>% 
+    ggplot( aes(x=pulse_length, y=x0, color=X),
+            show.legend=F) +
+    geom_point(show.legend = F) +
+    scale_x_continuous(labels = pulse_l, breaks = 1:6) +
+    geom_line(show.legend=F) +
+    ggtitle(paste(foldername,"Rheobase EC50 vs pulse width",sep=" "))
+  print(ind_ec50)
+  ggsave(paste("OutFiles/Rheobase/",foldername,"/plots/",foldername,"_EC50_inds_sub200.png",sep=""),dpi=300)
+}
+
+#average over genotypes -----
+genotypes <- c("WT_sirtalis","LVNV","T")
+geno_means <- matrix(ncol = 4)
+colnames(geno_means) <- c("pulse_length","mean","se","genotype")
+
+for (type in genotypes) {
+  foldername = type
+  rheo_ecs <- read.csv(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv",sep=""))
+  
+  rheo_ecs <- rheo_ecs[-1,-1] %>% 
+    filter(MusMassg != 0.000999) %>% 
+    group_by(pulse_length) %>% 
+    summarize(
+      mean = mean(x0), 
+      se = sd(x0)/sqrt(length(x0))
+    ) %>% 
+    mutate(
+      genotype = foldername
+    )
+  
+  geno_means <- rbind(geno_means,rheo_ecs)
+  
+}
+write.csv(geno_means[-1,],"OutFiles/Rheobase/All_geno_means.csv",row.names=F)
+
+rheo_df <- read.csv("OutFiles/Rheobase/All_geno_means.csv")
+rheo_df <- rheo_df %>% 
+  filter(
+    pulse_length %in% c(50,100,200,500,1000)
+  ) %>% 
+  mutate(
+    genotype = as.factor(genotype)
+  )
+rheo_df$genotype <- factor(rheo_df$genotype, levels = c("WT_sirtalis","T","LVNV"))
+rheo_df$pulse_length <- as.factor(rheo_df$pulse_length)
+
+png(filename="OutFiles/Rheobase/plots/WT_rheoavg_dot.png",width=4500,height=2700,res=500)
+WT_rheo <- ggplot(subset(rheo_df, genotype %in% c("WT_sirtalis")), 
+                  aes(x=pulse_length, y=mean, colour=genotype)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), size = 1,position = position_dodge(width=0.6),
+                width = 0.5/3) +
+  geom_line(linewidth = 1, linetype=2) +
+  geom_point(size = 3,position = position_dodge(width=0.6)) +
+  scale_color_manual(name = "Genotype", labels = c(expression(paste("WT ",italic("Th. sirtalis")))),
+                     values = c("#000000")) +
+  scale_x_discrete(expand=c(0,1)) +
+  scale_y_continuous(limits=c(0,150)) +
+  #scale_x_continuous(breaks = c(50,100,200,500,1000)) +
+  labs(y = "Current that Produces \n 50% Muscle Activation (mA)", 
+       x = expression(paste("Pulse Width (",mu,"s)",sep="")),
+       title = "Rheobase EC50 vs Pulse Width") +
+  expand_limits(x = 0, y = 0) +
+  theme_classic(base_size = 14)+
+  theme(plot.title = element_text(face = "bold",
+                                  margin = margin(10, 0, 10, 0),
+                                  size = 18),
+        legend.title = element_blank(),
+        legend.position = "inside",
+        legend.position.inside = c(0.85,0.85),
+        legend.background = element_rect(fill = "transparent"),
+        legend.text = element_text(size=16),
+        axis.text = element_text(size =14))
+
+WT_rheo
+dev.off()
+
+
+png(filename="OutFiles/Rheobase/plots/WT_T_rheoavg_dot.png",width=4500,height=2700,res=500)
+WT_T_rheo <- ggplot(subset(rheo_df, genotype %in% c("WT_sirtalis","T")), 
+                    aes(x=pulse_length, y=mean, colour=genotype)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), size = 1, position = position_dodge(width=0.6),
+                width = 0.25) +
+  geom_line(linewidth = 1,linetype=2) +
+  geom_point(size = 3, position = position_dodge(width= 0.6)) +
+  scale_x_discrete(expand=c(0,1)) +
+  scale_y_continuous(limits=c(0,150)) +
+  scale_color_manual(name = "Genotype", labels = c(expression(paste("WT ",italic("Th. sirtalis"))),
+                                                   expression(italic("Th. couchii"))),
+                     values = c("#000000","#1C8642")) +
+  #scale_x_continuous(breaks = c(50,100,200,500,1000)) +
+  labs(y = "Current that Produces \n 50% Muscle Activation (mA)", 
+       x = expression(paste("Pulse Width (",mu,"s)",sep="")),
+       title = "Rheobase EC50 vs Pulse Width") +
+  expand_limits(x = 0, y = 0) +
+  theme_classic(base_size = 14)+
+  theme(plot.title = element_text(face = "bold",
+                                  margin = margin(10, 0, 10, 0),
+                                  size = 18),
+        legend.title = element_blank(),
+        legend.position = "inside",
+        legend.position.inside = c(0.85,0.85),
+        legend.background = element_rect(fill = "transparent"),
+        legend.text = element_text(size=16),
+        axis.text = element_text(size =14))
+
+WT_T_rheo
+dev.off()
+
+png(filename="OutFiles/Rheobase/plots/WT_T_LVNV_rheoavg_dot.png",width=4500,height=2700,res=500)
+WT_T_LVNV_rheo <- ggplot(subset(rheo_df, genotype %in% c("WT_sirtalis","T","LVNV")), 
+                    aes(x=pulse_length, y=mean, colour=genotype)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), size = 1, position = position_dodge(width=0.6),
+                width = 0.5) +
+  geom_line(linewidth = 1,linetype=2,aes(group = genotype)) +
+  geom_point(size = 3,position = position_dodge(width=0.6)) +
+  scale_color_manual(name = "Genotype", labels = c(expression(paste("WT ",italic("Th. sirtalis"))),
+                                                   expression(italic("Th. couchii")),
+                                                   expression(paste("LVNV ",italic("Th. sirtalis")))),
+                     values = c("#000000","#1C8642","#CC1E1D")) +
+  scale_x_discrete(expand=c(0,1)) +
+  scale_y_continuous(limits=c(0,150)) +
+ # scale_x_continuous(breaks = c(50,100,200,500,1000)) +
+  labs(y = "Current that Produces \n 50% Muscle Activation (mA)", 
+       x = expression(paste("Pulse Width (",mu,"s)",sep="")),
+       title = "Rheobase EC50 vs Pulse Width") +
+  expand_limits(x = 0, y = 0) +
+  theme_classic(base_size = 14)+
+  theme(plot.title = element_text(face = "bold",
+                                  margin = margin(10, 0, 10, 0),
+                                  size = 18),
+        legend.title = element_blank(),
+        legend.position = "inside",
+        legend.position.inside = c(0.85,0.85),
+        legend.background = element_rect(fill = "transparent"),
+        legend.text = element_text(size=16),
+        axis.text = element_text(size =14))
+
+WT_T_LVNV_rheo
+dev.off()
+
+png(filename="OutFiles/Rheobase/plots/WT_rheoavg_line.png",width=4500,height=2700,res=500)
+WT_rheo <- ggplot(subset(rheo_df, genotype %in% c("WT_sirtalis")), 
+                  aes(x=pulse_length, y=mean, colour=genotype)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), size = 1,position = position_dodge(width=0.6),
+                width = 0.5/3) +
+  geom_line(linewidth = 1, linetype=1,aes(group = genotype)) +
+  geom_point(size = 3,position = position_dodge(width=0.6)) +
+  scale_color_manual(name = "Genotype", labels = c(expression(paste("WT ",italic("Th. sirtalis")))),
+                     values = c("#000000")) +
+  scale_x_discrete(expand=c(0,1)) +
+  scale_y_continuous(limits=c(0,150)) +
+  #scale_x_continuous(breaks = c(50,100,200,500,1000)) +
+  labs(y = "Current that Produces \n 50% Muscle Activation (mA)", 
+       x = expression(paste("Pulse Width (",mu,"s)",sep="")),
+       title = "Rheobase EC50 vs Pulse Width") +
+  expand_limits(x = 0, y = 0) +
+  theme_classic(base_size = 14)+
+  theme(plot.title = element_text(face = "bold",
+                                  margin = margin(10, 0, 10, 0),
+                                  size = 18),
+        legend.title = element_blank(),
+        legend.position = "inside",
+        legend.position.inside = c(0.85,0.85),
+        legend.background = element_rect(fill = "transparent"),
+        legend.text = element_text(size=16),
+        axis.text = element_text(size =14))
+
+WT_rheo
+dev.off()
+
+png(filename="OutFiles/Rheobase/plots/T_rheoavg_line.png",width=4500,height=2700,res=500)
+T_rheo <- ggplot(subset(rheo_df, genotype %in% c("T")), 
+                  aes(x=pulse_length, y=mean, colour=genotype)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), size = 1,position = position_dodge(width=0.6),
+                width = 0.5/3) +
+  geom_line(linewidth = 1, linetype=1,aes(group = genotype)) +
+  geom_point(size = 3,position = position_dodge(width=0.6)) +
+  scale_color_manual(name = "Genotype", labels = c(expression(paste(italic("Th. couchii")))),
+                     values = c("#1C8642")) +
+  scale_x_discrete(expand=c(0,1)) +
+  scale_y_continuous(limits=c(0,150)) +
+  #scale_x_continuous(breaks = c(50,100,200,500,1000)) +
+  labs(y = "Current that Produces \n 50% Muscle Activation (mA)", 
+       x = expression(paste("Pulse Width (",mu,"s)",sep="")),
+       title = "Rheobase EC50 vs Pulse Width") +
+  expand_limits(x = 0, y = 0) +
+  theme_classic(base_size = 14)+
+  theme(plot.title = element_text(face = "bold",
+                                  margin = margin(10, 0, 10, 0),
+                                  size = 18),
+        legend.title = element_blank(),
+        legend.position = "inside",
+        legend.position.inside = c(0.85,0.85),
+        legend.background = element_rect(fill = "transparent"),
+        legend.text = element_text(size=16),
+        axis.text = element_text(size =14))
+
+T_rheo
+dev.off()
+
+png(filename="OutFiles/Rheobase/plots/LVNV_rheoavg_line.png",width=4500,height=2700,res=500)
+LVNV_rheo <- ggplot(subset(rheo_df, genotype %in% c("LVNV")), 
+                  aes(x=pulse_length, y=mean, colour=genotype)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), size = 1,position = position_dodge(width=0.6),
+                width = 0.5/3) +
+  geom_line(linewidth = 1, linetype=1,aes(group = genotype)) +
+  geom_point(size = 3,position = position_dodge(width=0.6)) +
+  scale_color_manual(name = "Genotype", labels = c(expression(paste("LVNV ",italic("Th. sirtalis")))),
+                     values = c("#CC1E1D")) +
+  scale_x_discrete(expand=c(0,1)) +
+  scale_y_continuous(limits=c(0,150)) +
+  #scale_x_continuous(breaks = c(50,100,200,500,1000)) +
+  labs(y = "Current that Produces \n 50% Muscle Activation (mA)", 
+       x = expression(paste("Pulse Width (",mu,"s)",sep="")),
+       title = "Rheobase EC50 vs Pulse Width") +
+  expand_limits(x = 0, y = 0) +
+  theme_classic(base_size = 14)+
+  theme(plot.title = element_text(face = "bold",
+                                  margin = margin(10, 0, 10, 0),
+                                  size = 18),
+        legend.title = element_blank(),
+        legend.position = "inside",
+        legend.position.inside = c(0.85,0.85),
+        legend.background = element_rect(fill = "transparent"),
+        legend.text = element_text(size=16),
+        axis.text = element_text(size =14))
+
+LVNV_rheo
+dev.off()

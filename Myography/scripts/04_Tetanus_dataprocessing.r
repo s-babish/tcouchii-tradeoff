@@ -13,6 +13,9 @@
 # 4. Normalized force = (measuredF - baseF)*9.80665/(Muscle Mass in grams)
 #
 
+#set folder name for dataset
+foldername = "T"
+
 # Get Snake Info - Species, Genotype etc.
 sinf = read.csv("./data_raw/Snake_data_sheets/SnakeInfo-09.30.2020.csv")
 
@@ -21,14 +24,8 @@ smm = read.csv("./data_raw/Snake_data_sheets/SnakeSkeletalMuscleMasses-9.28.2020
 # reset all missing muscle mass values to -1.0smm
 smm[is.na(smm)] <- 0.999
 
-# dname = "Tcouchii_side_hustle/Couchii_tetanus"
-# # dname = "C:/Bobby/Data-CSV/p3Tetanus"
-# setwd(dname)
-# 
-# x = strsplit(dname, "/")
-
 # Set up file for output summary metrics (as we did with C4P)
-ofsum = "OutFiles/Tetanus/Couchii_Tetanus_Metrics_test.csv"
+ofsum = toString(paste("OutFiles/Tetanus/",foldername,"/",foldername,"_Tetanus_Metrics.csv",sep=""))
 hdrs <-
   c(
     "Species",
@@ -63,7 +60,7 @@ write.table(
 )
 
 #set up output file for force data
-ofF <- "OutFiles/Tetanus/Couchii_Tetanus_Force.csv"
+ofF <- toString(paste("OutFiles/Tetanus/",foldername,"/",foldername,"_Tetanus_Force.csv",sep=""))
 ofFhdr <-
   c(
     "Species",
@@ -87,7 +84,7 @@ write.table(
 )
 
 #Set up file for first derivative of force results
-ofF1d <- "OutFiles/Tetanus/Couchii_Tetanus_Force_1d.csv"
+ofF1d <- toString(paste("OutFiles/Tetanus/",foldername,"/",foldername,"_Tetanus_Force_1d.csv",sep=""))
 ofF1dhdr <-
   c(
     "Species",
@@ -111,10 +108,10 @@ write.table(
 )
 
 # Make a list of all the raw data files
-files = list.files(path = "data_raw/Tetanus/", pattern = "csv")
+files = list.files(path = paste("data_raw/Tetanus/",foldername,"/",sep=""), pattern = "csv")
 
 #Set up a file to track which files we've gone through
-fTet <- "OutFiles/Tetanus/P2-TetanusFiles.csv"
+fTet <- toString(paste("OutFiles/Tetanus/",foldername,"/",foldername,"_P2_TetanusFiles.csv",sep=""))
 write.table(
   t(c("File", "Snake", "Muscle", "Mass(g)")),
   file = fTet,
@@ -158,7 +155,7 @@ for (file in files) {
   
   #ofdata <- paste("./output/", snake, "-", muscle, ".csv", sep = "")
   #Actually read in the data file
-  raw = read.csv(paste("data_raw/Tetanus/",file, sep =""))
+  raw = read.csv(paste("data_raw/Tetanus/",foldername,"/",file, sep =""))
   
   # Select all rows with stimulus > 1 (and filter out rows with insufficient stimulus)
   stmRows <- as.integer(rownames(raw[raw$Stimulus > 1.0, ]))
@@ -170,7 +167,7 @@ for (file in files) {
   sr <- stmRows[1]
   meanF = mean(raw$Force..g.[sr - 1000:sr])
   rspF <-
-    (raw$Force..g.[stmRows[1]:(stmRows[1] + 29999)] - meanF) * (9.80665 / sMusMassg)
+    (raw$Force..g.[stmRows[1]:(stmRows[1] + 29999)] - meanF) * (0.00980665 / sMusMassg)
   oFline <- c(
     sSpecies,
     snake,

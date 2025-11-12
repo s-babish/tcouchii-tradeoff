@@ -246,3 +246,44 @@ for (col in 7:17) {
 }
 
 #that did remove all the correlations
+
+#compare between genotypes ----
+library(dunn.test)
+genotypes <- genotypes <- c("WT_elegans","WT_sirtalis","LVNV","EPN","P","T")
+c4p_metrics <- matrix(ncol=19)
+colnames(c4p_metrics) <- c("Species", "Snake","Muscle" ,"Rater","MusMassg","Pulse","BaseF.N.g." , "ContrAmpl",
+                           "ToMaxF.ms.","To10pct.ms." ,"MaxTo50pct.ms.","X10to50pct.ms.",
+                           "FMaxRateOfChg.N.g.s.","FMinRateOfChg.N.g.s.", "ToFChgMax.ms.",
+                           "ToFChgMin.ms." ,"DiffFChgMaxToMin.ms.","MAMU", "Genotype")
+for (type in genotypes) {
+  foldername = type
+  geno_metrics <- read.csv(paste("OutFiles/C4P/",foldername,"/",foldername,
+                                 "_C4P_Metrics.csv",sep="")) %>% 
+    mutate(
+      Genotype = foldername
+    )
+  
+  c4p_metrics <- rbind(c4p_metrics,geno_metrics)
+}
+c4p_metrics <- c4p_metrics[-1,]  %>% 
+  filter(
+    MusMassg != 0.000999 #only keeping the first pulse
+  )
+
+dunn_outputs <- matrix(ncol = 4)
+colnames(dunn_outputs) <- c("Metric","Comparison","Z","p-value")
+
+for (col in 7:17) {
+  comparison <- kruskal.test(c4p_metrics[,col] ~ c4p_metrics$Genotype)
+  print(colnames(c4p_metrics)[col])
+  print(comparison)
+  
+  dunn <- c(colnames(c4p_metrics)[col],dunn.test(c4p_metrics[,col], g = c4p_metrics$Genotype, 
+                                                 kw = T, method = "bonferroni",
+                                                 table = T, list = F))
+  dunn_mat <- matrix(c(rep(colnames(c4p_metrics)[col],each=15),dunn$comparisons,dunn$Z,dunn$P),ncol=4)
+  colnames(dunn_mat) <- c("Metric","Comparison","Z","p-value")
+  dunn_outputs <- rbind(dunn_outputs,dunn_mat)
+}
+
+write.csv(dunn_outputs[-1,],"OutFiles/C4P/Geno_dunn_comparisons.csv",row.names=F)

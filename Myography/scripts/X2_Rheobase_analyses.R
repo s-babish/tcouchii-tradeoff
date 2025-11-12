@@ -2,8 +2,9 @@
 library(tidyverse)
 library(lmtest)
 
+foldername <- "WT_elegans"
 #Runs stats on the x0 results from fitting sigmoidal curves to rheobase data
-rheodat <- read.csv("OutFiles/Rheobase/Sigmoidal/test2/Sigmoidal-rpt.csv")
+rheodat <- read.csv(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv",sep=""))
 rheodat$pulse_length <- as.factor(rheodat$pulse_length)
 rheodat <- rheodat[-1,-1]
 
@@ -71,47 +72,6 @@ force_corr <- cor.test(rheodat$MAMU, rheodat$maxF, method = "pearson")
 force_corr
 #not correlated either
 
-# MAMU vs change between pulse lengths (delta x0)
-#drop the first row, pick just the columns we care about, arrange by snake and
-# then group by it to calculate differences between pulse lengths (which are
-# already in order)
-deltadat <- rheodat[-1,] %>% 
-  select(X,x0,MAMU,Snake,pulse_length) %>% 
-  arrange(X) %>% 
-  group_by(X) %>%
-  mutate(deltax0 = x0 - lag(x0)) %>% 
-  na.omit() #the ones with NAs don't tell us anything
-
-deltadat
-
-summary(glm(deltax0 ~ MAMU*pulse_length, data = deltadat))
-
-rheo_anova3 <- aov(deltax0 ~ pulse_length, data = deltadat)
-summary(rheo_anova3)
-
-rheo_tukey3 <- TukeyHSD(rheo_anova3)
-rheo_tukey3
-#big difference in 5000-10000 and 10000-50000
-
-#do some plotting to look at this
-deltadat %>% ggplot( aes(x=pulse_length, y=deltax0, fill=pulse_length)) +
-  geom_boxplot() +
-  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
-  geom_jitter(color="black", size=0.4, alpha=0.9) +
-  theme(
-    legend.position="none",
-    plot.title = element_text(size=11)
-  ) +
-  ggtitle("Rheobase delta x0 vs pulse width") +
-  xlab("Pulse width (us)")
-
-deltadat %>% 
-  ggplot(aes(MAMU, deltax0, color = as.factor(pulse_length)))+
-  geom_point()
-#definitely nothing to do with MAMU
-
-#*need to ask if the delta x0 is a real metric or something i invented and go from there ----
-
 #above but with IC50 ----
 #load data and combine with current data
 IC50 <- read.csv("data_raw/IC50/IC50.csv")
@@ -152,20 +112,44 @@ pearson_corr2
 # lower x0 = more excitability (which is opposite what bobby suggested could happen)
 #kierstin says they could both be being influenced by a secret third thing
 
-#delta x0 data
-IC50dat <- deltadat %>% 
-  mutate( 
-    IC50 = 0) %>% 
-  rows_update(distinct(IC50[,c(2,10)]), by = "Snake", unmatched = "ignore") %>% 
-  mutate (
-    IC50 = ifelse(IC50 == 0, NA, IC50)
-  )
+#exponential decay curves fit to x0 ----
+all_fits <- matrix(ncol=3)
+colnames(output) <- c("Ind","t","Genotype")
 
-summary(glm(deltax0 ~ IC50*pulse_length, data = IC50dat))
-#very small effect of IC50 and longest pulse length on deltax0
+genotypes <- c("LVNV","WT_sirtalis","EPN","P","T","WT_elegans","WT_hammondii")
 
-IC50dat %>% 
-  ggplot(aes(IC50, deltax0, color = as.factor(pulse_length)))+
-  geom_point()
-#I suspect that one high value of delta x0 is what's causing the relationships
-# really need to see if that's a real parameter of interest or not
+for (type in genotypes) {
+  foldername = type
+  data<-read.csv(toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv", sep="")))
+  data <- exp[-1,-1] %>% 
+    filter(MusMassg != 0.000999) %>% 
+    select(X,x0,pulse_length) %>% 
+    pivot_wider(names_from = pulse_length, values_from = x0) %>% 
+    column_to_rownames('X') 
+  df <- t(data)
+  
+  expdecay <- function(pw,x0,t) {
+    x0*exp(-pw/t)
+  }
+  expdecay <- Vectorize(expdecay)
+  
+  expresidFun <- function(parS,observed,indices){
+    expdecay(as.numeric(rownames(df))[indices],observed[1],parS$t) - observed
+  }
+  
+  parStart <- list(t = 5) 
+  fitDecay <- function(x){
+    nls.out <- nls.lm(par = parStart, fn = expresidFun, 
+                      control = nls.lm.control(maxiter = 1024, maxfev = 1024), 
+                      observed = df[!is.na(df[,x]),x], indices = !is.na(df[,x]))
+    print(nls.out)
+    unlist(nls.out$par[1])
+  }
+  
+  result <- Vectorize(fitDecay)(1:ncol(df))
+  print(result)
+  
+  output <- t(matrix(c(colnames(df),result,rep(foldername,ncol(df))),nrow=3,byrow=T))
+  colnames(output) <- c("Ind","t","Genotype")
+  all_fits <- rbind(all_fits,output)
+}
