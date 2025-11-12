@@ -212,8 +212,8 @@ for (col in 7:17) {
 #storage file yet again
 write.csv(c4p_IC50_reg,"OutFiles/C4P/Couchii_C4P_IC50_lm.csv")
 
-#rerun the transformed regressions with just 1 pulse involved to see the effect 
-# of removing the repeats ----
+#rerun the transformed regressions with just 1 pulse involved to see the effect ----
+# of removing the repeats 
 df<-df[df$Pulse == 1,]
 c4p_IC50_reg <- matrix(nrow = 11,ncol = 6)
 colnames(c4p_IC50_reg) <- c("Metric","RMSE","R2","B0","B1","p")
@@ -249,7 +249,7 @@ for (col in 7:17) {
 
 #compare between genotypes ----
 library(dunn.test)
-genotypes <- genotypes <- c("WT_elegans","WT_sirtalis","LVNV","EPN","P","T")
+genotypes <- genotypes <- c("WT_elegans","WT_sirtalis","LVNV","EPN","P","T","WT_hammondii")
 c4p_metrics <- matrix(ncol=19)
 colnames(c4p_metrics) <- c("Species", "Snake","Muscle" ,"Rater","MusMassg","Pulse","BaseF.N.g." , "ContrAmpl",
                            "ToMaxF.ms.","To10pct.ms." ,"MaxTo50pct.ms.","X10to50pct.ms.",
@@ -267,7 +267,7 @@ for (type in genotypes) {
 }
 c4p_metrics <- c4p_metrics[-1,]  %>% 
   filter(
-    MusMassg != 0.000999 #only keeping the first pulse
+    MusMassg != 0.000999 #don't want ones that had missing muscle masses
   )
 
 dunn_outputs <- matrix(ncol = 4)
@@ -281,7 +281,8 @@ for (col in 7:17) {
   dunn <- c(colnames(c4p_metrics)[col],dunn.test(c4p_metrics[,col], g = c4p_metrics$Genotype, 
                                                  kw = T, method = "bonferroni",
                                                  table = T, list = F))
-  dunn_mat <- matrix(c(rep(colnames(c4p_metrics)[col],each=15),dunn$comparisons,dunn$Z,dunn$P),ncol=4)
+  dunn_mat <- matrix(c(rep(colnames(c4p_metrics)[col],each=length(dunn$comparisons)),
+                       dunn$comparisons,dunn$Z,dunn$P),ncol=4)
   colnames(dunn_mat) <- c("Metric","Comparison","Z","p-value")
   dunn_outputs <- rbind(dunn_outputs,dunn_mat)
 }

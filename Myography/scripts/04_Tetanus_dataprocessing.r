@@ -14,7 +14,7 @@
 #
 
 #set folder name for dataset
-foldername = "T"
+foldername = "WT_hammondii"
 
 # Get Snake Info - Species, Genotype etc.
 sinf = read.csv("./data_raw/Snake_data_sheets/SnakeInfo-09.30.2020.csv")

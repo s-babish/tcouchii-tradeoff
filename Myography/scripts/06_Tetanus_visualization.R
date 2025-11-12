@@ -3,6 +3,8 @@ library(ggplot2)
 library(tidyverse)
 library(viridis)
 library(ggpubr)
+library(ggforce)
+theme_set(theme_classic())
 
 #set folder name
 foldername <- "WT_elegans"
@@ -114,8 +116,8 @@ for (row in 1:nrow(tet_force)) {
 }
 
 #read all in and code by genotype ----
-#genotypes <- c("WT_elegans","WT_sirtalis","LVNV","EPN","P","T")
-genotypes <- c("WT_sirtalis","LVNV","T")
+genotypes <- c("WT_elegans","WT_sirtalis","WT_hammondii","LVNV","EPN","P","T")
+#genotypes <- c("WT_sirtalis","LVNV","T")
 
 geno_means <- matrix(ncol = 4)
 colnames(geno_means) <- c("avg","se","time","genotype")
@@ -149,54 +151,70 @@ for (type in genotypes) {
 
 }
 
-write.csv(geno_means,"OutFiles/Tetanus/sub_geno_avgs.csv",row.names=F)
-# plot_genotypes <- ggplot(geno_means[-1,], aes(x = time, y = avg, group = genotype, 
-#                                               fill = genotype, color = genotype)) +
-#   geom_line() 
-# #+
-#  # geom_ribbon(aes(ymin = avg - se, ymax = avg + se),alpha=0.5)
-# plot_genotypes
-# ggsave("OutFiles/Tetanus/geno_tetanus_comparisons.png",dpi=300)
-# 
-# #looking at metrics in box plot form ----
-# tet_all_long <- matrix(ncol = 4)
-# colnames(tet_all_long) <- c("Snake","Genotype","variable","value")
-# 
-# for (type in genotypes) {
-#   foldername = type
-#   tet_stats <- read.csv(paste("OutFiles/Tetanus/",foldername,"/",foldername,
-#                               "_Tetanus_Metrics.csv",sep=""))
-#   tet_long <- tet_stats %>% 
-#     filter(
-#       MusMassg != 0.000999
-#     ) %>% 
-#     mutate(
-#       Genotype = foldername
-#     ) %>% 
-#     select(Snake, BaseF.N.g.:DiffFMaxToEnd, Genotype) %>% 
-#     pivot_longer(cols = BaseF.N.g.:DiffFMaxToEnd, 
-#                  names_to = "variable", values_to = "value")
-#   
-#   tet_all_long <- rbind(tet_all_long,tet_long)
-# }
-# tet_all_long <- c4p_all_long[-1,]
-# tet_all_long$Genotype <- as.factor(tet_all_long$Genotype)
-# 
-# for (page in 1:6) {
-#   tet_boxes <- ggplot(c4p_all_long, aes(Genotype, value, fill = Genotype)) +
-#     geom_boxplot(outlier.shape = NA, na.rm = T) +
-#     facet_wrap_paginate (. ~ variable, scales = 'free', shrink = T, nrow=1, ncol = 2, 
-#                          page = page) +
-#     xlab('') +
-#     ylab('') + 
-#     theme(axis.text.x = element_text(angle=45, vjust=1, hjust=1)) +
-#     geom_pwc(method = "dunn_test", p.adjust.method = "bonferroni", 
-#              symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), 
-#                                 symbols = c("****", "***", "**", "*", "ns")),
-#              hide.ns = T, label = "p.adj.signif")
-#   print(tet_boxes)
-#   ggsave(paste("OutFiles/Tetanus/plots/geno_metrics_",page,".png"),dpi=300)
-# }
+#write.csv(geno_means,"OutFiles/Tetanus/sub_geno_avgs.csv",row.names=F) #just 3 from talk
+write.csv(geno_means, "OutFiles/Tetanus/All_geno_avgs.csv",row.names=F)
+
+plot_genotypes <- ggplot(geno_means[-1,], aes(x = time, y = avg, group = genotype,
+                                              fill = genotype, color = genotype)) +
+  geom_line()
+#+
+ # geom_ribbon(aes(ymin = avg - se, ymax = avg + se),alpha=0.5)
+plot_genotypes
+ggsave("OutFiles/Tetanus/geno_tetanus_comparisons.png",dpi=300)
+
+#looking at metrics in box plot form ----
+tet_all_long <- matrix(ncol = 4)
+colnames(tet_all_long) <- c("Snake","Genotype","variable","value")
+
+for (type in genotypes) {
+  foldername = type
+  tet_stats <- read.csv(paste("OutFiles/Tetanus/",foldername,"/",foldername,
+                              "_Tetanus_Metrics.csv",sep=""))
+  tet_long <- tet_stats %>%
+    filter(
+      MusMassg != 0.000999
+    ) %>%
+    mutate(
+      Genotype = foldername
+    ) %>%
+    dplyr::select(Snake, BaseF.N.g.:DiffFMaxToEnd, Genotype) %>%
+    pivot_longer(cols = BaseF.N.g.:DiffFMaxToEnd,
+                 names_to = "variable", values_to = "value")
+
+  tet_all_long <- rbind(tet_all_long,tet_long)
+}
+tet_all_long <- tet_all_long[-1,]
+tet_all_long$Genotype <- as.factor(tet_all_long$Genotype)
+
+for (page in 1:6) {
+  tet_boxes <- ggplot(tet_all_long, aes(Genotype, value, fill = Genotype)) +
+    geom_boxplot(outlier.shape = NA, na.rm = T) +
+    facet_wrap_paginate (. ~ variable, scales = 'free', shrink = T, nrow=1, ncol = 2,
+                         page = page) +
+    xlab('') +
+    ylab('') +
+    theme(axis.text.x = element_text(angle=45, vjust=1, hjust=1)) +
+    geom_pwc(method = "dunn_test", p.adjust.method = "bonferroni",
+             symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf),
+                                symbols = c("****", "***", "**", "*", "ns")),
+             hide.ns = T, label = "p.adj.signif")
+  print(tet_boxes)
+  ggsave(paste("OutFiles/Tetanus/plots/geno_metrics_",page,".png"),dpi=300)
+}
+
+#twitch-tet comps ----
+twitch_tet_comparisons <- read.csv("OutFiles/Tetanus/twitch_tet_comps.csv")
+tet_boxes <- ggplot(twitch_tet_comparisons, aes(Genotype, twitch_tet_ratio, fill = Genotype)) +
+  geom_boxplot(outlier.shape = NA, na.rm = T) +
+  xlab('') +
+  ylab('') +
+  theme(axis.text.x = element_text(angle=45, vjust=1, hjust=1)) +
+  geom_pwc(method = "dunn_test", p.adjust.method = "bonferroni",
+           symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf),
+                              symbols = c("****", "***", "**", "*", "ns")),
+           hide.ns = T, label = "p.adj.signif")
+print(tet_boxes)
+ggsave(paste("OutFiles/Tetanus/plots/geno_metrics_",page+1,".png"),dpi=300)
 
 #pairwise plots ----
 df <- read.csv("OutFiles/Tetanus/sub_geno_avgs.csv")

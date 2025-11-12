@@ -196,78 +196,10 @@ for (col in 4:13) {
 #write to outfile
 #write.csv(tetanus_IC50_reg,"OutFiles/Tetanus/test/Couchii_Tetanus_IC50_lm.csv")
 
-#tetanus/transient contractions comparison (just max values) ----
-c4p <- read.csv(toString(paste("OutFiles/Tetanus/",foldername,"/",foldername,"_Tetanus_Metrics.csv",sep="")))
-#remove outliers ID'd at end of script 1 
-c4p <- c4p %>% 
-  #filter(!Snake %in% c("CRF3066", "CRF2677", "CRF2671", "CRF2669")) %>% 
-  group_by(Snake) %>% 
-  slice(which.max(ContrAmpl)) %>%  #only keep highest pulse contraction 
-  mutate(
-    transient_max = ContrAmpl
-  )
-tetanus <- tetanus %>% 
-  mutate(
-    tetanic_max = ContrAmpl.N.g. #renaming to make it easier once they're merged
-  )
-head(c4p)
-head(tetanus)
-
-isometric_dat <- merge(c4p,tetanus,by = "Snake") #only 19 snakes with both
-isometric_dat <- merge(isometric_dat, IC50, by = "Snake") #only have this for 9 snakes
-head(isometric_dat)
-
-isometric_dat <- isometric_dat %>% 
-  mutate(
-    twitch_tet_ratio = transient_max/tetanic_max
-  # ) %>% 
-  # filter(
-  #   !Snake %in% c("CRF3064") #filtered bc it's an outlier based on +-2sd
-  )
-
-# mean(isometric_dat$twitch_tet_ratio)
-# max(isometric_dat$twitch_tet_ratio)
-# sd(isometric_dat$twitch_tet_ratio)
-# #it's 2 sd outside the mean so can ignore it as an outlier
-
-MAMU_corr <- cor.test(isometric_dat$MAMU.x,isometric_dat$twitch_tet_ratio, method = "pearson")
-MAMU_corr #nvm i can't read, not correlated at all
-shapiro.test(isometric_dat$twitch_tet_ratio)
-
-model <- lm(isometric_dat$twitch_tet_ratio ~ isometric_dat$MAMU.x)
-rmse <- round(sqrt(mean(resid(model)^2)), 2)
-coefs <- coef(model)
-b0 <- round(coefs[1], 2)
-b1 <- round(coefs[2],2)
-r2 <- round(summary(model)$r.squared, 2)
-p <- overall_p(model)
-
-plot(isometric_dat$MAMU.x, isometric_dat$twitch_tet_ratio)
-abline(model, lwd=2, col="darkred")
-legend(x = "bottomright", bty = "n",
-       legend = bquote(r^2 == .(r2) * "," ~~ RMSE == .(rmse))
-       )
-
-IC50_corr <- cor.test(isometric_dat$IC50,isometric_dat$twitch_tet_ratio, method = "pearson")
-IC50_corr #unsurprisingly this is also uncorrelated 
-
-model2 <- lm(isometric_dat$twitch_tet_ratio ~ isometric_dat$IC50)
-rmse <- round(sqrt(mean(resid(model2)^2)), 2)
-coefs <- coef(model2)
-b0 <- round(coefs[1], 2)
-b1 <- round(coefs[2],2)
-r2 <- round(summary(model2)$r.squared, 2)
-p <- overall_p(model2)
-
-plot(isometric_dat$IC50, isometric_dat$twitch_tet_ratio)
-abline(model2, lwd=2, col="darkred")
-legend(x = "bottomright", bty = "n",
-       legend = bquote(r^2 == .(r2) * "," ~~ RMSE == .(rmse))
-)
 
 #compare between genotypes ----
 library(dunn.test)
-genotypes <- genotypes <- c("WT_elegans","WT_sirtalis","LVNV","EPN","P","T")
+genotypes <- genotypes <- c("WT_elegans","WT_sirtalis","WT_hammondii","LVNV","EPN","P","T")
 tet_metrics <- matrix(ncol=18)
 colnames(tet_metrics) <- c("Species", "Snake","Muscle" ,"BaseF.N.g." , "ContrAmpl.N.g.",
                            "To10pct.ms." ,"MaxTo50pct.ms.","X10to50pct.ms.",
@@ -286,7 +218,7 @@ for (type in genotypes) {
 }
 tet_metrics <- tet_metrics[-1,] %>% 
   filter(
-    MusMassg != 0.000999 #only keeping the first pulse
+    MusMassg != 0.000999 #don't keep the ones that had missing muscle mass
   )
 
 dunn_outputs <- matrix(ncol = 4)
@@ -300,9 +232,103 @@ for (col in 4:15) {
   dunn <- c(colnames(tet_metrics)[col],dunn.test(tet_metrics[,col], g = tet_metrics$Genotype, 
                                                  kw = T, method = "bonferroni",
                                                  table = T, list = F))
-  dunn_mat <- matrix(c(rep(colnames(tet_metrics)[col],each=15),dunn$comparisons,dunn$Z,dunn$P),ncol=4)
+  dunn_mat <- matrix(c(rep(colnames(tet_metrics)[col],each=length(dunn$comparisons)),
+                       dunn$comparisons,dunn$Z,dunn$P),ncol=4)
   colnames(dunn_mat) <- c("Metric","Comparison","Z","p-value")
   dunn_outputs <- rbind(dunn_outputs,dunn_mat)
 }
 
+#tetanus/transient contractions comparison (just max values) ----
+#have to do this in a separate loop because we can't calculate it for every snake and 
+# i'd rather this than dealing with all the NAs trying to do it at the same time as the above would cause
+
+#IC50 <- read.csv("data_raw/IC50/IC50.csv") #not currently using
+
+twitch_tet_comparisons <- matrix(ncol=3) #storage matrix
+colnames(twitch_tet_comparisons) <- c("Genotype","Snake", "twitch_tet_ratio")
+for (type in genotypes) {
+  c4p <- read.csv(toString(paste("OutFiles/C4P/",type,"/",type,"_C4P_Metrics.csv",sep="")))
+  tetanus <- read.csv(toString(paste("OutFiles/Tetanus/",type,"/",type,"_Tetanus_Metrics.csv",sep="")))
+  
+  c4p <- c4p %>% 
+    filter(MusMassg != 0.000999) %>% 
+    group_by(Snake) %>% 
+    slice(which.max(ContrAmpl)) %>%  #only keep highest pulse's contraction 
+    mutate(
+      transient_max = ContrAmpl
+    )
+  tetanus <- tetanus %>% 
+    mutate(
+      tetanic_max = ContrAmpl.N.g. #renaming to make it easier once they're merged
+    )
+  
+  isometric_dat <- merge(c4p,tetanus,by = "Snake") 
+  # isometric_dat <- merge(isometric_dat, IC50, by = "Snake") commented out bc not currently using
+  
+  isometric_sub <- isometric_dat %>% 
+    mutate(
+      Genotype = type,
+      twitch_tet_ratio = transient_max/tetanic_max
+    ) %>% 
+    distinct(Snake,.keep_all = TRUE) %>% 
+    dplyr::select(Genotype,Snake,twitch_tet_ratio)
+  
+  twitch_tet_comparisons <- rbind(twitch_tet_comparisons,isometric_sub)
+}
+
+twitch_tet_comparisons <- twitch_tet_comparisons[-1,] #one day i'll figure out how to make this method not have an empty row
+#write.csv(twitch_tet_comparisons,"OutFiles/Tetanus/twitch_tet_comps.csv",row.names=F)
+
+#now do a dunn test on those outputs just as we did previously,
+# attach to end of old df
+comparison <- kruskal.test(twitch_tet_comparisons$twitch_tet_ratio ~ twitch_tet_comparisons$Genotype)
+print(comparison)
+
+dunn <- c("twitch_tet_ratio",dunn.test(twitch_tet_comparisons$twitch_tet_ratio, g = twitch_tet_comparisons$Genotype, 
+                                               kw = T, method = "bonferroni",
+                                               table = T, list = F))
+dunn_mat <- matrix(c(rep("tiwtch_tet_ratio",each=length(dunn$comparisons)),
+                     dunn$comparisons,dunn$Z,dunn$P),ncol=4)
+colnames(dunn_mat) <- c("Metric","Comparison","Z","p-value")
+dunn_outputs <- rbind(dunn_outputs,dunn_mat)
+
 write.csv(dunn_outputs[-1,],"OutFiles/Tetanus/Geno_dunn_comparisons.csv",row.names=F)
+
+
+
+
+#below is all from when i was doing this intraspecifically, don't care now but reluctant to delete
+# MAMU_corr <- cor.test(isometric_dat$MAMU.x,isometric_dat$twitch_tet_ratio, method = "pearson")
+# MAMU_corr #nvm i can't read, not correlated at all
+# shapiro.test(isometric_dat$twitch_tet_ratio)
+# 
+# model <- lm(isometric_dat$twitch_tet_ratio ~ isometric_dat$MAMU.x)
+# rmse <- round(sqrt(mean(resid(model)^2)), 2)
+# coefs <- coef(model)
+# b0 <- round(coefs[1], 2)
+# b1 <- round(coefs[2],2)
+# r2 <- round(summary(model)$r.squared, 2)
+# p <- overall_p(model)
+# 
+# plot(isometric_dat$MAMU.x, isometric_dat$twitch_tet_ratio)
+# abline(model, lwd=2, col="darkred")
+# legend(x = "bottomright", bty = "n",
+#        legend = bquote(r^2 == .(r2) * "," ~~ RMSE == .(rmse))
+# )
+# 
+# IC50_corr <- cor.test(isometric_dat$IC50,isometric_dat$twitch_tet_ratio, method = "pearson")
+# IC50_corr #unsurprisingly this is also uncorrelated 
+# 
+# model2 <- lm(isometric_dat$twitch_tet_ratio ~ isometric_dat$IC50)
+# rmse <- round(sqrt(mean(resid(model2)^2)), 2)
+# coefs <- coef(model2)
+# b0 <- round(coefs[1], 2)
+# b1 <- round(coefs[2],2)
+# r2 <- round(summary(model2)$r.squared, 2)
+# p <- overall_p(model2)
+# 
+# plot(isometric_dat$IC50, isometric_dat$twitch_tet_ratio)
+# abline(model2, lwd=2, col="darkred")
+# legend(x = "bottomright", bty = "n",
+#        legend = bquote(r^2 == .(r2) * "," ~~ RMSE == .(rmse))
+# )

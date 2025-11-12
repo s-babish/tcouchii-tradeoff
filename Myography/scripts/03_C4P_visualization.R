@@ -2,6 +2,8 @@
 library(ggplot2)
 library(tidyverse)
 library(viridis)
+library(ggforce)
+library(ggpubr)
 theme_set(theme_classic())
 
 #load data ----
@@ -152,7 +154,7 @@ plot_all <- ggplot(c4p_1d_long, aes(x = time_seq, y = force, group = Snake)) +
 plot_all
 
 #read all in and code by genotype ----
-genotypes <- c("WT_elegans","WT_sirtalis","LVNV","EPN","P","T")
+genotypes <- c("WT_elegans","WT_sirtalis","WT_hammondii","LVNV","EPN","P","T")
 
 
 #make storage matrix
@@ -235,7 +237,7 @@ c4p_long <- c4p_stats %>%
   mutate(
     Genotype = foldername
   ) %>% 
-  select(Snake, BaseF.N.g.:DiffFChgMaxToMin.ms., Genotype) %>% 
+  dplyr::select(Snake, BaseF.N.g.:DiffFChgMaxToMin.ms., Genotype) %>% 
   pivot_longer(cols = BaseF.N.g.:DiffFChgMaxToMin.ms., 
                names_to = "variable", values_to = "value")
 
