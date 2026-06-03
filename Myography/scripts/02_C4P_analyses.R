@@ -249,7 +249,7 @@ for (col in 7:17) {
 
 #compare between genotypes ----
 library(dunn.test)
-genotypes <- genotypes <- c("WT_elegans","WT_sirtalis","LVNV","EPN","P","T","WT_hammondii")
+genotypes <- genotypes <- c("WT_elegans","WT_sirtalis","LVNV","WT_atratus","EPN","P","T","WT_hammondii")
 c4p_metrics <- matrix(ncol=19)
 colnames(c4p_metrics) <- c("Species", "Snake","Muscle" ,"Rater","MusMassg","Pulse","BaseF.N.g." , "ContrAmpl",
                            "ToMaxF.ms.","To10pct.ms." ,"MaxTo50pct.ms.","X10to50pct.ms.",

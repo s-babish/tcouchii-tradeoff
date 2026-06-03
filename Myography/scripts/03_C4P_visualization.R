@@ -154,8 +154,8 @@ plot_all <- ggplot(c4p_1d_long, aes(x = time_seq, y = force, group = Snake)) +
 plot_all
 
 #read all in and code by genotype ----
-genotypes <- c("WT_elegans","WT_sirtalis","WT_hammondii","LVNV","EPN","P","T")
-
+#genotypes <- c("WT_elegans","WT_sirtalis","WT_hammondii","WT_atratus","LVNV","EPN","P","T")
+genotypes <- c("WT_hammondii","LVNV","EPN","T")
 
 #make storage matrix
 # all_long <- matrix(ncol = 9)
@@ -178,7 +178,8 @@ for (type in genotypes) {
     ) %>% 
     filter(
       MussMassg != 0.000999,
-      Snake != "CRF3110"
+      Snake != "CRF3110",
+      Pulse == 1
       ) #i realize this goes nowhere for now, may use it later
   
   
@@ -216,11 +217,9 @@ for (type in genotypes) {
 #write.csv(geno_means,"OutFiles/C4P/All_geno_avgs.csv",row.names=F)
 plot_genotypes <- ggplot(geno_means[-1,], aes(x = time, y = avg, group = genotype, 
                                               fill = genotype, color = genotype)) +
-  geom_line() 
-#+
- #geom_ribbon(aes(ymin = avg - se, ymax = avg + se),alpha=0.25)
+  geom_line() #+ geom_ribbon(aes(ymin = avg - se, ymax = avg + se),alpha=0.25)
 plot_genotypes
-ggsave("OutFiles/C4P/plots/geno_transient_comparisons.png",dpi=300)
+ggsave("OutFiles/C4P/plots/subset_geno_transient_comparisons.png",dpi=300)
 
 #looking at metrics in box plot form ----
 c4p_all_long <- matrix(ncol = 4)
@@ -246,10 +245,10 @@ c4p_long <- c4p_stats %>%
 c4p_all_long <- c4p_all_long[-1,]
 c4p_all_long$Genotype <- as.factor(c4p_all_long$Genotype)
 
-for (page in 1:6) {
+for (page in 1:3) {
 c4p_boxes <- ggplot(c4p_all_long, aes(Genotype, value, fill = Genotype)) +
   geom_boxplot(outlier.shape = NA, na.rm = T) +
-  facet_wrap_paginate (. ~ variable, scales = 'free', shrink = T, nrow=1, ncol = 2, 
+  facet_wrap_paginate (. ~ variable, scales = 'free', shrink = T, nrow=2, ncol = 2, 
                        page = page) +
   xlab('') +
   ylab('') + 
@@ -259,7 +258,7 @@ c4p_boxes <- ggplot(c4p_all_long, aes(Genotype, value, fill = Genotype)) +
                               symbols = c("****", "***", "**", "*", "ns")),
            hide.ns = T, label = "p.adj.signif")
 print(c4p_boxes)
-ggsave(paste("OutFiles/C4P/plots/geno_metrics_",page,".png"),dpi=300)
+ggsave(paste("OutFiles/C4P/plots/subset_geno_metrics_",page,".png"),dpi=300)
 }
 
 

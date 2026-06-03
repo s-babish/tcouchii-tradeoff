@@ -7,7 +7,7 @@ library(ggforce)
 theme_set(theme_classic())
 
 #set folder name
-foldername <- "WT_elegans"
+foldername <- "WT_atratus"
 
 #Plotting tetanus results -----
 #First plot will plot all results separately ----
@@ -116,7 +116,7 @@ for (row in 1:nrow(tet_force)) {
 }
 
 #read all in and code by genotype ----
-genotypes <- c("WT_elegans","WT_sirtalis","WT_hammondii","LVNV","EPN","P","T")
+genotypes <- c("WT_elegans","WT_sirtalis","WT_hammondii","WT_atratus","LVNV","EPN","P","T")
 #genotypes <- c("WT_sirtalis","LVNV","T")
 
 geno_means <- matrix(ncol = 4)
@@ -156,7 +156,7 @@ write.csv(geno_means, "OutFiles/Tetanus/All_geno_avgs.csv",row.names=F)
 
 plot_genotypes <- ggplot(geno_means[-1,], aes(x = time, y = avg, group = genotype,
                                               fill = genotype, color = genotype)) +
-  geom_line()
+  geom_line() 
 #+
  # geom_ribbon(aes(ymin = avg - se, ymax = avg + se),alpha=0.5)
 plot_genotypes

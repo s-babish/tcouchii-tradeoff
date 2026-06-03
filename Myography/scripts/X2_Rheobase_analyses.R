@@ -1,6 +1,7 @@
 #libraries ----
 library(tidyverse)
 library(lmtest)
+library(minpack.lm)
 
 foldername <- "WT_elegans"
 #Runs stats on the x0 results from fitting sigmoidal curves to rheobase data
@@ -114,19 +115,19 @@ pearson_corr2
 
 #exponential decay curves fit to x0 ----
 all_fits <- matrix(ncol=3)
-colnames(output) <- c("Ind","t","Genotype")
+colnames(all_fits) <- c("Ind","t","Genotype")
 
 genotypes <- c("LVNV","WT_sirtalis","EPN","P","T","WT_elegans","WT_hammondii")
 
 for (type in genotypes) {
   foldername = type
-  data<-read.csv(toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv", sep="")))
-  data <- exp[-1,-1] %>% 
+  df<-read.csv(toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv", sep="")))
+  df <- df[-1,-1] %>% 
     filter(MusMassg != 0.000999) %>% 
-    select(X,x0,pulse_length) %>% 
+    dplyr::select(X,x0,pulse_length) %>% 
     pivot_wider(names_from = pulse_length, values_from = x0) %>% 
     column_to_rownames('X') 
-  df <- t(data)
+  df <- t(df)
   
   expdecay <- function(pw,x0,t) {
     x0*exp(-pw/t)
@@ -153,3 +154,19 @@ for (type in genotypes) {
   colnames(output) <- c("Ind","t","Genotype")
   all_fits <- rbind(all_fits,output)
 }
+
+all_fits <- as.data.frame(all_fits[-1,]) #not sure why it was formatted weirdly
+#write.csv(all_fits,"OutFiles/Rheobase/exp_decay_method1.csv",row.names=F)
+all_fits <- as.data.frame(all_fits)
+comparison <- kruskal.test(all_fits$t ~ all_fits$Genotype)
+print(comparison)
+
+dunn <- c("exp_decay_t",dunn.test(all_fits$t, g = all_fits$Genotype, 
+                                       kw = T, method = "bonferroni",
+                                       table = T, list = F))
+
+dunn.test(as.numeric(all_fits$t), g = all_fits$Genotype, 
+          kw = T, method = "bonferroni",
+          table = T, list = F)
+#need to try to figure out how to redo this with a curve that is actually normally used for rheobase data
+# (later me problem)

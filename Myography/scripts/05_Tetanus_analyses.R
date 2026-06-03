@@ -6,7 +6,7 @@ library(ggplot2)
 library(tidyverse)
 
 #set folder name
-foldername <- "WT_elegans"
+foldername <- "WT_atratus"
 
 #MAMU-Tetanus correlation results ----
 tetanus <- read.csv(paste("OutFiles/Tetanus/",foldername,"/",foldername,"_Tetanus_Metrics.csv",sep=""))
@@ -199,7 +199,8 @@ for (col in 4:13) {
 
 #compare between genotypes ----
 library(dunn.test)
-genotypes <- genotypes <- c("WT_elegans","WT_sirtalis","WT_hammondii","LVNV","EPN","P","T")
+genotypes <- genotypes <- c("WT_elegans","WT_sirtalis","WT_hammondii","WT_atratus",
+                            "LVNV","EPN","P","T")
 tet_metrics <- matrix(ncol=18)
 colnames(tet_metrics) <- c("Species", "Snake","Muscle" ,"BaseF.N.g." , "ContrAmpl.N.g.",
                            "To10pct.ms." ,"MaxTo50pct.ms.","X10to50pct.ms.",
