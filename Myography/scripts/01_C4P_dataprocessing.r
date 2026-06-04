@@ -17,7 +17,7 @@
 getwd()
 
 #set folder for dataset we're working with
-foldername <- "WT_atratus"
+foldername <- "WT_sirtalis"
 
 # Get Snake Info - Species, Genotype etc.
 sinf = read.csv("./data_raw/Snake_data_sheets/SnakeInfo-09.30.2020.csv")
@@ -206,7 +206,19 @@ for (file in files) {
       col.names = FALSE
     )
     #  Low pass 200Hz filter -> pick every 50th entry and convert to Force / Sec (changed to every 25th, was [1:30 * 50])
-    rspF1d <- diff(rspF[1:60 * 25]) * 200
+    # going to how bobby did it to try to get comparable results
+    # rspF1d <- diff(rspF[1:60 * 25]) * 200
+     
+     #  Instead of Mani's downsampling, I'm going to use an actual first-derivative regime based on a smoothed spline
+     #  This capitalizes on smooth.spline, predict() and diff(x)/diff(y)
+     
+     dt = (1:1500) / 10000
+     spline <- smooth.spline(x= dt, y=rspF)
+     prediction <- predict(spline)
+     Force_Prime <- diff(rspF)/diff(dt)
+     prediction <- predict(spline, deriv=1)
+     rspF1d <- prediction$y
+     
     oF1dline <- c(
       sSpecies,
       sMAMU,
@@ -244,8 +256,10 @@ for (file in files) {
     #minimum rate of change
     minF1d <- min(rspF1d)
     #times where we hit those values (multiplied to correct for how frequently we calculated the derivative)
-    t1dmax <- min(which(rspF1d >= maxF1d)) * 25
-    t1dmin <- min(which(rspF1d <= minF1d)) * 25
+    t1dmax <- min(which(rspF1d >= maxF1d)) #* 50
+    t1dmin <- min(which(rspF1d <= minF1d)) #* 50
+    #t1dmax <- min(which(rspF1d >= maxF1d)) * 25
+    #t1dmin <- min(which(rspF1d <= minF1d)) * 25
     sumLine = c(
       sSpecies,
       snake,

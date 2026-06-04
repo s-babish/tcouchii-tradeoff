@@ -155,7 +155,7 @@ plot_all
 
 #read all in and code by genotype ----
 #genotypes <- c("WT_elegans","WT_sirtalis","WT_hammondii","WT_atratus","LVNV","EPN","P","T")
-genotypes <- c("WT_hammondii","LVNV","EPN","T")
+genotypes <- c("LVNV","T","WT_sirtalis","WT_hammondii","EPN","WT_atratus")
 
 #make storage matrix
 # all_long <- matrix(ncol = 9)
@@ -217,11 +217,14 @@ for (type in genotypes) {
 #write.csv(geno_means,"OutFiles/C4P/All_geno_avgs.csv",row.names=F)
 plot_genotypes <- ggplot(geno_means[-1,], aes(x = time, y = avg, group = genotype, 
                                               fill = genotype, color = genotype)) +
-  geom_line() #+ geom_ribbon(aes(ymin = avg - se, ymax = avg + se),alpha=0.25)
+  geom_line(lwd=1.5) #+ geom_ribbon(aes(ymin = avg - se, ymax = avg + se),alpha=0.25)
 plot_genotypes
-ggsave("OutFiles/C4P/plots/subset_geno_transient_comparisons.png",dpi=300)
+ggsave("Plots/transient_plots/geno_transient_comparisons.png",dpi=300)
 
 #looking at metrics in box plot form ----
+genotypes <- c("EPN","LVNV","T","WT_sirtalis","WT_atratus","WT_hammondii")
+genotypes <- c("LVNV","T","WT_sirtalis","WT_hammondii")
+
 c4p_all_long <- matrix(ncol = 4)
 colnames(c4p_all_long) <- c("Snake","Genotype","variable","value")
 
@@ -231,7 +234,8 @@ for (type in genotypes) {
                               "_C4P_Metrics.csv",sep=""))
 c4p_long <- c4p_stats %>% 
   filter(
-    MusMassg != 0.000999
+    MusMassg != 0.000999,
+    Pulse == 1
   ) %>% 
   mutate(
     Genotype = foldername
@@ -258,7 +262,7 @@ c4p_boxes <- ggplot(c4p_all_long, aes(Genotype, value, fill = Genotype)) +
                               symbols = c("****", "***", "**", "*", "ns")),
            hide.ns = T, label = "p.adj.signif")
 print(c4p_boxes)
-ggsave(paste("OutFiles/C4P/plots/subset_geno_metrics_",page,".png"),dpi=300)
+ggsave(paste("Plots/transient_plots/Subset2_geno_metrics_",page,".png"),dpi=300)
 }
 
 

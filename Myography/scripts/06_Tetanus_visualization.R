@@ -116,8 +116,8 @@ for (row in 1:nrow(tet_force)) {
 }
 
 #read all in and code by genotype ----
-genotypes <- c("WT_elegans","WT_sirtalis","WT_hammondii","WT_atratus","LVNV","EPN","P","T")
-#genotypes <- c("WT_sirtalis","LVNV","T")
+#genotypes <- c("WT_elegans","WT_sirtalis","WT_hammondii","WT_atratus","LVNV","EPN","P","T")
+genotypes <- c("WT_sirtalis","LVNV","T","WT_hammondii","EPN")
 
 geno_means <- matrix(ncol = 4)
 colnames(geno_means) <- c("avg","se","time","genotype")
@@ -151,8 +151,8 @@ for (type in genotypes) {
 
 }
 
-#write.csv(geno_means,"OutFiles/Tetanus/sub_geno_avgs.csv",row.names=F) #just 3 from talk
-write.csv(geno_means, "OutFiles/Tetanus/All_geno_avgs.csv",row.names=F)
+write.csv(geno_means,"OutFiles/Tetanus/subset_geno_avgs.csv",row.names=F) #just 3 from talk
+#write.csv(geno_means, "OutFiles/Tetanus/All_geno_avgs.csv",row.names=F)
 
 plot_genotypes <- ggplot(geno_means[-1,], aes(x = time, y = avg, group = genotype,
                                               fill = genotype, color = genotype)) +
@@ -160,7 +160,7 @@ plot_genotypes <- ggplot(geno_means[-1,], aes(x = time, y = avg, group = genotyp
 #+
  # geom_ribbon(aes(ymin = avg - se, ymax = avg + se),alpha=0.5)
 plot_genotypes
-ggsave("OutFiles/Tetanus/geno_tetanus_comparisons.png",dpi=300)
+ggsave("OutFiles/Tetanus/subset_geno_tetanus_comparisons.png",dpi=300)
 
 #looking at metrics in box plot form ----
 tet_all_long <- matrix(ncol = 4)
@@ -186,10 +186,10 @@ for (type in genotypes) {
 tet_all_long <- tet_all_long[-1,]
 tet_all_long$Genotype <- as.factor(tet_all_long$Genotype)
 
-for (page in 1:6) {
+for (page in 1:3) {
   tet_boxes <- ggplot(tet_all_long, aes(Genotype, value, fill = Genotype)) +
     geom_boxplot(outlier.shape = NA, na.rm = T) +
-    facet_wrap_paginate (. ~ variable, scales = 'free', shrink = T, nrow=1, ncol = 2,
+    facet_wrap_paginate (. ~ variable, scales = 'free', shrink = T, nrow=2, ncol = 2,
                          page = page) +
     xlab('') +
     ylab('') +
@@ -199,7 +199,7 @@ for (page in 1:6) {
                                 symbols = c("****", "***", "**", "*", "ns")),
              hide.ns = T, label = "p.adj.signif")
   print(tet_boxes)
-  ggsave(paste("OutFiles/Tetanus/plots/geno_metrics_",page,".png"),dpi=300)
+  ggsave(paste("OutFiles/Tetanus/plots/subset_geno_metrics_",page,".png"),dpi=300)
 }
 
 #twitch-tet comps ----
