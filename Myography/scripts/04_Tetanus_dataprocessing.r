@@ -14,7 +14,7 @@
 #
 
 #set folder name for dataset
-foldername = "WT_atratus"
+foldername = "T"
 
 # Get Snake Info - Species, Genotype etc.
 sinf = read.csv("./data_raw/Snake_data_sheets/SnakeInfo-09.30.2020.csv")
@@ -92,7 +92,8 @@ ofF1dhdr <-
     "Muscle",
     "MAMU",
     "MusMassg",
-    (1:2399) / 200
+    #(1:2399) / 200 switched with what was in github version
+    (1:30000)/10000
   )
 write.table(
   t(ofF1dhdr),
@@ -190,7 +191,16 @@ for (file in files) {
   )
   #  Low pass 200Hz filter -> pick every 25th entry & convert to per sec
   # This will give us our first derivative file
-  rspF1d <- diff(rspF[1:1200 * 25]) * 200
+  #rspF1d <- diff(rspF[1:1200 * 25]) * 200
+  
+  # Smooth spline and take first derivative (same thing i did with the other)
+  dt = (1:30000) / 10000
+  spline <- smooth.spline(x= dt, y=rspF)
+  prediction <- predict(spline)
+  Force_Prime <- diff(rspF)/diff(dt)
+  prediction <- predict(spline, deriv=1)
+  rspF1d <- prediction$y
+  
   oF1dline <- c(
     sSpecies,
     snake,
@@ -212,7 +222,7 @@ for (file in files) {
     col.names = FALSE
   )
   #Calculating all the summary stats (again, just like the C4P script)
-  tmf <- max(round(rspF, 0)) - 1 #because of some variation in data, getting max from this
+  tmf <- max(round(rspF, 0)) - 10 #because of some variation in data, getting max from this
   tmmin = min(which(rspF >= tmf)) #first time we hit that value
   tmmax <- max(which(rspF >= tmf)) #second time we hit that plateau
   maxF <- mean(rspF[tmmin:tmmax]) #mean force between the ends of that plateau
@@ -221,8 +231,12 @@ for (file in files) {
   t50p <- t100p + min(which(rspF[t100p:length(rspF)] <= 0.5 * maxF)) #time from max to 50% down
   maxF1d <- max(rspF1d) #max rate of change
   minF1d <- min(rspF1d) #min rate of change
-  t1dmax <- min(which(rspF1d >= maxF1d)) * 25 #converting times based on how frequently we sampled for the derivative
-  t1dmin <- min(which(rspF1d <= minF1d)) * 25
+  
+  #t1dmax <- min(which(rspF1d >= maxF1d)) * 25 #converting times based on how frequently we sampled for the derivative
+  #t1dmin <- min(which(rspF1d <= minF1d)) * 25
+  t1dmax <- min(which(rspF1d >= maxF1d)) #* 25 #matching github
+  t1dmin <- min(which(rspF1d <= minF1d)) #* 25
+  
   endF <- rspF[20000] #stimulus cuts off at this time stamp, so getting force here
   difMaxToEndF <- maxF - endF #calc how much the muscle fatigued
   
