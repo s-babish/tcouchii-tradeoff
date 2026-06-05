@@ -134,7 +134,12 @@ for (type in genotypes) {
     Ind = paste(Snake,"_",Muscle,sep=""),
     Genotype = foldername
   ) %>% 
-    filter(MussMassg != 0.000999)
+    filter(MussMassg != 0.000999,
+           !Snake %in% c("CRF3074","CRF3065","CRF3066","CRF3058","CRF2675","CRF2673",
+                         "CRF2670","CRF2631","CRF3110","CRF3111","CRF2436B","CRF3615",
+                         "Wills06","CRF2415","Brodie15.60"),
+           Ind != "CRF3606_M3") %>% 
+    distinct(Ind, .keep_all=T)
   
   subtet <- tet_force[,6:30005]
   
@@ -152,31 +157,36 @@ for (type in genotypes) {
 }
 
 #write.csv(geno_means,"OutFiles/Tetanus/subset_geno_avgs.csv",row.names=F) #just 3 from talk
-write.csv(geno_means, "OutFiles/Tetanus/All_geno_avgs.csv",row.names=F)
+write.csv(geno_means, "OutFiles/Tetanus/All_geno_avgs_no_outliers.csv",row.names=F)
 
-plot_genotypes <- ggplot(geno_means[-1,] %>% filter(genotype %in% c("WT_sirtalis","LVNV","T","EPN","WT_atratus","WT_hammondii")),
+plot_genotypes <- ggplot(geno_means[-1,] %>% filter(genotype %in% c("WT_sirtalis","LVNV","T","WT_hammondii")),
                          aes(x = time, y = avg, group = genotype,
                                               fill = genotype, color = genotype)) +
   geom_line(lwd=1.5) #+ geom_ribbon(aes(ymin = avg - se, ymax = avg + se),alpha=0.5)
 plot_genotypes
-ggsave("Plots/tetanic_plots/subset_geno_tetanus_comparisons.png",dpi=300)
+ggsave("Plots/tetanic_plots/subset3_geno_tetanus_comparisons.png",dpi=300)
 
 #looking at metrics in box plot form ----
 tet_all_long <- matrix(ncol = 4)
 colnames(tet_all_long) <- c("Snake","Genotype","variable","value")
 
-genotypes <- c("LVNV","T","WT_sirtalis")
+genotypes <- c("LVNV","T","WT_sirtalis","WT_hammondii")
 for (type in genotypes) {
   foldername = type
   tet_stats <- read.csv(paste("OutFiles/Tetanus/",foldername,"/",foldername,
                               "_Tetanus_Metrics.csv",sep=""))
   tet_long <- tet_stats %>%
-    filter(
-      MusMassg != 0.000999
-    ) %>%
     mutate(
+      Ind = paste(Snake,"_",Muscle,sep=""),
       Genotype = foldername
     ) %>%
+    filter(MusMassg != 0.000999,
+           !Snake %in% c("CRF3074","CRF3065","CRF3066","CRF3058","CRF2675","CRF2673",
+                         "CRF2670","CRF2631","CRF3110","CRF3111","CRF2436B","CRF3615",
+                         "Wills06","CRF2415","Brodie15.60"),
+           Ind != "CRF3606_M3") %>% 
+    distinct(Ind, .keep_all=T) %>% 
+   
     dplyr::select(Snake, BaseF.N.g.:DiffFMaxToEnd, Genotype) %>%
     pivot_longer(cols = BaseF.N.g.:DiffFMaxToEnd,
                  names_to = "variable", values_to = "value")
@@ -314,3 +324,43 @@ WT_T_LVNV_tet <- ggplot(subset(df.new, genotype %in% c("WT_sirtalis","T","LVNV")
 
 WT_T_LVNV_tet
 dev.off()
+
+#checking for outliers ----
+
+
+foldername = "T"
+tet_force <- read.csv(paste("OutFiles/Tetanus/",foldername,"/",foldername,
+                            "_Tetanus_Force.csv",sep=""))
+
+colnames(tet_force) <- c("Species","Snake","Muscle","MAMU","MussMassg",
+                         paste0("t",1:30000))
+tet_force <- tet_force %>% 
+  mutate(
+    Ind = paste(Snake,"_",Muscle,sep=""),
+    Genotype = foldername
+  ) %>% 
+  filter(MussMassg != 0.000999,
+         !Snake %in% c("3074","3065","3066","3058","2675","2673","2670","2631",
+                       "3110","3111","2436B","3615","Wills06","2415","Brodie15.60"),
+         Ind != "CRF3606_M3") %>% 
+  distinct(Ind, .keep_all=T)
+tet_force$group = gl(8,8,length=64)
+
+tet_force_long <- tet_force %>% 
+  mutate(
+    Ind = paste(Snake,"_",Muscle,sep="")
+  ) %>% 
+  pivot_longer(
+    cols = starts_with("t"),
+    names_to = "time",
+    values_to = "force"
+  ) %>% 
+  mutate(
+    time = as.numeric(gsub("t","", time))
+  )
+
+ggplot(tet_force_long %>% filter(group == 8)
+       ,aes(x = time, y = force, group = Ind, color = Ind)) +
+  geom_line() +
+  ggtitle(foldername)
+

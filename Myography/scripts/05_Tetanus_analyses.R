@@ -203,17 +203,18 @@ genotypes <- c("WT_elegans","WT_sirtalis","WT_hammondii","WT_atratus",
                             "LVNV","EPN","P","T")
 genotypes <-  c("WT_sirtalis","WT_hammondii","WT_atratus","LVNV","EPN","T")
 
-tet_metrics <- matrix(ncol=18)
+tet_metrics <- matrix(ncol=19)
 colnames(tet_metrics) <- c("Species", "Snake","Muscle" ,"BaseF.N.g." , "ContrAmpl.N.g.",
                            "To10pct.ms." ,"MaxTo50pct.ms.","X10to50pct.ms.",
                            "FMaxRateOfChg.N.g.s.","FMinRateOfChg.N.g.s.", "ToFChgMax.ms.",
                            "ToFChgMin.ms." ,"DiffFChgMaxToMin.ms.", "ForceAtEnd",
-                           "DiffFMaxToEnd" ,  "MAMU",  "MusMassg" , "Genotype")
+                           "DiffFMaxToEnd" ,  "MAMU",  "MusMassg" , "Genotype","Ind")
 for (type in genotypes) {
   foldername = type
   geno_metrics <- read.csv(paste("OutFiles/Tetanus/",foldername,"/",foldername,
                                  "_Tetanus_Metrics.csv",sep="")) %>% 
     mutate(
+      Ind = paste(Snake,"_",Muscle,sep=""),
       Genotype = foldername
     )
   
@@ -221,7 +222,11 @@ for (type in genotypes) {
 }
 tet_metrics <- tet_metrics[-1,] %>% 
   filter(
-    MusMassg != 0.000999 #don't keep the ones that had missing muscle mass
+    MusMassg != 0.000999, #don't keep the ones that had missing muscle mass
+    !Snake %in% c("CRF3074","CRF3065","CRF3066","CRF3058","CRF2675","CRF2673",
+                  "CRF2670","CRF2631","CRF3110","CRF3111","CRF2436B","CRF3615",
+                  "Wills06","CRF2415","Brodie15.60"),
+    Ind != "CRF3606_M3"
   )
 
 dunn_outputs <- matrix(ncol = 4)
@@ -254,7 +259,10 @@ for (type in genotypes) {
   tetanus <- read.csv(toString(paste("OutFiles/Tetanus/",type,"/",type,"_Tetanus_Metrics.csv",sep="")))
   
   c4p <- c4p %>% 
-    filter(MusMassg != 0.000999) %>% 
+    filter(MusMassg != 0.000999,
+           !Snake %in% c("CRF3074","CRF3065","CRF3066","CRF3058","CRF2675","CRF2673",
+                         "CRF2670","CRF2631","CRF3110","CRF3111","CRF2436B","CRF3615",
+                         "Wills06","CRF2415","Brodie15.60")) %>% 
     group_by(Snake) %>% 
     slice(which.max(ContrAmpl)) %>%  #only keep highest pulse's contraction 
     mutate(

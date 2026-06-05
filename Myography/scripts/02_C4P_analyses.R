@@ -250,25 +250,28 @@ for (col in 7:17) {
 #compare between genotypes ----
 library(dunn.test)
 genotypes <- genotypes <- c("WT_sirtalis","LVNV","WT_atratus","EPN","T","WT_hammondii")
-c4p_metrics <- matrix(ncol=19)
+c4p_metrics <- matrix(ncol=20)
 colnames(c4p_metrics) <- c("Species", "Snake","Muscle" ,"Rater","MusMassg","Pulse","BaseF.N.g." , "ContrAmpl",
                            "ToMaxF.ms.","To10pct.ms." ,"MaxTo50pct.ms.","X10to50pct.ms.",
                            "FMaxRateOfChg.N.g.s.","FMinRateOfChg.N.g.s.", "ToFChgMax.ms.",
-                           "ToFChgMin.ms." ,"DiffFChgMaxToMin.ms.","MAMU", "Genotype")
+                           "ToFChgMin.ms." ,"DiffFChgMaxToMin.ms.","MAMU", "Genotype","Ind")
 for (type in genotypes) {
   foldername = type
   geno_metrics <- read.csv(paste("OutFiles/C4P/",foldername,"/",foldername,
                                  "_C4P_Metrics.csv",sep="")) %>% 
     mutate(
+      Ind = paste(Snake,"_",Muscle,sep=""),
       Genotype = foldername
-    )
+    ) 
   
   c4p_metrics <- rbind(c4p_metrics,geno_metrics)
 }
 c4p_metrics <- c4p_metrics[-1,]  %>% 
   filter(
     Pulse == 1,
-    MusMassg != 0.000999 #don't want ones that had missing muscle masses
+    MusMassg != 0.000999, #don't want ones that had missing muscle masses
+    !(Snake %in% c("CRF3110","CRF2436B")),
+    !(Ind %in% c("CRF2671_M1","CRF2633_M3","CRF3609_M3","EJE190_M4"))
   ) 
 
 dunn_outputs <- matrix(ncol = 4)

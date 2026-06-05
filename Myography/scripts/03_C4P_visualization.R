@@ -178,12 +178,11 @@ for (type in genotypes) {
     ) %>% 
     filter(
       MussMassg != 0.000999,
-      Snake != "CRF3110",
-      Pulse == 1
-      ) #i realize this goes nowhere for now, may use it later
-  
-  
-  
+      !(Snake %in% c("CRF3110","CRF2436B")),
+      Pulse == 1,
+      !(Ind %in% c("CRF2671_M1","CRF2633_M3","CRF3609_M3","EJE190_M4"))
+      ) #remove bad data I ID'd
+
   subset <- c4p_force[,8:1507] #only apply over the observations
   
   stats <- as.data.frame(t(sapply(subset, function(x) 
@@ -194,7 +193,6 @@ for (type in genotypes) {
     )
   
   geno_means <- rbind(geno_means,stats)
-  
   
   #want to see what the individuals within the genotypes are doing
   c4p_long <- c4p_force %>% 
@@ -223,7 +221,7 @@ ggsave("Plots/transient_plots/geno_transient_comparisons.png",dpi=300)
 
 #looking at metrics in box plot form ----
 genotypes <- c("EPN","LVNV","T","WT_sirtalis","WT_atratus","WT_hammondii")
-genotypes <- c("LVNV","T","WT_sirtalis","WT_hammondii")
+genotypes <- c("LVNV","T","WT_sirtalis")
 
 c4p_all_long <- matrix(ncol = 4)
 colnames(c4p_all_long) <- c("Snake","Genotype","variable","value")
@@ -233,12 +231,15 @@ for (type in genotypes) {
   c4p_stats <- read.csv(paste("OutFiles/C4P/",foldername,"/",foldername,
                               "_C4P_Metrics.csv",sep=""))
 c4p_long <- c4p_stats %>% 
+  mutate(
+    Ind = paste(Snake,"_",Muscle,sep=""),
+    Genotype = foldername
+  ) %>% 
   filter(
     MusMassg != 0.000999,
-    Pulse == 1
-  ) %>% 
-  mutate(
-    Genotype = foldername
+    !(Snake %in% c("CRF3110","CRF2436B")),
+    Pulse == 1,
+    !(Ind %in% c("CRF2671_M1","CRF2633_M3","CRF3609_M3","EJE190_M4"))
   ) %>% 
   dplyr::select(Snake, BaseF.N.g.:DiffFChgMaxToMin.ms., Genotype) %>% 
   pivot_longer(cols = BaseF.N.g.:DiffFChgMaxToMin.ms., 
@@ -262,7 +263,7 @@ c4p_boxes <- ggplot(c4p_all_long, aes(Genotype, value, fill = Genotype)) +
                               symbols = c("****", "***", "**", "*", "ns")),
            hide.ns = T, label = "p.adj.signif")
 print(c4p_boxes)
-ggsave(paste("Plots/transient_plots/Subset2_geno_metrics_",page,".png"),dpi=300)
+ggsave(paste("Plots/transient_plots/subset2_geno_metrics_",page,".png"),dpi=300)
 }
 
 
