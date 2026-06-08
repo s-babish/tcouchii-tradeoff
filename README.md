@@ -2,6 +2,8 @@
 
 This github repository includes all the code and (eventually) all the data required to recreate the analyses and figures in Babish et al ?2025?, which examines the trade-offs in sodium channel, muscular, and whole-animal functioning associated with TTX resistance in the Sierra garter snake, *Thamnophis couchii*. The organization of the files is such that all scripts can be run without any rearranging, and all outputs will end up in the same directory that the current output files are in (overwriting them, so be careful of that if you want to save the originals).
 
+IMPORTANT NOTE: figure powerpoint for Chris for our meeting is now in the presentations tab, and the figures themselves are accessible under Myography -> Plots -> either tetanic_plots or transient_plots depending on which ones you want. I am going to have to just get this ReadMe fixed in the morning but the plots should be good enough for now.
+
 ## Myography
 
 This folder contains all the data and scripts associated with the muscle-level analyses presented by Babish et al. This includes C4P, a transient contraction experiment, tetanus, a tetanic contraction experiment, and Rheobase, an excitability experiment. Within folders (data_raw, OutFiles, etc), files are organized into subfolders according to which of these three experiments they fall under. They are organized in this way so that people who are not interested in the raw data but want the outputs, for example, can download just that information more easily.
