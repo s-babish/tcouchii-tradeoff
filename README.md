@@ -1,8 +1,6 @@
 # tcouchii-tradeoff
 
-This github repository includes all the code and (eventually) all the data required to recreate the analyses and figures in Babish et al ?2025?, which examines the trade-offs in sodium channel, muscular, and whole-animal functioning associated with TTX resistance in the Sierra garter snake, *Thamnophis couchii*. The organization of the files is such that all scripts can be run without any rearranging, and all outputs will end up in the same directory that the current output files are in (overwriting them, so be careful of that if you want to save the originals).
-
-IMPORTANT NOTE: figure powerpoint for Chris for our meeting is now in the presentations tab, and the figures themselves are accessible under Myography -> Plots -> either tetanic_plots or transient_plots depending on which ones you want. I am going to have to just get this ReadMe fixed in the morning but the plots should be good enough for now.
+This github repository includes all the code and (eventually) all the data required to recreate the analyses and figures in Babish et al (in prep), which examines the trade-offs in sodium channel, muscular, and whole-animal functioning associated with TTX resistance in the Sierra garter snake, *Thamnophis couchii*. The organization of the files is such that all scripts can be run without any rearranging, and all outputs will end up in the same directory that the current output files are in (overwriting them, so be careful of that if you want to save the originals).
 
 ## Myography
 
@@ -10,59 +8,81 @@ This folder contains all the data and scripts associated with the muscle-level a
 
 ### data_raw
 
+All the raw data for the myography portion of the paper; the only processing before this was converting the files from those used by the proprietary software on our data logger to .csv files.
+
 #### C4P
 
-All the C4P data files are named with the Snake CollPreNo ID, the muscle number (some snakes had multiple muscles dissected out and tested on, and the pulse number (1 through 4). This naming is essential to the functioning of the script 01_C4P_dataprocessing.R and should not be changed. The data has 4 columns: Time (s), Force (g), Position (mm), and Stimulus (?).
+All the C4P data files are named with the Snake CollPreNo ID, the muscle number (some snakes had multiple muscles dissected out and tested on), and the pulse number (1 through 4). This naming is essential to the functioning of the script 01_C4P_dataprocessing.R and should not be changed. The data has 4 columns: Time (s), Force (g), Position (mm), and Stimulus.
 
 #### Tetanus
 
-All the Tetanus data files are named with the Snake CollPreNo ID, the muscle number (some snakes had multiple muscles dissected out and tested on, and which repeat of the protocol it was (1 or 2). This naming is essential to the functioning of the script 04_Tetanus_dataprocessing.R and should not be changed. The data has 4 columns: Time (s), Force (g), Position (mm), and Stimulus (?).
+All the Tetanus data files are named with the Snake CollPreNo ID, the muscle number (some snakes had multiple muscles dissected out and tested on), and which repeat of the protocol it was (1 or 2). This naming is essential to the functioning of the script 04_Tetanus_dataprocessing.R and should not be changed. The data has 4 columns: Time (s), Force (g), Position (mm), and Stimulus.
 
 #### Rheobase
+
+Will be updated once I go back through these analyses an dplotting and it gets changed around.
+
+
+
+
+
 
 #### Snake_data_sheets
 
 These data sheets contain various information about the snakes used in all three of these experiments, and are in this folder because all three analyses draw on this information. The most important information in these files is snake MAMU and muscle masses for the muscles used in the various analyses, the former of which is integral to the analyses and the latter of which is necessary for all data processing (scaling results to muscle mass).
 
-#### IC50
+#### IC50_analysis
 
-IC50 data, currently unorganized except IC50.csv, which has the final results for all the IC50 analyses and isn't really raw data but is staying there until I have the code to create it and can actually treat it as an outfile.
+Currently empty, this will contain the data files needed in the calculation of the IC50s for muscle=level TTX resistance once I find them (or I might delete this and stick with IC50.csv in the data_processed folder which is where I've been pulling that data from this whole time anyway).
 
 ### data_processed
 
-This folder might end up deleted for all but rheobase; more likely, the force and force-1d files may end up here because they're more data than results and so should be in a data folder, but that's tbd.
+In theory, this should contain data at an intermediate stage of processing, not ready for analysis or plotting but not raw. This folder may eventually be deleted for all protocols but rheobase; more likely, the force and force-1d files may end up here because they're more data than results and so should be in a data folder. 
 
 ### OutFiles
 
 #### C4P
 
--   Couchii_C4P_Force.csv contains the force output of the muscles, scaled to muscle mass and normalized to baseline
+This folder is split into subfolders arranging individuals by species/genotype. Each folder follows the same basic structuring of the file names, just switching out the genotype/species indicator term. 
 
--   Couchii_C4P_Force_Sorted.csv contains the same information as the above file, just sorted and rotated to be better used by the later analyses (except actually I don't think I need it? needs confirmed)
+The contents of each subfolder are:
+-   X_C4P_Force.csv contains the force output of the muscles, scaled to muscle mass and normalized to baseline
 
--   Couchii_C4P_Force_1d.csv contains the first derivative of the force data (from every 200th reading)
+-   X_C4P_Force_1d.csv contains the first derivative of the force data
 
--   Couchii_C4P_Metrics.csv contains the key summary stats for each transient contraction, including base force, contraction amplitude, contraction duration, and more
+-   X_C4P_Metrics.csv contains the key summary stats for each transient contraction, including base force, contraction amplitude, contraction duration, and more
 
--   P1-C4PFiles.csv contains a list of the raw data files that contributed to the above files; it is not directly used for anything but may prove informative or useful
+-   X_P1_C4PFiles.csv contains a list of the raw data files that contributed to the above files, along with the snake IDs and muscle masses
+
+Additionally, this folder contains a .csv titled "All_geno_avgs.csv" that contains the mean and standard error for the twitch/transient contractions for each genotype, which can be drawn from to plot. The plotting scripts do not currently draw on it but will once data processing is complete. There are also two .csv files, "Geno_dunn_comparisons.csv" and "Subset_geno_dunn_comparisons.csv" which contain the results for Dunn's post hoc tests for either all the groups or a subset of the groups (WT sirtalis, atratus, hammondii, and LVNV, EPN, and T). 
 
 #### Tetanus
 
--   Couchii_Tetanus_Force.csv contains the force output of the muscles, scaled to muscle mass and normalized to baseline
+This folder is very similar to the C4P folder previously described, with substructuring to present the results of the tetanic contraction experiments by genotype/species.
 
--   Couchii_Tetanus_Force_Sorted.csv contains the same information as the above file, just sorted and rotated to be better used by the later analyses (except I may not actually use it, need to confirm)
+The contents of each subfolder are:
+-   X_Tetanus_Force.csv contains the force output of the muscles, scaled to muscle mass and normalized to baseline
 
--   Couchii_Tetanus_Force_1d.csv contains the first derivative of the force data (from every 200th reading)
+-   X_Tetanus_Force_1d.csv contains the first derivative of the force data (from every 200th reading)
 
--   Couchii_Tetanus_Metrics.csv contains the key summary stats for each tetanic contraction, including base force, contraction amplitude, contraction duration, and more
+-   X_Tetanus_Metrics.csv contains the key summary stats for each tetanic contraction, including base force, contraction amplitude, contraction duration, and more
 
--   P1-TetanusFiles.csv contains a list of the raw data files that contributed to the above files; it is not directly used for anything but may prove informative or useful
+-   X_P2_TetanusFiles.csv contains a list of the raw data files that contributed to the above files; it is not directly used for anything but may prove informative or useful
+
+Additionally, this folder contains a .csv titled "All_geno_avgs.csv" that contains the mean and standard error for the twitch/transient contractions for each genotype, which can be drawn from to plot, and another version "All_geno_avgs_no_outliers.csv" which contains the same data but calculated without observations identified as bad (muscle tearing or twitch rather than transient contractions). The plotting scripts do not currently draw on these files but will once data processing is complete. There are also two .csv files, "Geno_dunn_comparisons.csv" and "Subset_geno_dunn_comparisons.csv" which contain the results for Dunn's post hoc tests for either all the groups or a subset of the groups (WT sirtalis, atratus, hammondii, and LVNV, EPN, and T). 
 
 #### Rheobase
 
+Will be updated once I go back through these analyses an dplotting and it gets changed around.
+
+
+
+
+
+
 ### scripts
 
--   00_sample+mapping_comparison.R - This script may not last, but for now it exists to map the samples we used in the various myography experiments (I wanted an idea of where they came from) and compiles a list of which samples were used for which experiments (because annoyingly there were very different individuals used for each experiment and there's not huge overlap)).
+-   00_sample_mapping_comparison.R - This script may not last, but for now it exists to map the samples we used in the various myography experiments (I wanted an idea of where they came from) and compiles a list of which samples were used for which experiments (because annoyingly there were very different individuals used for each experiment and there's not huge overlap)).
 
 -   01_C4P_dataprocessing.R - This file takes all the raw C4P data files (from data_raw/C4P) and processes them to determine amount of force exerted at each time point (normalized and scaled to muscle mass). It then calculates several metrics of interest for the transient contractions, including contraction amplitude, time to maximal contraction, etc., and generates a first derivative trace of the force curve (giving force/second) to determine the minimal and maximal rate of force change. The output files are used by file 02_C4P_analysis.R. Will eventually also remove outliers, still trying to figure out what method I feel comfortable with there.
 
@@ -72,29 +92,35 @@ This folder might end up deleted for all but rheobase; more likely, the force an
 
 -   04_Tetanus_dataprocessing.R - This file does basically the same thing as script #1, but for the tetanic contraction protocol data (Tetanus) instead of the transient contraction protocol data (C4P). The output files are used by file 05_Tetanus_analysis.R. Will eventually remove outliers as well/
 
--   04_Tetanus_analyses.R - Does correlation analyses (Kendall's tau and Pearson's correlation) between tetanus metrics and both MAMU and IC50. Also does basic linear regressions and calculates RMSE and R\^2. Creates .csvs with the correlation values (Couchii_Tetanus_X_corr.csv) and the regression parameters (Couchii_Tetanus_X_lm.csv) in OutFiles.
+-   05_Tetanus_analyses.R - Does correlation analyses (Kendall's tau and Pearson's correlation) between tetanus metrics and both MAMU and IC50. Also does basic linear regressions and calculates RMSE and R\^2. Creates .csvs with the correlation values (Couchii_Tetanus_X_corr.csv) and the regression parameters (Couchii_Tetanus_X_lm.csv) in OutFiles.
 
 -   06_Tetanus_visualization.R - Creates all tetanus-related figures, including traces of the force and the first derivative of the force. Ideally it will eventually plot the traces as fitted to the sigmoidal equation from REdC, but that isn't working right now.
 
--   Absolute nightmare that is the rheobase scripts will be dealt with eventually, after the above and the whole-animal stuff (you can tell I don't want to deal with them right now) (also the ones staring with P will have that changed once they're fixed to make this one cohesive pipeline)
+-   Absolute nightmare that is the rheobase scripts will be dealt with, they're mostly working now. Ones starting with P are largely in python or finish out the Python pipeline, then the ones starting with X roughly follow the 1-2-3 structure of the C4P and Tetanus scripts.
 
     -   P1_Rheobase_processing.py takes in the raw rheobase data files and processes them to an intermediate (stored in data_processed)
 
-    -   P2_Rheobase_compilation.py takes the output from the previous step and produces the file "megareport.csv" (currently unsorted in OutFiles)
+    -   P2_Rheobase_compilation.py takes the output from the previous step and produces the file "megareport.csv" for each genotype/group, which goes into that group's Rheobase OutFiles folder.
 
-    -   P3_Rheobase_sorting.R takes the megareport and sorts the data into outfiles by pulse length (and also scales the force data for each individual). Outputs for this are currently stored in the Force_scaled folder of the outfiles (and maybe could also be processed data tbh). They currently have the format TPA_pulse width but I should change that because I don't do anything with temperature
+    -   P3_Rheobase_sorting.R takes the megareport and sorts the data into outfiles by pulse length (and also scales the force data for each individual). Outputs for this are stored in the Force_scaled subfolder of the OutFiles for each group, and it may be moved to data_processed eventually. Those outputs have the format "Rheo_pulse width," with pulse widths 10, 50, 100, 200, 500, 1000, 10000, 50000, 100000, and 500000, with some occasionally missing if that data was not able to be recorded on that muscle
 
-    -   X1_Rheobase_sigmoidal.R - The current problem script, theoretically fits a sigmoidal curve to the scaled force data obtained from script P3. What I'm meeting with Paul to troubleshoot.
 
-    -   X2_Rheobase_analyses.R - Currently barely does anything, will eventually compute stats for rheobase outputs once I have sigmoidal fits to compute stats from
 
-    -   X3_Rheobase_visualization.R - Will make the rheobase plots (mostly whatever Bobby suggested), another work in progress shelved until I get actually good rheobase sigmoidal fits
+
+
+
+    -   X1_Rheobase_sigmoidal.R - This fits a sigmoidal curve to the scaled force data obtained from script P3
+
+    -   X2_Rheobase_analyses.R - Will eventually compute stats for rheobase outputs once I have sigmoidal fits to compute stats from. Stats will largely be looking at the theoretically exponentially decreasing curve, fitting it, and doing stats on the parameters of those fitted curves.
+
+    -   X3_Rheobase_visualization.R - Will make the rheobase plots: initial S curve, exponential decrease, and plots for curve parameters.
+
+
+
+
+
 
 -   "Unused" folder that contains things I got from Bobby that I don't think I need but don't want to delete just yet
-
-### IC50_analyses
-
-This will ideally eventually be spread out between other folders, but it's all in this folder right now because I'm missing some of the code associated with it and therefore can't do anything with it yet anyway.
 
 ## tradeoff_modeling
 
@@ -115,3 +141,11 @@ This file will have data with information about models, maybe? For now it exists
 -   02_modeling.R - This script runs GLMs, GLMMs (eventually, once I fill in locality information and standardize it), and path models on the whole-animal trade-off data.
 
 -   03_visualization.R - This script will eventually make whatever plots I want for this section, I haven't decided what those look like yet so for now it's empty.
+
+
+## Presentations
+
+This folder contains any and all powerpoints and other presentations made for this project. This will likely be removed when closer to publication but is useful for now to help share materials, previous outlines, etc. between coauthors. List of presentations below:
+
+- Babish_JMIH 2025 is slides from the 12 minute talk given at JMIH 2025 in ST. Paul, MN presenting preliminary results
+- Figure powerpoint that contains the set of plots we are more likely to use in the final publication, with explanations in the descriptions. All plots here can also be found in the "Plots" tab under Myography.
