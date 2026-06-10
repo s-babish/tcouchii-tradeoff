@@ -17,7 +17,7 @@
 getwd()
 
 #set folder for dataset we're working with
-foldername <- "WT_sirtalis"
+foldername <- "WT_elegans"
 
 # Get Snake Info - Species, Genotype etc.
 sinf = read.csv("./data_raw/Snake_data_sheets/SnakeInfo-09.30.2020.csv")

@@ -154,7 +154,7 @@ plot_all <- ggplot(c4p_1d_long, aes(x = time_seq, y = force, group = Snake)) +
 plot_all
 
 #read all in and code by genotype ----
-#genotypes <- c("WT_elegans","WT_sirtalis","WT_hammondii","WT_atratus","LVNV","EPN","P","T")
+genotypes <- c("WT_elegans","WT_sirtalis","WT_hammondii","WT_atratus","LVNV","EPN","P","T")
 genotypes <- c("LVNV","T","WT_sirtalis","WT_hammondii","EPN","WT_atratus")
 
 #make storage matrix
@@ -215,9 +215,9 @@ for (type in genotypes) {
 #write.csv(geno_means,"OutFiles/C4P/All_geno_avgs.csv",row.names=F)
 plot_genotypes <- ggplot(geno_means[-1,], aes(x = time, y = avg, group = genotype, 
                                               fill = genotype, color = genotype)) +
-  geom_line(lwd=1.5) #+ geom_ribbon(aes(ymin = avg - se, ymax = avg + se),alpha=0.25)
+  geom_line(lwd=1.25) #+ geom_ribbon(aes(ymin = avg - se, ymax = avg + se),alpha=0.25)
 plot_genotypes
-ggsave("Plots/transient_plots/geno_transient_comparisons.png",dpi=300)
+ggsave("Plots/transient_plots/WT_transient_comparisons.png",dpi=300)
 
 #looking at metrics in box plot form ----
 genotypes <- c("EPN","LVNV","T","WT_sirtalis","WT_atratus","WT_hammondii")
