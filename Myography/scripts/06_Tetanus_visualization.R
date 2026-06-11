@@ -159,12 +159,12 @@ for (type in genotypes) {
 #write.csv(geno_means,"OutFiles/Tetanus/subset_geno_avgs.csv",row.names=F) #just 3 from talk
 write.csv(geno_means, "OutFiles/Tetanus/All_geno_avgs_no_outliers.csv",row.names=F)
 
-plot_genotypes <- ggplot(geno_means[-1,] %>% filter(genotype %in% c("WT_sirtalis","LVNV","T","WT_hammondii")),
+plot_genotypes <- ggplot(geno_means[-1,],
                          aes(x = time, y = avg, group = genotype,
                                               fill = genotype, color = genotype)) +
-  geom_line(lwd=1.5) #+ geom_ribbon(aes(ymin = avg - se, ymax = avg + se),alpha=0.5)
+  geom_line(lwd=1.25) #+ geom_ribbon(aes(ymin = avg - se, ymax = avg + se),alpha=0.5)
 plot_genotypes
-ggsave("Plots/tetanic_plots/subset3_geno_tetanus_comparisons.png",dpi=300)
+ggsave("Plots/tetanic_plots/all_tetanus_comparisons.png",dpi=300)
 
 #looking at metrics in box plot form ----
 tet_all_long <- matrix(ncol = 4)
