@@ -2,6 +2,7 @@ library(tidyverse)
 library(ggplot2)
 library(viridis)
 library(ggforce)
+theme_set(theme_classic())
 
 #set according to dataset 
 foldername <- "WT_elegans"
@@ -502,14 +503,14 @@ rheo_df$genotype <- factor(rheo_df$genotype, levels = c("WT_sirtalis","T","LVNV"
 rheo_df$pulse_length <- as.factor(rheo_df$pulse_length)
 
 png(filename="OutFiles/Rheobase/plots/WT_rheoavg_dot.png",width=4500,height=2700,res=500)
-WT_rheo <- ggplot(subset(rheo_df, genotype %in% c("WT_sirtalis")), 
+WT_rheo <- ggplot(subset(rheo_df, genotype %in% c("WT_sirtalis","T")), 
                   aes(x=pulse_length, y=mean, colour=genotype)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), size = 1,position = position_dodge(width=0.6),
                 width = 0.5/3) +
   geom_line(linewidth = 1, linetype=2) +
   geom_point(size = 3,position = position_dodge(width=0.6)) +
   scale_color_manual(name = "Genotype", labels = c(expression(paste("WT ",italic("Th. sirtalis")))),
-                     values = c("#000000")) +
+                     values = c("#000000","green")) +
   scale_x_discrete(expand=c(0,1)) +
   scale_y_continuous(limits=c(0,150)) +
   #scale_x_continuous(breaks = c(50,100,200,500,1000)) +
@@ -684,3 +685,79 @@ LVNV_rheo <- ggplot(subset(rheo_df, genotype %in% c("LVNV")),
 
 LVNV_rheo
 dev.off()
+
+#using the curve fitted with the rheobase equation -----
+rheo <- read.csv("OutFiles/Rheobase/exp_decay_rheo_method.csv")
+
+params_rheo <- rheo %>% group_by(Genotype) %>% 
+  summarize(mean = mean(t),
+            se = sd(t)/sqrt(length(t)))
+
+x = seq(1,1000,1)
+means <- matrix(nrow=length(x),ncol = nrow(params_rheo))
+
+
+for (genotype in 1:nrow(params_rheo)) {
+  rheobase = params_rheo$mean[genotype]
+  rheo_se = params_rheo$se[genotype]
+  y = rheobase*(1+(2*rheobase/x))
+  
+  means[,genotype] = y
+}
+
+colnames(means) <- params_rheo$Genotype
+rownames(means) <- x
+
+means <- as.data.frame(t(means)) 
+ 
+means$Genotype = rownames(means)
+
+plot_means <- pivot_longer(data = means, cols = -Genotype,
+                 names_to = "pulse_width", values_to = "ec50") %>% 
+  mutate(
+    pulse_width = as.numeric(pulse_width)
+  )
+
+ggplot(plot_means %>% filter(Genotype != "P")) +
+  geom_line(aes(x = pulse_width,y=ec50,group=Genotype, color=Genotype),
+            lwd = 1) + xlim(0,200) + ylim(0,500)
+
+ggsave("Plots/rheobase_plots/strength_duration.png",dpi=300)
+#+  ylim(0,170)
+
+#now do it again with exponential decay function ----
+#this equation does not fit well
+# tau <- read.csv("OutFiles/Rheobase/exp_decay_method2.csv")
+# 
+# params_exp <- tau %>% group_by(Genotype) %>% 
+#   summarize(mean_t = mean(t),
+#             se_t = sd(t)/sqrt(length(t)),
+#             mean_x0 = mean(x0),
+#             se_x0 = sd(x0)/sqrt(length(x0)))
+# 
+# x = seq(1,10000,1)
+# means_exp <- matrix(nrow=length(x),ncol = nrow(params_exp))
+# 
+# for (genotype in 1:nrow(params_exp)) {
+#   x0 = params_exp$mean_x0[genotype]
+#   t = params_exp$mean_t[genotype]
+#   
+#   y = x0*exp(-x*t)
+#   means_exp[,genotype] = y
+# }
+# 
+# colnames(means_exp) <- params_exp$Genotype
+# rownames(means_exp) <- x
+# 
+# means_exp <- as.data.frame(t(means_exp)) 
+# 
+# means_exp$Genotype = rownames(means_exp)
+# 
+# plot_means <- pivot_longer(data = means_exp, cols = -Genotype,
+#                            names_to = "pulse_width", values_to = "ec50") %>% 
+#   mutate(
+#     pulse_width = as.numeric(pulse_width)
+#   )
+# 
+# ggplot(plot_means) +
+#   geom_line(aes(x = pulse_width,y=ec50,group=Genotype, color=Genotype)) + xlim(0,500) + ylim(0,200)

@@ -114,8 +114,8 @@ pearson_corr2
 #kierstin says they could both be being influenced by a secret third thing
 
 #exponential decay curves fit to x0 (most current analysis) ----
-all_fits <- matrix(ncol=3)
-colnames(all_fits) <- c("Ind","t","Genotype")
+all_fits <- matrix(ncol=4)
+colnames(all_fits) <- c("Ind","x0","t","Genotype")
 
 genotypes <- c("LVNV","WT_sirtalis","EPN","P","T","WT_elegans","WT_hammondii")
 
@@ -128,7 +128,7 @@ for (type in genotypes) {
     pivot_wider(names_from = pulse_length, values_from = x0) %>% 
     column_to_rownames('X') 
   df <- t(df)
-  df <- df[1:5,] #ditching the high pulses bc they mae fitting harder
+  df <- df[1:5,] #ditching the high pulses bc they make fitting harder
   
   expdecay <- function(pw,x0,tau) {
     x0*exp(-pw*tau)
@@ -144,14 +144,14 @@ for (type in genotypes) {
                       control = nls.lm.control(maxiter = 1024, maxfev = 1024), 
                       observed = df[!is.na(df[,x]),x], indices = !is.na(df[,x]))
     print(nls.out)
-    unlist(nls.out$par[2])
+    unlist(nls.out$par)
   }
   
   result <- Vectorize(fitDecay)(1:ncol(df))
   print(result)
   
-  output <- t(matrix(c(colnames(df),result,rep(foldername,ncol(df))),nrow=3,byrow=T))
-  colnames(output) <- c("Ind","t","Genotype")
+  output <- t(matrix(c(colnames(df),result,rep(foldername,ncol(df))),nrow=4,byrow=T))
+  colnames(output) <- c("Ind","x0","t","Genotype")
   all_fits <- rbind(all_fits,output)
 }
 
@@ -161,11 +161,14 @@ all_fits <- as.data.frame(all_fits)
 comparison <- kruskal.test(all_fits$t ~ all_fits$Genotype)
 print(comparison)
 
+comparison2 <- kruskal.test(all_fits$x0 ~ all_fits$Genotype)
+print(comparison2)
+
 # dunn <- c("exp_decay_t",dunn.test::dunn.test(all_fits$t, g = all_fits$Genotype, 
 #                                        kw = T, method = "bonferroni",
 #                                        table = T, list = F))
 
-dunn.test::dunn.test(as.numeric(all_fits$t), g = all_fits$Genotype, 
+dunn.test::dunn.test(as.numeric(all_fits$x0), g = all_fits$Genotype, 
           kw = T, method = "bonferroni",
           table = T, list = F)
 
