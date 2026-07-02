@@ -114,6 +114,9 @@ pearson_corr2
 #kierstin says they could both be being influenced by a secret third thing
 
 #exponential decay curves fit to x0 (most current analysis) ----
+#want to redo this with a different fit, honestly maybe just geom smooth at first, and see if i can even make it work
+#i suspect i'm doing something silly somewhere
+
 all_fits <- matrix(ncol=4)
 colnames(all_fits) <- c("Ind","x0","t","Genotype")
 
@@ -123,11 +126,12 @@ for (type in genotypes) {
   foldername = type
   df<-read.csv(toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv", sep="")))
   df <- df[-1,-1] %>% 
-    filter(MusMassg != 0.000999) %>% 
+    filter(MusMassg != 0.999) %>% 
     dplyr::select(X,x0,pulse_length) %>% 
     pivot_wider(names_from = pulse_length, values_from = x0) %>% 
     column_to_rownames('X') 
   df <- t(df)
+  rownames(df) <- as.numeric(rownames(df))/1000
   df <- df[1:5,] #ditching the high pulses bc they make fitting harder
   
   expdecay <- function(pw,x0,tau) {
@@ -164,71 +168,57 @@ print(comparison)
 comparison2 <- kruskal.test(all_fits$x0 ~ all_fits$Genotype)
 print(comparison2)
 
-# dunn <- c("exp_decay_t",dunn.test::dunn.test(all_fits$t, g = all_fits$Genotype, 
-#                                        kw = T, method = "bonferroni",
-#                                        table = T, list = F))
-
-dunn.test::dunn.test(as.numeric(all_fits$x0), g = all_fits$Genotype, 
-          kw = T, method = "bonferroni",
-          table = T, list = F)
-
 #now do it again with the curve typically used for rheobase data -----
-all_fits <- matrix(ncol=3)
-colnames(all_fits) <- c("Ind","rheobase","Genotype")
+all_fits <- matrix(ncol=4)
+colnames(all_fits) <- c("Ind","rheobase","chronaxie","Genotype")
 
-genotypes <- c("LVNV","WT_sirtalis","T","WT_hammondii","EPN","WT_atratus")
+genotypes <- c("LVNV","WT_sirtalis","T","WT_hammondii","EPN","WT_elegans")
 
 for (type in genotypes) {
   foldername = type
   df<-read.csv(toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv", sep="")))
   df <- df[-1,-1] %>% 
-    filter(MusMassg != 0.000999) %>% 
+    filter(MusMassg != 0.999) %>% 
     dplyr::select(X,x0,pulse_length) %>% 
     pivot_wider(names_from = pulse_length, values_from = x0) %>% 
     column_to_rownames('X') 
   df <- t(df)
   df <- df[1:5,] #ditching the high pulses bc they make fitting harder
   
-  expdecay <- function(pw,rheobase) {
-    rheobase*(1+(2*rheobase/pw)) #chronaxie is just 2*rheobase
+  expdecay <- function(pw,rheobase,chronaxie) {
+    rheobase*(1+(chronaxie/pw)) 
   }
   expdecay <- Vectorize(expdecay)
   
   expresidFun <- function(parS,observed,indices){
-    expdecay(as.numeric(rownames(df))[indices],parS$rheobase) - observed
+    expdecay(as.numeric(rownames(df))[indices],parS$rheobase,parS$chronaxie) - observed
   }
   
   #parStart <- list(x0 = exp(coef(fm0)[[1]]), tau = -coef(fm0)[[2]])
   
   fitDecay <- function(x){
-    nls.out <- nls.lm(par = list(rheobase = min(df[,x],na.rm=T)), fn = expresidFun, 
+    nls.out <- nls.lm(par = list(rheobase = min(df[,x],na.rm=T),chronaxie = 50), 
+                      fn = expresidFun, lower = c(0,0),
                       control = nls.lm.control(maxiter = 1024, maxfev = 1024), 
                       observed = df[!is.na(df[,x]),x], indices = !is.na(df[,x]))
     print(nls.out)
-    unlist(nls.out$par[1])
+    unlist(nls.out$par)
   }
   
   result <- Vectorize(fitDecay)(1:ncol(df))
   print(result)
   
-  output <- t(matrix(c(colnames(df),result,rep(foldername,ncol(df))),nrow=3,byrow=T))
-  colnames(output) <- c("Ind","rheobase","Genotype")
+  output <- t(matrix(c(colnames(df),result,rep(foldername,ncol(df))),nrow=4,byrow=T))
+  colnames(output) <- c("Ind","rheobase","chronaxie","Genotype")
   all_fits <- rbind(all_fits,output)
 }
 
 all_fits <- as.data.frame(all_fits[-1,])
 
-#write.csv(all_fits,"OutFiles/Rheobase/exp_decay_rheo_method.csv",row.names=F)
+#write.csv(all_fits,"OutFiles/Rheobase/exp_decay_rheo_method_2.csv",row.names=F)
 
 
 all_fits <- as.data.frame(all_fits)
 comparison <- kruskal.test(all_fits$rheobase ~ all_fits$Genotype)
 print(comparison)
 
-# dunn <- c("exp_decay_t",dunn.test::dunn.test(all_fits$t, g = all_fits$Genotype, 
-#                                        kw = T, method = "bonferroni",
-#                                        table = T, list = F))
-
-dunn.test::dunn.test(as.numeric(all_fits$rheobase), g = all_fits$Genotype, 
-                     kw = T, method = "bonferroni",
-                     table = T, list = F)

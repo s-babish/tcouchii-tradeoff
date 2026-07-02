@@ -8,7 +8,7 @@ theme_set(theme_classic())
 foldername <- "WT_elegans"
 #Scaled force vs time (separated by pulse length) -----
 #vector with all pulse length options for iterating (excluding files with no or few snakes)
-pulse_l <- c(50,100,200,500,1000,10000,50000)
+pulse_l <- c(50,100,200,500,1000) #removed longer pulses bc they don't seem trustworthy
 
 keydf <- read.csv(toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv", sep="")))
 keydf <- keydf[,c(10,14)]
@@ -82,71 +82,34 @@ keydf <- keydf[,c(10,14)]
 #   print(plot)
 #   
 # }
-# 
-# 
-# #force/mA vs pulse width*mA ----
-# #note that I don't think this is really a proper plot bc these are the scaled
-# # force values, but I do not want to have to deal with modifying the python script 
-# # just for these plots at this point, so this is what we have for now
-# 
-# for (j in 1:length(pulse_l)) {
-#   infile <- toString(paste("OutFiles/Rheobase/",foldername,"/Force_scaled/Rheo_",pulse_l[j],".csv", sep=""))
-#   df <- read.csv(infile)
-#   df <- df[,c(-1)] #remove index line
-#   #multiple force in each column by mA
-#   force_df <- mapply('/',df[3:ncol(df)],df[2])
-#   force_df[1,] <- 0
-#   force_df_long <- as.data.frame(force_df) %>% 
-#     mutate(
-#       mA_s = df$Dose * pulse_l[j]
-#     ) %>% 
-#     pivot_longer(
-#       cols = -mA_s,
-#       names_to = "Snake",
-#       values_to = "g_mA"
-#     ) %>% 
-#     mutate(
-#       Snake = sub("_.*", "", Snake),
-#       MAMU = 0
-#     ) %>% 
-#     rows_update(distinct(keydf), by = "Snake", unmatched = "ignore") #pull in MAMU
-#   
-#   plot <- ggplot(force_df_long, aes(x = mA_s, y = g_mA, group = Snake, color = MAMU)) +
-#     #geom_point() +
-#     geom_line(aes(group = Snake)) +
-#     scale_color_viridis(option = "viridis") +
-#     scale_x_continuous(labels = dose_labels, breaks = 0:15) +
-#     ggtitle(toString(paste("Rheobase, pulse length ", pulse_l[i], "us"))) +
-#     xlab("Total current (mA*s)") + 
-#     ylab("Proportion of maximal force per mA")
-#   print(plot)
-#   
-# }
-# #I suspect these plots will make more sense if/when I do it with the not-scaled
-# # force data, I think the sub-0 values are messing with it
 
 
 #pulse width vs x0/EC50 ------
-#renaming to make more sense for what we're doing here
-rheobase_sigmoidal_plot <- read.csv(toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv",sep="")))
-#remove rows we don't want
-rheobase_sigmoidal_plot <- rheobase_sigmoidal_plot[-1,-1]
-
-#general view
-rheobase_sigmoidal_plot$pulse_length <- as.factor(rheobase_sigmoidal_plot$pulse_length)
-
-ec50 <- rheobase_sigmoidal_plot %>% ggplot( aes(x=pulse_length, y=x0, fill=pulse_length)) +
-  geom_boxplot() +
-  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
-  geom_jitter(color="black", size=0.4, alpha=0.9) +
-  theme(
-    legend.position="none",
-    plot.title = element_text(size=11)
-  ) +
-  ggtitle(paste(foldername,"Rheobase EC50 vs pulse width",sep=" ")) +
-  xlab("Pulse width (us)")
-
-ggsave(paste("OutFiles/Rheobase/",foldername,"/plots/",foldername,"_EC50.png",sep=""),dpi=300)
+for (foldername in c("LVNV","WT_sirtalis","EPN","P","T","WT_elegans","WT_hammondii")) {
+  #renaming to make more sense for what we're doing here
+  rheobase_sigmoidal_plot <- read.csv(toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv",sep="")))
+  #remove rows we don't want
+  rheobase_sigmoidal_plot <- rheobase_sigmoidal_plot[-1,-1] %>% filter(
+    pulse_length %in% c(50,100,200,500,1000),
+    MusMassg != 0.999
+  ) %>% distinct()
+  
+  #general view
+  rheobase_sigmoidal_plot$pulse_length <- as.factor(rheobase_sigmoidal_plot$pulse_length)
+  
+  ec50 <- rheobase_sigmoidal_plot %>% ggplot(aes(x=pulse_length, y=x0, fill=pulse_length)) +
+    geom_boxplot() +
+    scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    geom_jitter(color="black", size=0.4, alpha=0.9) +
+    theme(
+      legend.position="none",
+      plot.title = element_text(size=11)
+    ) +
+    ggtitle(paste(foldername,"Rheobase EC50 vs pulse width",sep=" ")) +
+    xlab("Pulse width (us)")
+  
+  ggsave(paste("Plots/rheobase_plots/",foldername,"_EC50.png",sep=""),dpi=300)
+}
 
 #ANOVA and Tukey's confirm the pulses have statistically equivalent x0 values
 
@@ -566,7 +529,7 @@ dev.off()
 
 png(filename="OutFiles/Rheobase/plots/WT_T_LVNV_rheoavg_dot.png",width=4500,height=2700,res=500)
 WT_T_LVNV_rheo <- ggplot(subset(rheo_df, genotype %in% c("WT_sirtalis","T","LVNV")), 
-                    aes(x=pulse_length, y=mean, colour=genotype)) +
+                         aes(x=pulse_length, y=mean, colour=genotype)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), size = 1, position = position_dodge(width=0.6),
                 width = 0.5) +
   geom_line(linewidth = 1,linetype=2,aes(group = genotype)) +
@@ -577,7 +540,7 @@ WT_T_LVNV_rheo <- ggplot(subset(rheo_df, genotype %in% c("WT_sirtalis","T","LVNV
                      values = c("#000000","#1C8642","#CC1E1D")) +
   scale_x_discrete(expand=c(0,1)) +
   scale_y_continuous(limits=c(0,150)) +
- # scale_x_continuous(breaks = c(50,100,200,500,1000)) +
+  # scale_x_continuous(breaks = c(50,100,200,500,1000)) +
   labs(y = "Current that Produces \n 50% Muscle Activation (mA)", 
        x = expression(paste("Pulse Width (",mu,"s)",sep="")),
        title = "Rheobase EC50 vs Pulse Width") +
@@ -628,7 +591,7 @@ dev.off()
 
 png(filename="OutFiles/Rheobase/plots/T_rheoavg_line.png",width=4500,height=2700,res=500)
 T_rheo <- ggplot(subset(rheo_df, genotype %in% c("T")), 
-                  aes(x=pulse_length, y=mean, colour=genotype)) +
+                 aes(x=pulse_length, y=mean, colour=genotype)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), size = 1,position = position_dodge(width=0.6),
                 width = 0.5/3) +
   geom_line(linewidth = 1, linetype=1,aes(group = genotype)) +
@@ -658,7 +621,7 @@ dev.off()
 
 png(filename="OutFiles/Rheobase/plots/LVNV_rheoavg_line.png",width=4500,height=2700,res=500)
 LVNV_rheo <- ggplot(subset(rheo_df, genotype %in% c("LVNV")), 
-                  aes(x=pulse_length, y=mean, colour=genotype)) +
+                    aes(x=pulse_length, y=mean, colour=genotype)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), size = 1,position = position_dodge(width=0.6),
                 width = 0.5/3) +
   geom_line(linewidth = 1, linetype=1,aes(group = genotype)) +
@@ -687,20 +650,24 @@ LVNV_rheo
 dev.off()
 
 #using the curve fitted with the rheobase equation -----
-rheo <- read.csv("OutFiles/Rheobase/exp_decay_rheo_method.csv")
+rheo <- read.csv("OutFiles/Rheobase/exp_decay_rheo_method_2.csv")
 
 params_rheo <- rheo %>% group_by(Genotype) %>% 
-  summarize(mean = mean(t),
-            se = sd(t)/sqrt(length(t)))
+  summarize(mean_rheo = mean(rheobase),
+            se_rheo = sd(rheobase)/sqrt(length(rheobase)),
+            mean_chron = mean(chronaxie),
+            se_chron = sd(chronaxie)/sqrt(length(chronaxie)))
 
 x = seq(1,1000,1)
 means <- matrix(nrow=length(x),ncol = nrow(params_rheo))
 
 
 for (genotype in 1:nrow(params_rheo)) {
-  rheobase = params_rheo$mean[genotype]
-  rheo_se = params_rheo$se[genotype]
-  y = rheobase*(1+(2*rheobase/x))
+  rheobase = params_rheo$mean_rheo[genotype]
+  rheo_se = params_rheo$se_rheo[genotype]
+  chronaxie = params_rheo$mean_chron[genotype]
+  chron_se = params_rheo$se_chron[genotype]
+  y =  rheobase*(1+(chronaxie/x)) 
   
   means[,genotype] = y
 }
@@ -709,11 +676,11 @@ colnames(means) <- params_rheo$Genotype
 rownames(means) <- x
 
 means <- as.data.frame(t(means)) 
- 
+
 means$Genotype = rownames(means)
 
 plot_means <- pivot_longer(data = means, cols = -Genotype,
-                 names_to = "pulse_width", values_to = "ec50") %>% 
+                           names_to = "pulse_width", values_to = "ec50") %>% 
   mutate(
     pulse_width = as.numeric(pulse_width)
   )
@@ -727,37 +694,37 @@ ggsave("Plots/rheobase_plots/strength_duration.png",dpi=300)
 
 #now do it again with exponential decay function ----
 #this equation does not fit well
-# tau <- read.csv("OutFiles/Rheobase/exp_decay_method2.csv")
-# 
-# params_exp <- tau %>% group_by(Genotype) %>% 
-#   summarize(mean_t = mean(t),
-#             se_t = sd(t)/sqrt(length(t)),
-#             mean_x0 = mean(x0),
-#             se_x0 = sd(x0)/sqrt(length(x0)))
-# 
-# x = seq(1,10000,1)
-# means_exp <- matrix(nrow=length(x),ncol = nrow(params_exp))
-# 
-# for (genotype in 1:nrow(params_exp)) {
-#   x0 = params_exp$mean_x0[genotype]
-#   t = params_exp$mean_t[genotype]
-#   
-#   y = x0*exp(-x*t)
-#   means_exp[,genotype] = y
-# }
-# 
-# colnames(means_exp) <- params_exp$Genotype
-# rownames(means_exp) <- x
-# 
-# means_exp <- as.data.frame(t(means_exp)) 
-# 
-# means_exp$Genotype = rownames(means_exp)
-# 
-# plot_means <- pivot_longer(data = means_exp, cols = -Genotype,
-#                            names_to = "pulse_width", values_to = "ec50") %>% 
-#   mutate(
-#     pulse_width = as.numeric(pulse_width)
-#   )
-# 
-# ggplot(plot_means) +
-#   geom_line(aes(x = pulse_width,y=ec50,group=Genotype, color=Genotype)) + xlim(0,500) + ylim(0,200)
+tau <- read.csv("OutFiles/Rheobase/exp_decay_method2.csv")
+
+params_exp <- tau %>% group_by(Genotype) %>%
+  summarize(mean_t = mean(t),
+            se_t = sd(t)/sqrt(length(t)),
+            mean_x0 = mean(x0),
+            se_x0 = sd(x0)/sqrt(length(x0)))
+
+x = seq(1,1.2,0.001)
+means_exp <- matrix(nrow=length(x),ncol = nrow(params_exp))
+
+for (genotype in 1:nrow(params_exp)) {
+  x0 = params_exp$mean_x0[genotype]
+  t = params_exp$mean_t[genotype]
+
+  y = x0*exp(-x*t)
+  means_exp[,genotype] = y
+}
+
+colnames(means_exp) <- params_exp$Genotype
+rownames(means_exp) <- x
+
+means_exp <- as.data.frame(t(means_exp))
+
+means_exp$Genotype = rownames(means_exp)
+
+plot_means <- pivot_longer(data = means_exp, cols = -Genotype,
+                           names_to = "pulse_width", values_to = "ec50") %>%
+  mutate(
+    pulse_width = as.numeric(pulse_width)
+  )
+
+ggplot(plot_means) +
+  geom_line(aes(x = pulse_width,y=ec50,group=Genotype, color=Genotype)) + xlim(0,500) + ylim(0,200)
