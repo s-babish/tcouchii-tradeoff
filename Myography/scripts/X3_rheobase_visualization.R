@@ -7,81 +7,84 @@ theme_set(theme_classic())
 #set according to dataset 
 foldername <- "WT_elegans"
 #Scaled force vs time (separated by pulse length) -----
+#currently using this to see if they really should be as flat as they appeared
+
 #vector with all pulse length options for iterating (excluding files with no or few snakes)
 pulse_l <- c(50,100,200,500,1000) #removed longer pulses bc they don't seem trustworthy
 
 keydf <- read.csv(toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv", sep="")))
 keydf <- keydf[,c(10,14)]
 
-# for (i in 1:length(pulse_l)) {
-#   infile <- toString(paste("OutFiles/Rheobase/",foldername,"/Force_scaled/Rheo_",pulse_l[i],".csv", sep=""))
-#   df <- read.csv(infile)
-#   df <- df[-17,c(-1)] #remove index line
-#   dose_labels = df$Dose
-#   df_long <- df %>%
-#     mutate (
-#       Dose = 0:15 #this is to make the plot look better bc ggplot is fighting me
-#     ) %>% 
-#     pivot_longer(
-#       cols = -Dose,
-#       names_to = "Snake",
-#       values_to = "scaled_force"
-#     ) %>% 
-#     mutate(
-#       Snake = sub("_.*", "", Snake),
-#       MAMU = 0
-#     ) %>% 
-#     rows_update(distinct(keydf), by = "Snake", unmatched = "ignore") #pull in MAMU
-#   
-#   plot <- ggplot(df_long, aes(x = Dose, y = scaled_force, group = Snake, color = MAMU)) +
-#     #geom_smooth(se = F) + 
-#     geom_point() +
-#     geom_line(aes(group = Snake)) +
-#     scale_color_viridis(option = "viridis") +
-#     scale_x_continuous(labels = dose_labels, breaks = 0:15) +
-#     ggtitle(toString(paste("Rheobase, pulse length ", pulse_l[i], "us"))) +
-#     xlab("Current (mA)") + 
-#     ylab("Proportion of maximal force")
-#   print(plot)
-#   
-# }
-# 
+for (i in 1:length(pulse_l)) {
+  infile <- toString(paste("OutFiles/Rheobase/",foldername,"/Force_scaled/Rheo_",pulse_l[i],".csv", sep=""))
+  df <- read.csv(infile)
+  df <- df[-17,c(-1)] #remove index line
+  dose_labels = df$Dose
+  df_long <- df %>%
+    mutate (
+      Dose = 0:15 #this is to make the plot look better bc ggplot is fighting me
+    ) %>%
+    pivot_longer(
+      cols = -Dose,
+      names_to = "Snake",
+      values_to = "scaled_force"
+    ) %>%
+    mutate(
+      Snake = sub("_.*", "", Snake),
+      MAMU = 0
+    ) %>%
+    rows_update(distinct(keydf), by = "Snake", unmatched = "ignore") #pull in MAMU
+
+  plot <- ggplot(df_long, aes(x = Dose, y = scaled_force, group = Snake, color = MAMU)) +
+    #geom_smooth(se = F) +
+    geom_point() +
+    geom_line(aes(group = Snake)) +
+    scale_color_viridis(option = "viridis") +
+    scale_x_continuous(labels = dose_labels, breaks = 0:15) +
+    ggtitle(toString(paste("Rheobase, pulse length ", pulse_l[i], "us"))) +
+    xlab("Current (mA)") +
+    ylab("Proportion of maximal force")
+  print(plot)
+
+}
+
 # #actually fit the curve to the data ----
-# for (i in 1:length(pulse_l)) {
-#   infile <- toString(paste("OutFiles/Rheobase/",foldername,"/Force_scaled/Rheo_",pulse_l[i],".csv", sep=""))
-#   df <- read.csv(infile)
-#   df <- df[,c(-1)] #remove index line
-#   dose_labels = df$Dose
-#   df_long <- df %>%
-#     pivot_longer(
-#       cols = -Dose,
-#       names_to = "Snake",
-#       values_to = "scaled_force"
-#     ) %>% 
-#     mutate(
-#       Snake = sub("_.*", "", Snake),
-#       MAMU = 0
-#     ) %>% 
-#     rows_update(distinct(keydf), by = "Snake", unmatched = "ignore") #pull in MAMU
-#   
-#   plot <- ggplot(df_long, aes(x = Dose, y = scaled_force, group = Snake, color = MAMU)) + 
-#     geom_point() + 
-#     geom_smooth(method = "nls", 
-#                 method.args = list(formula = y ~ (-1)/(1 + exp((log(x)-log(x0))/dx)) + 1,
-#                                    start = list(x0 = 60 , dx = 1)
-#                                     # ,
-#                                     # control = nls.lm.control(maxiter = 1024, maxfev = 1024),
-#                                     # lower = c(0,-Inf), upper = c(600,Inf), algorithm = "port"
-#                                    ), 
-#                 data = df_long,
-#                 se = FALSE) +
-#     scale_color_viridis(option = "viridis") +
-#     ggtitle(toString(paste("Rheobase, pulse length ", pulse_l[i], "us"))) +
-#     xlab("Current (mA)") + 
-#     ylab("Proportion of maximal force")
-#   print(plot)
-#   
-# }
+for (i in 1:length(pulse_l)) {
+  infile <- toString(paste("OutFiles/Rheobase/",foldername,"/Force_scaled/Rheo_",pulse_l[i],".csv", sep=""))
+  df <- read.csv(infile)
+  df <- df[,c(-1)] #remove index line
+  dose_labels = df$Dose
+  df_long <- df %>%
+    pivot_longer(
+      cols = -Dose,
+      names_to = "Snake",
+      values_to = "scaled_force"
+    ) 
+  # %>%
+  #   mutate(
+  #     Snake = sub("_.*", "", Snake),
+  #     MAMU = 0
+  #   ) %>%
+  #   rows_update(distinct(keydf), by = "Snake", unmatched = "ignore") #pull in MAMU
+
+  plot <- ggplot(df_long, aes(x = Dose, y = scaled_force, group = Snake)) +
+    geom_point() +
+    geom_smooth(method = "nls",
+                method.args = list(formula = y ~ (-1)/(1 + exp((log(x)-log(x0))/dx)) + 1,
+                                   start = list(x0 = 60 , dx = 1)
+                                    # ,lower = list(0.0000001,-Inf), upper = list(600,Inf)
+                                    # ,control = nls.lm.control(maxiter = 1024, maxfev = 1024),
+                                    #   algorithm = "port"
+                                   ),
+                data = df_long,
+                se = FALSE) +
+    #scale_color_viridis(option = "viridis") +
+    ggtitle(toString(paste("Rheobase, pulse length ", pulse_l[i], "us"))) +
+    xlab("Current (mA)") +
+    ylab("Proportion of maximal force")
+  print(plot)
+
+}
 
 
 #pulse width vs x0/EC50 ------
@@ -650,7 +653,7 @@ LVNV_rheo
 dev.off()
 
 #using the curve fitted with the rheobase equation -----
-rheo <- read.csv("OutFiles/Rheobase/exp_decay_rheo_method_2.csv")
+rheo <- read.csv("OutFiles/Rheobase/rheobase_curve_method.csv")
 
 params_rheo <- rheo %>% group_by(Genotype) %>% 
   summarize(mean_rheo = mean(rheobase),
@@ -692,39 +695,16 @@ ggplot(plot_means %>% filter(Genotype != "P")) +
 ggsave("Plots/rheobase_plots/strength_duration.png",dpi=300)
 #+  ylim(0,170)
 
-#now do it again with exponential decay function ----
-#this equation does not fit well
-tau <- read.csv("OutFiles/Rheobase/exp_decay_method2.csv")
-
-params_exp <- tau %>% group_by(Genotype) %>%
-  summarize(mean_t = mean(t),
-            se_t = sd(t)/sqrt(length(t)),
-            mean_x0 = mean(x0),
-            se_x0 = sd(x0)/sqrt(length(x0)))
-
-x = seq(1,1.2,0.001)
-means_exp <- matrix(nrow=length(x),ncol = nrow(params_exp))
-
-for (genotype in 1:nrow(params_exp)) {
-  x0 = params_exp$mean_x0[genotype]
-  t = params_exp$mean_t[genotype]
-
-  y = x0*exp(-x*t)
-  means_exp[,genotype] = y
-}
-
-colnames(means_exp) <- params_exp$Genotype
-rownames(means_exp) <- x
-
-means_exp <- as.data.frame(t(means_exp))
-
-means_exp$Genotype = rownames(means_exp)
-
-plot_means <- pivot_longer(data = means_exp, cols = -Genotype,
-                           names_to = "pulse_width", values_to = "ec50") %>%
-  mutate(
-    pulse_width = as.numeric(pulse_width)
-  )
-
-ggplot(plot_means) +
-  geom_line(aes(x = pulse_width,y=ec50,group=Genotype, color=Genotype)) + xlim(0,500) + ylim(0,200)
+#testing ----
+plot2 <- ggplot(test, aes(x = x, y = y)) +
+  geom_point() +
+  geom_smooth(method = "nls",
+              method.args = list(formula =  y ~ rheobase*(1+(chronaxie/x)),
+                                 start = list(rheobase = 50, chronaxie = 50)
+                                 # ,
+                                 # control = nls.lm.control(maxiter = 1024, maxfev = 1024),
+                                 # lower = c(0,-Inf), upper = c(600,Inf), algorithm = "port"
+              ),
+              data = as.data.frame(test),
+              se = FALSE)
+plot2

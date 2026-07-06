@@ -113,60 +113,60 @@ pearson_corr2
 # lower x0 = more excitability (which is opposite what bobby suggested could happen)
 #kierstin says they could both be being influenced by a secret third thing
 
-#exponential decay curves fit to x0 (most current analysis) ----
-#want to redo this with a different fit, honestly maybe just geom smooth at first, and see if i can even make it work
-#i suspect i'm doing something silly somewhere
+#exponential decay curves fit to x0 ----
+#test plots show that the rheobase curve fits better so I'm using it, not this
 
-all_fits <- matrix(ncol=4)
-colnames(all_fits) <- c("Ind","x0","t","Genotype")
-
-genotypes <- c("LVNV","WT_sirtalis","EPN","P","T","WT_elegans","WT_hammondii")
-
-for (type in genotypes) {
-  foldername = type
-  df<-read.csv(toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv", sep="")))
-  df <- df[-1,-1] %>% 
-    filter(MusMassg != 0.999) %>% 
-    dplyr::select(X,x0,pulse_length) %>% 
-    pivot_wider(names_from = pulse_length, values_from = x0) %>% 
-    column_to_rownames('X') 
-  df <- t(df)
-  rownames(df) <- as.numeric(rownames(df))/1000
-  df <- df[1:5,] #ditching the high pulses bc they make fitting harder
-  
-  expdecay <- function(pw,x0,tau) {
-    x0*exp(-pw*tau)
-  }
-  expdecay <- Vectorize(expdecay)
-  
-  expresidFun <- function(parS,observed,indices){
-    expdecay(as.numeric(rownames(df))[indices],parS$x0,parS$tau) - observed
-  }
-  
-  fitDecay <- function(x){
-    nls.out <- nls.lm(par = list(x0 = df[1,x],tau = 0.1), fn = expresidFun, 
-                      control = nls.lm.control(maxiter = 1024, maxfev = 1024), 
-                      observed = df[!is.na(df[,x]),x], indices = !is.na(df[,x]))
-    print(nls.out)
-    unlist(nls.out$par)
-  }
-  
-  result <- Vectorize(fitDecay)(1:ncol(df))
-  print(result)
-  
-  output <- t(matrix(c(colnames(df),result,rep(foldername,ncol(df))),nrow=4,byrow=T))
-  colnames(output) <- c("Ind","x0","t","Genotype")
-  all_fits <- rbind(all_fits,output)
-}
-
-all_fits <- as.data.frame(all_fits[-1,]) #not sure why it was formatted weirdly
-#write.csv(all_fits,"OutFiles/Rheobase/exp_decay_method2.csv",row.names=F)
-all_fits <- as.data.frame(all_fits)
-comparison <- kruskal.test(all_fits$t ~ all_fits$Genotype)
-print(comparison)
-
-comparison2 <- kruskal.test(all_fits$x0 ~ all_fits$Genotype)
-print(comparison2)
+# 
+# all_fits <- matrix(ncol=4)
+# colnames(all_fits) <- c("Ind","x0","t","Genotype")
+# 
+# genotypes <- c("LVNV","WT_sirtalis","EPN","P","T","WT_elegans","WT_hammondii")
+# 
+# for (type in genotypes) {
+#   foldername = type
+#   df<-read.csv(toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv", sep="")))
+#   df <- df[-1,-1] %>% 
+#     filter(MusMassg != 0.999) %>% 
+#     dplyr::select(X,x0,pulse_length) %>% 
+#     pivot_wider(names_from = pulse_length, values_from = x0) %>% 
+#     column_to_rownames('X') 
+#   df <- t(df)
+#   rownames(df) <- as.numeric(rownames(df))/1000
+#   df <- df[1:5,] #ditching the high pulses bc they make fitting harder
+#   
+#   expdecay <- function(pw,x0,tau) {
+#     x0*exp(-pw*tau)
+#   }
+#   expdecay <- Vectorize(expdecay)
+#   
+#   expresidFun <- function(parS,observed,indices){
+#     expdecay(as.numeric(rownames(df))[indices],parS$x0,parS$tau) - observed
+#   }
+#   
+#   fitDecay <- function(x){
+#     nls.out <- nls.lm(par = list(x0 = df[1,x],tau = 0.1), fn = expresidFun, 
+#                       control = nls.lm.control(maxiter = 1024, maxfev = 1024), 
+#                       observed = df[!is.na(df[,x]),x], indices = !is.na(df[,x]))
+#     print(nls.out)
+#     unlist(nls.out$par)
+#   }
+#   
+#   result <- Vectorize(fitDecay)(1:ncol(df))
+#   print(result)
+#   
+#   output <- t(matrix(c(colnames(df),result,rep(foldername,ncol(df))),nrow=4,byrow=T))
+#   colnames(output) <- c("Ind","x0","t","Genotype")
+#   all_fits <- rbind(all_fits,output)
+# }
+# 
+# all_fits <- as.data.frame(all_fits[-1,]) #not sure why it was formatted weirdly
+# #write.csv(all_fits,"OutFiles/Rheobase/exp_decay_method2.csv",row.names=F)
+# all_fits <- as.data.frame(all_fits)
+# comparison <- kruskal.test(all_fits$t ~ all_fits$Genotype)
+# print(comparison)
+# 
+# comparison2 <- kruskal.test(all_fits$x0 ~ all_fits$Genotype)
+# print(comparison2)
 
 #now do it again with the curve typically used for rheobase data -----
 all_fits <- matrix(ncol=4)
@@ -182,6 +182,7 @@ for (type in genotypes) {
     dplyr::select(X,x0,pulse_length) %>% 
     pivot_wider(names_from = pulse_length, values_from = x0) %>% 
     column_to_rownames('X') 
+
   df <- t(df)
   df <- df[1:5,] #ditching the high pulses bc they make fitting harder
   
@@ -194,11 +195,9 @@ for (type in genotypes) {
     expdecay(as.numeric(rownames(df))[indices],parS$rheobase,parS$chronaxie) - observed
   }
   
-  #parStart <- list(x0 = exp(coef(fm0)[[1]]), tau = -coef(fm0)[[2]])
-  
   fitDecay <- function(x){
-    nls.out <- nls.lm(par = list(rheobase = min(df[,x],na.rm=T),chronaxie = 50), 
-                      fn = expresidFun, lower = c(0,0),
+    nls.out <- nls.lm(par = list(rheobase = min(df[,x],na.rm=T),chronaxie = 0.2), 
+                      fn = expresidFun, lower = c(0,0), upper = c(600,500),
                       control = nls.lm.control(maxiter = 1024, maxfev = 1024), 
                       observed = df[!is.na(df[,x]),x], indices = !is.na(df[,x]))
     print(nls.out)
@@ -208,17 +207,49 @@ for (type in genotypes) {
   result <- Vectorize(fitDecay)(1:ncol(df))
   print(result)
   
+  #used to plot the raw data
+  df_long <- as.data.frame(df) %>% mutate(
+    pulse_length=as.numeric(rownames(df))
+  ) %>%  pivot_longer(
+    cols= -pulse_length,
+    names_to = "Ind",
+    values_to = "current"
+  )
+  
+  #so that I can put the fitted lines on top of the raw data
+  sim_output <- data.frame(pw = seq(50,1000,by=10))
+  for (ind in 1:ncol(result)) {
+    sim_output[,ind+1] <- result[1,ind]*(1+(result[2,ind]/sim_output[,1]))
+  }
+  colnames(sim_output) <- c("pulse_length", colnames(df))
+  
+  sim_output <- sim_output %>% pivot_longer(
+    cols= -pulse_length,
+    names_to = "Ind",
+    values_to = "current"
+  )
+  
+  #this is all built in to visually assess the goodness of fit of the curves
+  geno_plot <- ggplot(df_long, aes(x = pulse_length, y = current, group = Ind)) +
+    geom_line(data = sim_output, aes(x=pulse_length, y=current, group = Ind, color=Ind)) +  
+    geom_point(aes(color = Ind, x=pulse_length,y=current), data=df_long) +
+    scale_fill_viridis(discrete=T) +
+    scale_y_continuous(limits = c(0,600)) # +facet_wrap(~Ind)
+
+  geno_plot
+  
+  ggsave(toString(paste("Plots/rheobase_plots/",foldername,"_fit_check.png")),dpi=300)
+  
   output <- t(matrix(c(colnames(df),result,rep(foldername,ncol(df))),nrow=4,byrow=T))
   colnames(output) <- c("Ind","rheobase","chronaxie","Genotype")
+  
   all_fits <- rbind(all_fits,output)
 }
 
 all_fits <- as.data.frame(all_fits[-1,])
 
-#write.csv(all_fits,"OutFiles/Rheobase/exp_decay_rheo_method_2.csv",row.names=F)
-
+#write.csv(all_fits,"OutFiles/Rheobase/rheobase_curve_subset_method.csv",row.names=F)
 
 all_fits <- as.data.frame(all_fits)
 comparison <- kruskal.test(all_fits$rheobase ~ all_fits$Genotype)
 print(comparison)
-
