@@ -156,7 +156,7 @@ for (type in genotypes) {
 
 }
 
-#write.csv(geno_means,"OutFiles/Tetanus/subset_geno_avgs.csv",row.names=F) #just 3 from talk
+ #write.csv(geno_means,"OutFiles/Tetanus/subset_geno_avgs.csv",row.names=F) #just 3 from talk
 write.csv(geno_means, "OutFiles/Tetanus/All_geno_avgs_no_outliers.csv",row.names=F)
 
 plot_genotypes <- ggplot(geno_means[-1,],
@@ -194,12 +194,15 @@ for (type in genotypes) {
   tet_all_long <- rbind(tet_all_long,tet_long)
 }
 tet_all_long <- tet_all_long[-1,]
-tet_all_long$Genotype <- as.factor(tet_all_long$Genotype)
+tet_all_long$Genotype <- factor(
+  tet_all_long$Genotype,
+  levels = c("WT_sirtalis", "LVNV", "T", "WT_hammondii")
+)
 
 for (page in 1:3) {
   tet_boxes <- ggplot(tet_all_long, aes(Genotype, value, fill = Genotype)) +
     geom_boxplot(outlier.shape = NA, na.rm = T) +
-    facet_wrap_paginate (. ~ variable, scales = 'free', shrink = T, nrow=2, ncol = 2,
+    facet_wrap_paginate (. ~ variable, scales = 'free', shrink = T, nrow=4, ncol = 3,
                          page = page) +
     xlab('') +
     ylab('') +
@@ -207,10 +210,146 @@ for (page in 1:3) {
     geom_pwc(method = "dunn_test", p.adjust.method = "bonferroni",
              symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf),
                                 symbols = c("****", "***", "**", "*", "ns")),
-             hide.ns = T, label = "p.adj.signif")
+             hide.ns = T, label = "p.adj.signif") +
+    scale_fill_manual(
+      values = c("#000000", "#CC1E1D", "#1C8642", "#41BDEB"),
+      name = "Genotype",
+      labels = c(expression(paste("WT ", italic("Th. sirtalis"))),
+                 expression(paste("LVNV ", italic("Th. sirtalis"))),
+                 expression(italic("Th. couchii")),
+                 expression(paste("WT ", italic("Th. hammondii")))))
   print(tet_boxes)
-  ggsave(paste("Plots/tetanic_plots/subset3_geno_metrics_",page,".png"),dpi=300)
+  ggsave(paste("Plots/tetanic_plots/4main_geno_metrics_",page,".png"),dpi=300)
 }
+
+#alt version with one plot with all boxes ----
+tet_boxes <- ggplot(tet_all_long, aes(Genotype, value, fill = Genotype)) +
+  geom_boxplot(outlier.shape = NA, na.rm = T) +
+  facet_wrap (. ~ variable, scales = 'free', shrink = T, nrow=4, ncol = 3) +
+  xlab('') +
+  ylab('') +
+  theme(axis.text.x = element_blank()) +
+  geom_pwc(method = "dunn_test", p.adjust.method = "bonferroni",
+           symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf),
+                              symbols = c("****", "***", "**", "*", "ns")),
+           hide.ns = T, label = "p.adj.signif") +
+  scale_fill_manual(
+    values = c("#000000", "#CC1E1D", "#1C8642", "#41BDEB"),
+    name = "Genotype",
+    labels = c(expression(paste("WT ", italic("Th. sirtalis"))),
+               expression(paste("LVNV ", italic("Th. sirtalis"))),
+               expression(italic("Th. couchii")),
+               expression(paste("WT ", italic("Th. hammondii")))))
+png("Plots/tetanic_plots/4main_allboxs.png", width=4000,height=3000,res=300)
+tet_boxes
+dev.off()
+
+#way to fix the labels that i don't want to do today
+# Source - https://stackoverflow.com/a/12104207
+# Posted by naught101, modified by community. See post 'Timeline' for change history
+# Retrieved 2026-11-24, License - CC BY-SA 3.0
+
+hospital_names <- list(
+  'Hospital#1'="Some Hospital",
+  'Hospital#2'="Another Hospital",
+  'Hospital#3'="Hospital Number 3",
+  'Hospital#4'="The Other Hospital"
+)
+
+# Source - https://stackoverflow.com/a/12104207
+# Posted by naught101, modified by community. See post 'Timeline' for change history
+# Retrieved 2026-11-24, License - CC BY-SA 3.0
+
+hospital_labeller <- function(variable,value){
+  return(hospital_names[value])
+}
+
+ggplot(survey,aes(x=age)) + stat_bin(aes(n=nrow(h3),y=..count../n), binwidth=10)
++ facet_grid(hospital ~ ., labeller=hospital_labeller)
+...
+
+#wt box plots ---
+tet_all_long <- matrix(ncol = 4)
+colnames(tet_all_long) <- c("Snake","Genotype","variable","value")
+
+genotypes <- c("WT_atratus", "WT_elegans", "WT_hammondii","WT_sirtalis")
+for (type in genotypes) {
+  foldername = type
+  tet_stats <- read.csv(paste("OutFiles/Tetanus/",foldername,"/",foldername,
+                              "_Tetanus_Metrics.csv",sep=""))
+  tet_long <- tet_stats %>%
+    mutate(
+      Ind = paste(Snake,"_",Muscle,sep=""),
+      Genotype = foldername
+    ) %>%
+    filter(MusMassg != 0.000999,
+           !Snake %in% c("CRF3074","CRF3065","CRF3066","CRF3058","CRF2675","CRF2673",
+                         "CRF2670","CRF2631","CRF3110","CRF3111","CRF2436B","CRF3615",
+                         "Wills06","CRF2415","Brodie15.60"),
+           Ind != "CRF3606_M3") %>% 
+    distinct(Ind, .keep_all=T) %>% 
+    
+    dplyr::select(Snake, BaseF.N.g.:DiffFMaxToEnd, Genotype) %>%
+    pivot_longer(cols = BaseF.N.g.:DiffFMaxToEnd,
+                 names_to = "variable", values_to = "value")
+  
+  tet_all_long <- rbind(tet_all_long,tet_long)
+}
+tet_all_long <- tet_all_long[-1,]
+tet_all_long$Genotype <- factor(
+  tet_all_long$Genotype,
+  levels = c("WT_atratus", "WT_elegans", "WT_hammondii","WT_sirtalis")
+)
+
+for (page in 1:3) {
+  tet_boxes <- ggplot(tet_all_long, aes(Genotype, value, fill = Genotype)) +
+    geom_boxplot(outlier.shape = NA, na.rm = T) +
+    facet_wrap_paginate (. ~ variable, scales = 'free', shrink = T, nrow=4, ncol = 3,
+                         page = page) +
+    xlab('') +
+    ylab('') +
+    theme(axis.text.x = element_text(angle=45, vjust=1, hjust=1)) +
+    geom_pwc(method = "dunn_test", p.adjust.method = "bonferroni",
+             symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf),
+                                symbols = c("****", "***", "**", "*", "ns")),
+             hide.ns = T, label = "p.adj.signif") +
+    scale_fill_manual(
+      values = c("#0066CC", "#3EB74B", "#41BDEB", "#000000"),
+      name = "Genotype",
+      labels = c(
+        expression(paste("WT ", italic("Th. atratus"))),
+        expression(paste("WT ", italic("Th. elegans"))),
+        expression(paste("WT ", italic("Th. hammondii"))),
+        expression(paste("WT ", italic("Th. sirtalis")))
+      )
+    )
+  print(tet_boxes)
+  ggsave(paste("Plots/tetanic_plots/4wt_geno_metrics_",page,".png"),dpi=300)
+}
+
+tet_boxes <- ggplot(tet_all_long, aes(Genotype, value, fill = Genotype)) +
+  geom_boxplot(outlier.shape = NA, na.rm = T) +
+  facet_wrap (. ~ variable, scales = 'free', shrink = T, nrow=4, ncol = 3) +
+  xlab('') +
+  ylab('') +
+  theme(axis.text.x = element_blank()) +
+  geom_pwc(method = "dunn_test", p.adjust.method = "bonferroni",
+           symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf),
+                              symbols = c("****", "***", "**", "*", "ns")),
+           hide.ns = T, label = "p.adj.signif") +
+  scale_fill_manual(
+    values = c("#0066CC", "#3EB74B", "#41BDEB", "#000000"),
+    name = "Genotype",
+    labels = c(
+      expression(paste("WT ", italic("Th. atratus"))),
+      expression(paste("WT ", italic("Th. elegans"))),
+      expression(paste("WT ", italic("Th. hammondii"))),
+      expression(paste("WT ", italic("Th. sirtalis")))
+    )
+  )
+png("Plots/tetanic_plots/4wt_allboxs.png", width=4000,height=3000,res=300)
+tet_boxes
+dev.off()
 
 #twitch-tet comps ----
 twitch_tet_comparisons <- read.csv("OutFiles/Tetanus/twitch_tet_comps.csv")
@@ -227,12 +366,12 @@ print(tet_boxes)
 ggsave(paste("OutFiles/Tetanus/plots/geno_metrics_",page+1,".png"),dpi=300)
 
 #pairwise plots ----
-df <- read.csv("OutFiles/Tetanus/sub_geno_avgs.csv")
+df <- read.csv("OutFiles/Tetanus/All_geno_avgs_no_outliers.csv")
 #thin data so line type is legible
 df.new = df[seq(1, nrow(df), 5), ]
-df.new$genotype <- factor(df.new$genotype, levels = c("WT_sirtalis","T","LVNV"))
+df.new$genotype <- factor(df.new$genotype, levels = c("WT_atratus","WT_elegans","WT_hammondii","WT_sirtalis"))
 
-png(filename="OutFiles/Tetanus/plots/WT_tetanic.png",width=4000,height=2700,res=500)
+png(filename="Plots/tetanic_plots/WT_tetanic2.png",width=4000,height=2700,res=500)
 WT_tet <- ggplot(subset(df.new, genotype %in% c("WT_sirtalis")), 
                    aes(x = time, y = avg, group = genotype,fill = genotype, 
                        color = genotype, linetype = genotype)) +
@@ -260,21 +399,43 @@ WT_tet <- ggplot(subset(df.new, genotype %in% c("WT_sirtalis")),
 WT_tet
 dev.off()
 
-png(filename="OutFiles/Tetanus/plots/WT_T_tetanic.png",width=4000,height=2700,res=500)
-WT_T_tet <- ggplot(subset(df.new, genotype %in% c("WT_sirtalis","T")), 
+#LEFT OFF HERE ---------
+png(filename="Plots/tetanic_plots/WT_LVNV_tetanic2.png",width=4000,height=2700,res=500)
+WT_LVNV_tet <- ggplot(subset(df.new, genotype %in% c("WT_sirtalis","LVNV")), 
                  aes(x = time, y = avg, group = genotype,fill = genotype, 
                      color = genotype, linetype = genotype)) +
   geom_line() + 
   geom_ribbon(aes(ymin = avg - se, ymax = avg + se),alpha=0.25,color=NA) + 
-  scale_linetype_manual(values = c("solid","35"),name = "Genotype", 
-                        labels = c(expression(paste("WT ",italic("Th. sirtalis"))),
-                                   expression(italic("Th. couchii")))) +
-  scale_fill_manual(values = c("#000000","#1C8642"),
-                    name = "Genotype", labels = c(expression(paste("WT ",italic("Th. sirtalis"))),
-                                                  expression(italic("Th. couchii")))) +
-  scale_color_manual(name = "Genotype", labels = c(expression(paste("WT ",italic("Th. sirtalis"))),
-                                                   expression(italic("Th. couchii"))),
-                     values = c("#000000","#1C8642")) +
+  scale_linetype_manual(
+    values = c("solid", "35"),
+    name = "Genotype",
+    labels = c(expression(paste(
+      "WT ", italic("Th. sirtalis")
+    )),
+    expression(paste(
+      "LVNV ", italic("Th. sirtalis")
+    )))
+  ) +
+  scale_fill_manual(
+    values = c("#000000", "#CC1E1D"),
+    name = "Genotype",
+    labels = c(expression(paste(
+      "WT ", italic("Th. sirtalis")
+    )),
+    expression(paste(
+      "LVNV ", italic("Th. sirtalis")
+    )))
+  ) +
+  scale_color_manual(
+    name = "Genotype",
+    labels = c(expression(paste(
+      "WT ", italic("Th. sirtalis")
+    )),
+    expression(paste(
+      "LVNV ", italic("Th. sirtalis")
+    ))),
+    values = c("#000000", "#CC1E1D")
+  ) +
   labs(x = "Time (s)", y = "Scaled Force (N/g)",
        title = "Force of Tetanic Muscle Contractions") +
   expand_limits(x = 0, y = 0) +
@@ -288,27 +449,49 @@ WT_T_tet <- ggplot(subset(df.new, genotype %in% c("WT_sirtalis","T")),
         legend.background = element_rect(fill = "transparent"),
         legend.text = element_text(size=16))
 
-WT_T_tet
+WT_LVNV_tet
 dev.off()
 
-png(filename="OutFiles/Tetanus/plots/WT_T_LVNV_tetanic.png",width=4000,height=2700,res=500)
+png(filename="Plots/tetanic_plots/WT_T_LVNV_tetanic2.png",width=4000,height=2700,res=500)
 WT_T_LVNV_tet <- ggplot(subset(df.new, genotype %in% c("WT_sirtalis","T","LVNV")), 
                    aes(x = time, y = avg, group = genotype,fill = genotype, 
                        color = genotype,linetype = genotype)) +
   geom_line() + 
   geom_ribbon(aes(ymin = avg - se, ymax = avg + se),alpha=0.25,color=NA) + 
-  scale_linetype_manual(values = c("solid","35","14"),name = "Genotype", 
-                        labels = c(expression(paste("WT ",italic("Th. sirtalis"))),
-                                  expression(italic("Th. couchii")),
-                                  expression(paste("LVNV ",italic("Th. sirtalis"))))) +
-  scale_fill_manual(values = c("#000000","#1C8642","#CC1E1D"),
-                    name = "Genotype", labels = c(expression(paste("WT ",italic("Th. sirtalis"))),
-                                                   expression(italic("Th. couchii")),
-                                                   expression(paste("LVNV ",italic("Th. sirtalis"))))) +
-  scale_color_manual(name = "Genotype", labels = c(expression(paste("WT ",italic("Th. sirtalis"))),
-                                                   expression(italic("Th. couchii")),
-                                                   expression(paste("LVNV ",italic("Th. sirtalis")))),
-                     values = c("#000000","#1C8642","#CC1E1D")) +
+  scale_linetype_manual(
+    values = c("solid", "35", "14"),
+    name = "Genotype",
+    labels = c(expression(paste(
+      "WT ", italic("Th. sirtalis")
+    )),
+    expression(paste(
+      "LVNV ", italic("Th. sirtalis")
+    )),
+    expression(italic("Th. couchii"))
+    )) +
+  scale_fill_manual(
+    values = c("#000000", "#CC1E1D", "#1C8642"),
+    name = "Genotype",
+    labels = c(expression(paste(
+      "WT ", italic("Th. sirtalis")
+    )),
+    expression(paste(
+      "LVNV ", italic("Th. sirtalis")
+    )),
+    expression(italic("Th. couchii"))
+    )) +
+  scale_color_manual(
+    name = "Genotype",
+    labels = c(expression(paste(
+      "WT ", italic("Th. sirtalis")
+    )),
+    expression(paste(
+      "LVNV ", italic("Th. sirtalis")
+    )),
+    expression(italic("Th. couchii"))
+    ),
+    values = c("#000000", "#CC1E1D", "#1C8642")
+  ) +
   labs(x = "Time (s)", y = "Scaled Force (N/g)",
        title = "Force of Tetanic Muscle Contractions") +
   expand_limits(x = 0, y = 0) +
@@ -324,6 +507,206 @@ WT_T_LVNV_tet <- ggplot(subset(df.new, genotype %in% c("WT_sirtalis","T","LVNV")
 
 WT_T_LVNV_tet
 dev.off()
+
+png(
+  filename = "Plots/tetanic_plots/WT_T_LVNV_ham_tetanic2.png",
+  width=4000,height=2700,res=500
+)
+WT_T_LVNV_ham_tet <-
+  ggplot(
+    subset(df.new, genotype %in% c("WT_sirtalis", "T", "LVNV","WT_hammondii")),
+    aes(
+      x = time,
+      y = avg,
+      group = genotype,
+      fill = genotype,
+      color = genotype,
+      linetype = genotype
+    )
+  ) +
+  geom_line() +
+  geom_ribbon(aes(ymin = avg - se, ymax = avg + se),
+              alpha = 0.25,
+              color = NA) +
+  scale_linetype_manual(
+    values = c("solid", "35", "14","62"),
+    name = "Genotype",
+    labels = c(expression(paste("WT ", italic("Th. sirtalis"))),
+               expression(paste("LVNV ", italic("Th. sirtalis"))),
+               expression(italic("Th. couchii")),
+               expression(paste("WT ", italic("Th. hammondii")))
+    )) +
+  scale_fill_manual(
+    values = c("#000000", "#CC1E1D", "#1C8642", "#41BDEB"),
+    name = "Genotype",
+    labels = c(expression(paste("WT ", italic("Th. sirtalis"))),
+               expression(paste("LVNV ", italic("Th. sirtalis"))),
+               expression(italic("Th. couchii")),
+               expression(paste("WT ", italic("Th. hammondii")))
+    )) +
+  scale_color_manual(
+    name = "Genotype",
+    labels = c(
+      expression(paste("WT ", italic("Th. sirtalis"))),
+      expression(paste("LVNV ", italic("Th. sirtalis"))),
+      expression(italic("Th. couchii")),
+      expression(paste("WT ", italic("Th. hammondii")))
+    ),
+    values = c("#000000", "#CC1E1D", "#1C8642", "#41BDEB")
+  ) +
+  labs(x = "Time (s)", y = "Scaled Force (N/g)",
+       title = "Force of Tetanic Muscle Contractions") +
+  expand_limits(x = 0, y = 0) +
+  theme_classic(base_size = 14) +
+  theme(
+    plot.title = element_text(
+      face = "bold",
+      margin = margin(10, 0, 10, 0),
+      size = 18
+    ),
+    legend.title = element_blank(),
+    legend.position = "inside",
+    legend.position.inside = c(0.85, 0.85),
+    legend.background = element_rect(fill = "transparent"),
+    legend.text = element_text(size = 16)
+  )
+WT_T_LVNV_ham_tet
+dev.off()
+
+png(
+  filename = "Plots/tetanic_plots/WT_T_LVNV_ham_atratus_tetanic2.png",
+  width=4000,height=2700,res=500
+)
+WT_T_LVNV_ham_atratus_tet <-
+  ggplot(
+    subset(df.new, genotype %in% c("WT_sirtalis", "T", "LVNV","WT_hammondii","WT_atratus")),
+    aes(
+      x = time,
+      y = avg,
+      group = genotype,
+      fill = genotype,
+      color = genotype,
+      linetype = genotype
+    )
+  ) +
+  geom_line() +
+  geom_ribbon(aes(ymin = avg - se, ymax = avg + se),
+              alpha = 0.25,
+              color = NA) +
+  scale_linetype_manual(
+    values = c("solid", "35", "14","62","21"),
+    name = "Genotype",
+    labels = c(
+      expression(paste("WT ", italic("Th. sirtalis"))),
+      expression(paste("LVNV ", italic("Th. sirtalis"))),
+      expression(italic("Th. couchii")),
+      expression(paste("WT ", italic("Th. hammondii"))),
+      expression(paste("WT ", italic("Th. atratus")))
+    )) +
+  scale_fill_manual(
+    values = c("#000000", "#CC1E1D", "#1C8642", "#41BDEB","#0066CC"),
+    name = "Genotype",
+    labels = c(
+      expression(paste("WT ", italic("Th. sirtalis"))),
+      expression(paste("LVNV ", italic("Th. sirtalis"))),
+      expression(italic("Th. couchii")),
+      expression(paste("WT ", italic("Th. hammondii"))),
+      expression(paste("WT ", italic("Th. atratus")))
+    )
+  ) +
+  scale_color_manual(
+    name = "Genotype",
+    labels = c(
+      expression(paste("WT ", italic("Th. sirtalis"))),
+      expression(paste("LVNV ", italic("Th. sirtalis"))),
+      expression(italic("Th. couchii")),
+      expression(paste("WT ", italic("Th. hammondii"))),
+      expression(paste("WT ", italic("Th. atratus")))
+    ),
+    values = c("#000000", "#CC1E1D", "#1C8642", "#41BDEB","#0066CC")
+  ) +
+  labs(x = "Time (s)", y = "Scaled Force (N/g)",
+       title = "Force of Tetanic Muscle Contractions") +
+  expand_limits(x = 0, y = 0) +
+  theme_classic(base_size = 14) +
+  theme(
+    plot.title = element_text(
+      face = "bold",
+      margin = margin(10, 0, 10, 0),
+      size = 18
+    ),
+    legend.title = element_blank(),
+    legend.position = "inside",
+    legend.position.inside = c(0.85, 0.85),
+    legend.background = element_rect(fill = "transparent"),
+    legend.text = element_text(size = 16)
+  )
+
+# wt plot ----
+plot_genotypes <-
+  ggplot(df.new %>% filter (genotype %in% c("WT_atratus","WT_elegans","WT_hammondii","WT_sirtalis")),
+         aes(
+           x = time,
+           y = avg,
+           group = genotype,
+           fill = genotype,
+           color = genotype
+         )) +
+  geom_line(lwd = 1) + geom_ribbon(aes(ymin = avg - se, ymax = avg + se),
+                                   alpha = 0.25,
+                                   color = NA) +
+  scale_fill_manual(
+    values = c("#0066CC", "#3EB74B", "#41BDEB", "#000000"),
+    name = "Genotype",
+    labels = c(
+      expression(paste("WT ", italic("Th. atratus"))),
+      expression(paste("WT ", italic("Th. elegans"))),
+      expression(paste("WT ", italic("Th. hammondii"))),
+      expression(paste("WT ", italic("Th. sirtalis")))
+    )
+  ) +
+  scale_color_manual(
+    values = c("#0066CC", "#3EB74B", "#41BDEB", "#000000"),
+    name = "Genotype",
+    labels = c(
+      expression(paste("WT ", italic("Th. atratus"))),
+      expression(paste("WT ", italic("Th. elegans"))),
+      expression(paste("WT ", italic("Th. hammondii"))),
+      expression(paste("WT ", italic("Th. sirtalis")))
+    )
+  )
+
+
+#ggsave("Plots/transient_plots/WT_transient_comparisons.png", dpi = 300)
+png(
+  filename = "Plots/tetanic_plots/WT_tetanic_comparisons.png",
+  width = 3600,
+  height = 2700,
+  res = 500
+)
+plot_genotypes +
+  ggtitle("Tetanic Contractions in WT Snakes") +
+  labs(x = "Time (s)", y = "Scaled Force (N/g)") +
+  expand_limits(x = 0, y = 0) +
+  theme_classic(base_size = 14) +
+  theme(
+    plot.title = element_text(
+      face = "bold",
+      margin = margin(10, 0, 10, 0),
+      size = 18
+    ),
+    legend.title = element_blank(),
+    legend.position = "inside",
+    legend.position.inside = c(0.85, 0.85),
+    legend.background = element_rect(fill = "transparent"),
+    legend.text = element_text(size = 16)
+  )
+dev.off()
+
+
+WT_T_LVNV_ham_atratus_tet
+dev.off()
+
 
 #checking for outliers ----
 

@@ -249,7 +249,9 @@ for (col in 7:17) {
 
 #compare between genotypes ----
 library(dunn.test)
-genotypes <- genotypes <- c("WT_sirtalis","LVNV","WT_atratus","EPN","T","WT_hammondii")
+genotypes <- c("WT_sirtalis","LVNV","T","WT_hammondii")
+genotypes <- c("WT_sirtalis","WT_hammondii","WT_atratus","WT_elegans")
+
 c4p_metrics <- matrix(ncol=20)
 colnames(c4p_metrics) <- c("Species", "Snake","Muscle" ,"Rater","MusMassg","Pulse","BaseF.N.g." , "ContrAmpl",
                            "ToMaxF.ms.","To10pct.ms." ,"MaxTo50pct.ms.","X10to50pct.ms.",
@@ -286,9 +288,9 @@ for (col in 7:17) {
                                                  kw = T, method = "bonferroni",
                                                  table = T, list = F))
   dunn_mat <- matrix(c(rep(colnames(c4p_metrics)[col],each=length(dunn$comparisons)),
-                       dunn$comparisons,dunn$Z,dunn$P),ncol=4)
+                       dunn$comparisons,dunn$Z,dunn$P.adjusted),ncol=4)
   colnames(dunn_mat) <- c("Metric","Comparison","Z","p-value")
   dunn_outputs <- rbind(dunn_outputs,dunn_mat)
 }
 
-write.csv(dunn_outputs[-1,],"OutFiles/C4P/Subset_geno_dunn_comparisons.csv",row.names=F)
+write.csv(dunn_outputs[-1,],"OutFiles/C4P/4wt_geno_dunn_comparisons.csv",row.names=F)

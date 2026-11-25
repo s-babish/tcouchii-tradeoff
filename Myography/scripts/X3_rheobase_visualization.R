@@ -5,7 +5,7 @@ library(ggforce)
 theme_set(theme_classic())
 
 #set according to dataset 
-foldername <- "WT_elegans"
+foldername <- "T"
 #Scaled force vs time (separated by pulse length) -----
 #currently using this to see if they really should be as flat as they appeared
 
@@ -52,8 +52,9 @@ for (i in 1:length(pulse_l)) {
 for (i in 1:length(pulse_l)) {
   infile <- toString(paste("OutFiles/Rheobase/",foldername,"/Force_scaled/Rheo_",pulse_l[i],".csv", sep=""))
   df <- read.csv(infile)
-  df <- df[,c(-1)] #remove index line
+  df <- df[-17,c(-1)] #remove index line and the max
   dose_labels = df$Dose
+  df$Dose = as.numeric(df$Dose)
   df_long <- df %>%
     pivot_longer(
       cols = -Dose,
@@ -70,12 +71,10 @@ for (i in 1:length(pulse_l)) {
   plot <- ggplot(df_long, aes(x = Dose, y = scaled_force, group = Snake)) +
     geom_point() +
     geom_smooth(method = "nls",
-                method.args = list(formula = y ~ (-1)/(1 + exp((log(x)-log(x0))/dx)) + 1,
-                                   start = list(x0 = 60 , dx = 1)
+                method.args = list(formula = y ~  1 + (-1) / (1 + (x / x0)^dx),
+                                                      start = list(x0 = 40 , dx = 1)
                                     # ,lower = list(0.0000001,-Inf), upper = list(600,Inf)
-                                    # ,control = nls.lm.control(maxiter = 1024, maxfev = 1024),
-                                    #   algorithm = "port"
-                                   ),
+                                     ),
                 data = df_long,
                 se = FALSE) +
     #scale_color_viridis(option = "viridis") +
@@ -193,167 +192,167 @@ for (foldername in c("LVNV","WT_sirtalis","EPN","P","T","WT_elegans","WT_hammond
 #IC50 plots (data formatted in analyses script for now) -----
 # plot(x0 ~ IC50, data = IC50dat)
 # 
-# #plots for norm and bobby ----
-# #storage dataframe
-# all_rheo <- data.frame(
-#   Dose = double(),
-#   Ind = character(),
-#   Snake = character(),
-#   scaled_force = double(),
-#   pulse_length = integer(),
-#   MAMU = double()
-# )
-# 
-# #another dataframe for the max force plot I'm going to make after this
-# max_forces <- data.frame(
-#   Ind = character(),
-#   max_force = double(),
-#   pulse_length = integer(),
-#   MAMU = double(),
-#   Snake = character()
-# )
-# 
-# for (i in 1:length(pulse_l)) {
-#   infile <- toString(paste("OutFiles/Rheobase/",foldername,"/Force_scaled/Rheo_",pulse_l[i],".csv", sep=""))
-#   df <- read.csv(infile)
-#   
-#   #deal with max values first, to use later
-#   max_long <- df[17,c(-1,-2)] %>% 
-#     pivot_longer(
-#       everything(),
-#       names_to = "Ind",
-#       values_to = "max_force"
-#     ) %>% 
-#     mutate(
-#       Snake = sub("_.*", "", Ind),
-#            pulse_length = pulse_l[i],
-#            MAMU = 0
-#     ) %>% 
-#     rows_update(distinct(keydf), by = "Snake", unmatched = "ignore") %>% #pull in MAMU
-#   mutate(
-#     pulse_length = as.factor(pulse_length)
-#     )
-#   max_forces <- rbind(max_forces,max_long)
-#   
-#   df <- df[-17,-1] #remove index line and maxes
-#   dose_labels = df$Dose
-#   df_long <- df %>%
-#     pivot_longer(
-#       cols = -Dose,
-#       names_to = "Ind",
-#       values_to = "scaled_force"
-#     ) %>% 
-#     mutate(
-#       Snake = sub("_.*", "", Ind),
-#       pulse_length = pulse_l[i],
-#       MAMU = 0
-#     ) %>% 
-#     rows_update(distinct(keydf), by = "Snake", unmatched = "ignore") %>% #pull in MAMU
-#     mutate(
-#       pulse_length = as.factor(pulse_length),
-#       Dose = as.numeric(Dose)
-#     )
-#   all_rheo <- rbind(all_rheo,df_long)
-# }
-# 
-# for (page in 1:6) {
-# plot <- ggplot(all_rheo, aes(x = Dose, y = scaled_force, group = pulse_length, color = pulse_length)) +
-#   geom_point() + 
-#   facet_wrap_paginate(~ Ind, ncol = 3, nrow = 2, page = page) +
-#   geom_smooth(method = "nls",
-#               method.args = list(formula = y ~  1 + (-1) / (1 + (x / x0)^dx),
-#                                  start = list(x0 = 40 , dx = 1)
-#               ),
-#               data = all_rheo,
-#               se = FALSE) +
-#   scale_color_viridis(discrete = T) +
-#   xlab("Current (mA)") + 
-#   ylab("Proportion of maximal force")
-# print(plot)
-# }
-# 
-# #plot each set of raw data individually, one sheet per snake ----
-# #i can't figure out how to make facet_wrap_paginate work well for odd numbers so i'm
-# # adding a fake variable to each set just to give each snake 8 "pulse lengths"
-# 
-# #also they don't all have data for all plots
-# 
-# #best i can think of is removing all the 0,0 observations and then adding one
-# # for each dataset (removing so there's no double data to mess up curve fitting)
-# 
-# no_0_rheo <- all_rheo[all_rheo$Dose != 0,]
-# fake_base <- matrix(
-#   c(
-#     0,"Ind",0,"Snake",0,"MAMU",
-#     0,"Ind",0,"Snake",50,"MAMU",
-#     0,"Ind",0,"Snake",100,"MAMU",
-#     0,"Ind",0,"Snake",200,"MAMU",
-#     0,"Ind",0,"Snake",500,"MAMU",
-#     0,"Ind",0,"Snake",1000,"MAMU",
-#     0,"Ind",0,"Snake",10000,"MAMU",
-#     0,"Ind",0,"Snake",50000,"MAMU"
-#   ),
-#   nrow= 8,
-#   ncol = 6,
-#   byrow=T,
-#   
-# )
-# 
-# colnames(fake_base) <- c("Dose","Ind","scaled_force","Snake","pulse_length","MAMU")
-# fake_base<- as.data.frame(fake_base)
-# 
-# fake_zeros <- data.frame(
-#   Dose = double(),
-#   Ind = character(),
-#   scaled_force = double(),
-#   Snake = character(),
-#   pulse_length = integer(),
-#   MAMU = double()
-# )
-# 
-# inds <- unique(all_rheo$Ind)
-# 
-# for(ind in inds){
-#   fake_ind <- fake_base %>% 
-#     mutate(
-#       Dose = as.numeric(Dose),
-#       Ind = ind,
-#       scaled_force = as.numeric(scaled_force),
-#       Snake =  sub("_.*", "", Ind),
-#       MAMU = 0, #this should be fine for plotting purposes
-#       pulse_length = as.factor(pulse_length)
-#     )
-#   fake_zeros <- rbind(fake_zeros,fake_ind)
-# }
-# 
-# all_rheo_w_fake <- rbind(no_0_rheo,fake_zeros)
-# all_rheo_w_fake <- all_rheo_w_fake[order(all_rheo_w_fake$Ind, all_rheo_w_fake$pulse_length,all_rheo_w_fake$Dose),]
-# 
-# #now make a page of plots for each snake
-# for (page in 1:34) {
-#   plot <- ggplot(all_rheo_w_fake, aes(x = Dose, y = scaled_force, 
-#                                group = interaction(Ind,pulse_length), 
-#                                color = pulse_length)) +
-#     geom_point(
-#       # aes(x = Dose, y = scaled_force, 
-#       #             group = interaction(Snake,pulse_length))
-#       ) + 
-#     facet_wrap_paginate(~ Ind + pulse_length, ncol = 4, nrow = 2, page = page) +
-#     geom_smooth(method = "nls",
-#                 method.args = list(formula = y ~  1 + (-1) / (1 + (x / x0)^dx),
-#                                    start = list(x0 = 60 , dx = 1)
-#                                    # ,
-#                                    # control = nls.lm.control(maxiter = 1024, maxfev = 1024),
-#                                    # lower = c(0,-Inf), upper = c(600,Inf), algorithm = "port"
-#                 ),
-#                 data = all_rheo_w_fake, #don't want to fit one for the fake plot
-#                 se = FALSE) +
-#     scale_color_viridis(discrete = T) +
-#     xlab("Current (mA)") + 
-#     ylab("Proportion of maximal force")
-#   print(plot)
-#   ggsave(paste("OutFiles/Rheobase/",foldername,"/plots/rheo_",sort(unique(all_rheo$Ind))[page],".png",sep=""),dpi=300)
-# }
+#plots for norm and bobby ----
+#storage dataframe
+all_rheo <- data.frame(
+  Dose = double(),
+  Ind = character(),
+  Snake = character(),
+  scaled_force = double(),
+  pulse_length = integer(),
+  MAMU = double()
+)
+
+#another dataframe for the max force plot I'm going to make after this
+max_forces <- data.frame(
+  Ind = character(),
+  max_force = double(),
+  pulse_length = integer(),
+  MAMU = double(),
+  Snake = character()
+)
+
+for (i in 1:length(pulse_l)) {
+  infile <- toString(paste("OutFiles/Rheobase/",foldername,"/Force_scaled/Rheo_",pulse_l[i],".csv", sep=""))
+  df <- read.csv(infile)
+
+  #deal with max values first, to use later
+  max_long <- df[17,c(-1,-2)] %>%
+    pivot_longer(
+      everything(),
+      names_to = "Ind",
+      values_to = "max_force"
+    ) %>%
+    mutate(
+      Snake = sub("_.*", "", Ind),
+           pulse_length = pulse_l[i],
+           MAMU = 0
+    ) %>%
+    rows_update(distinct(keydf), by = "Snake", unmatched = "ignore") %>% #pull in MAMU
+  mutate(
+    pulse_length = as.factor(pulse_length)
+    )
+  max_forces <- rbind(max_forces,max_long)
+
+  df <- df[-17,-1] #remove index line and maxes
+  dose_labels = df$Dose
+  df_long <- df %>%
+    pivot_longer(
+      cols = -Dose,
+      names_to = "Ind",
+      values_to = "scaled_force"
+    ) %>%
+    mutate(
+      Snake = sub("_.*", "", Ind),
+      pulse_length = pulse_l[i],
+      MAMU = 0
+    ) %>%
+    rows_update(distinct(keydf), by = "Snake", unmatched = "ignore") %>% #pull in MAMU
+    mutate(
+      pulse_length = as.factor(pulse_length),
+      Dose = as.numeric(Dose)
+    )
+  all_rheo <- rbind(all_rheo,df_long)
+}
+
+for (page in 1:6) {
+plot <- ggplot(all_rheo, aes(x = Dose, y = scaled_force, group = pulse_length, color = pulse_length)) +
+  geom_point() +
+  facet_wrap_paginate(~ Ind, ncol = 3, nrow = 2, page = page) +
+  geom_smooth(method = "nls",
+              method.args = list(formula = y ~  1 + (-1) / (1 + (x / x0)^dx),
+                                 start = list(x0 = 40 , dx = 1)
+              ),
+              data = all_rheo,
+              se = FALSE) +
+  scale_color_viridis(discrete = T) +
+  xlab("Current (mA)") +
+  ylab("Proportion of maximal force")
+print(plot)
+}
+
+#plot each set of raw data individually, one sheet per snake ----
+#i can't figure out how to make facet_wrap_paginate work well for odd numbers so i'm
+# adding a fake variable to each set just to give each snake 8 "pulse lengths"
+
+#also they don't all have data for all plots
+
+#best i can think of is removing all the 0,0 observations and then adding one
+# for each dataset (removing so there's no double data to mess up curve fitting)
+
+no_0_rheo <- all_rheo[all_rheo$Dose != 0,]
+fake_base <- matrix(
+  c(
+    0,"Ind",0,"Snake",0,"MAMU",
+    0,"Ind",0,"Snake",50,"MAMU",
+    0,"Ind",0,"Snake",100,"MAMU",
+    0,"Ind",0,"Snake",200,"MAMU",
+    0,"Ind",0,"Snake",500,"MAMU",
+    0,"Ind",0,"Snake",1000,"MAMU",
+    0,"Ind",0,"Snake",10000,"MAMU",
+    0,"Ind",0,"Snake",50000,"MAMU"
+  ),
+  nrow= 8,
+  ncol = 6,
+  byrow=T,
+
+)
+
+colnames(fake_base) <- c("Dose","Ind","scaled_force","Snake","pulse_length","MAMU")
+fake_base<- as.data.frame(fake_base)
+
+fake_zeros <- data.frame(
+  Dose = double(),
+  Ind = character(),
+  scaled_force = double(),
+  Snake = character(),
+  pulse_length = integer(),
+  MAMU = double()
+)
+
+inds <- unique(all_rheo$Ind)
+
+for(ind in inds){
+  fake_ind <- fake_base %>%
+    mutate(
+      Dose = as.numeric(Dose),
+      Ind = ind,
+      scaled_force = as.numeric(scaled_force),
+      Snake =  sub("_.*", "", Ind),
+      MAMU = 0, #this should be fine for plotting purposes
+      pulse_length = as.factor(pulse_length)
+    )
+  fake_zeros <- rbind(fake_zeros,fake_ind)
+}
+
+all_rheo_w_fake <- rbind(no_0_rheo,fake_zeros)
+all_rheo_w_fake <- all_rheo_w_fake[order(all_rheo_w_fake$Ind, all_rheo_w_fake$pulse_length,all_rheo_w_fake$Dose),]
+
+#now make a page of plots for each snake
+for (page in 1:34) {
+  plot <- ggplot(all_rheo_w_fake, aes(x = Dose, y = scaled_force,
+                               group = interaction(Ind,pulse_length),
+                               color = pulse_length)) +
+    geom_point(
+      # aes(x = Dose, y = scaled_force,
+      #             group = interaction(Snake,pulse_length))
+      ) +
+    facet_wrap_paginate(~ Ind + pulse_length, ncol = 4, nrow = 2, page = page) +
+    geom_smooth(method = "nls",
+                method.args = list(formula = y ~  1 + (-1) / (1 + (x / x0)^dx),
+                                   start = list(x0 = 60 , dx = 1)
+                                   # ,
+                                   # control = nls.lm.control(maxiter = 1024, maxfev = 1024),
+                                   # lower = c(0,-Inf), upper = c(600,Inf), algorithm = "port"
+                ),
+                data = all_rheo_w_fake, #don't want to fit one for the fake plot
+                se = FALSE) +
+    scale_color_viridis(discrete = T) +
+    xlab("Current (mA)") +
+    ylab("Proportion of maximal force")
+  print(plot)
+  #ggsave(paste("OutFiles/Rheobase/",foldername,"/plots/rheo_",sort(unique(all_rheo$Ind))[page],".png",sep=""),dpi=300)
+}
 # 
 # #strength-duration curve with max force instead of 50%
 # #general view
@@ -432,8 +431,9 @@ for (type in genotypes) {
   ggsave(paste("OutFiles/Rheobase/",foldername,"/plots/",foldername,"_EC50_inds_sub200.png",sep=""),dpi=300)
 }
 
-#average over genotypes -----
-genotypes <- c("WT_sirtalis","LVNV","T")
+#JMIH plots ------
+#average over genotypes 
+genotypes <- c("WT_sirtalis","LVNV","T","WT_hammondii")
 geno_means <- matrix(ncol = 4)
 colnames(geno_means) <- c("pulse_length","mean","se","genotype")
 
@@ -455,9 +455,9 @@ for (type in genotypes) {
   geno_means <- rbind(geno_means,rheo_ecs)
   
 }
-write.csv(geno_means[-1,],"OutFiles/Rheobase/All_geno_means.csv",row.names=F)
+write.csv(geno_means[-1,],"OutFiles/Rheobase/sub_geno_means.csv",row.names=F)
 
-rheo_df <- read.csv("OutFiles/Rheobase/All_geno_means.csv")
+rheo_df <- read.csv("OutFiles/Rheobase/sub_geno_means.csv")
 rheo_df <- rheo_df %>% 
   filter(
     pulse_length %in% c(50,100,200,500,1000)
@@ -465,7 +465,7 @@ rheo_df <- rheo_df %>%
   mutate(
     genotype = as.factor(genotype)
   )
-rheo_df$genotype <- factor(rheo_df$genotype, levels = c("WT_sirtalis","T","LVNV"))
+rheo_df$genotype <- factor(rheo_df$genotype, levels = c("WT_sirtalis","LVNV","T","WT_hammondii"))
 rheo_df$pulse_length <- as.factor(rheo_df$pulse_length)
 
 png(filename="OutFiles/Rheobase/plots/WT_rheoavg_dot.png",width=4500,height=2700,res=500)
@@ -530,17 +530,21 @@ WT_T_rheo <- ggplot(subset(rheo_df, genotype %in% c("WT_sirtalis","T")),
 WT_T_rheo
 dev.off()
 
-png(filename="OutFiles/Rheobase/plots/WT_T_LVNV_rheoavg_dot.png",width=4500,height=2700,res=500)
-WT_T_LVNV_rheo <- ggplot(subset(rheo_df, genotype %in% c("WT_sirtalis","T","LVNV")), 
+png(filename="Plots/rheobase_plots/WT_T_LVNV_ham_rheoavg_dot.png",width=4500,height=2700,res=500)
+WT_T_LVNV_rheo <- ggplot(subset(rheo_df, genotype %in% c("WT_sirtalis","T","LVNV","WT_hammondii")), 
                          aes(x=pulse_length, y=mean, colour=genotype)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), size = 1, position = position_dodge(width=0.6),
                 width = 0.5) +
   geom_line(linewidth = 1,linetype=2,aes(group = genotype)) +
   geom_point(size = 3,position = position_dodge(width=0.6)) +
-  scale_color_manual(name = "Genotype", labels = c(expression(paste("WT ",italic("Th. sirtalis"))),
-                                                   expression(italic("Th. couchii")),
-                                                   expression(paste("LVNV ",italic("Th. sirtalis")))),
-                     values = c("#000000","#1C8642","#CC1E1D")) +
+  scale_color_manual(name = "Genotype", labels = c(
+    expression(paste("WT ", italic("Th. sirtalis"))),
+    expression(paste("LVNV ", italic("Th. sirtalis"))),
+    expression(italic("Th. couchii")),
+    expression(paste("WT ", italic("Th. hammondii"))),
+    expression(paste("WT ", italic("Th. atratus")))
+  ),
+  values = c("#000000", "#CC1E1D", "#1C8642", "#41BDEB","#0066CC")) +
   scale_x_discrete(expand=c(0,1)) +
   scale_y_continuous(limits=c(0,150)) +
   # scale_x_continuous(breaks = c(50,100,200,500,1000)) +
@@ -653,7 +657,7 @@ LVNV_rheo
 dev.off()
 
 #using the curve fitted with the rheobase equation -----
-rheo <- read.csv("OutFiles/Rheobase/rheobase_curve_method.csv")
+rheo <- read.csv("OutFiles/Rheobase/rheobase_curve_subset_method.csv")
 
 params_rheo <- rheo %>% group_by(Genotype) %>% 
   summarize(mean_rheo = mean(rheobase),
@@ -682,18 +686,34 @@ means <- as.data.frame(t(means))
 
 means$Genotype = rownames(means)
 
+
 plot_means <- pivot_longer(data = means, cols = -Genotype,
                            names_to = "pulse_width", values_to = "ec50") %>% 
   mutate(
     pulse_width = as.numeric(pulse_width)
   )
 
-ggplot(plot_means %>% filter(Genotype != "P")) +
-  geom_line(aes(x = pulse_width,y=ec50,group=Genotype, color=Genotype),
-            lwd = 1) + xlim(0,200) + ylim(0,500)
+plot_means$Genotype <-   factor(
+  plot_means$Genotype,
+  levels = c("WT_sirtalis", "LVNV", "T", "WT_hammondii", "WT_atratus")
+)
 
-ggsave("Plots/rheobase_plots/strength_duration.png",dpi=300)
-#+  ylim(0,170)
+ggplot(plot_means %>% filter(Genotype %in% c("WT_sirtalis","LVNV","T","WT_hammondii"))) +
+  scale_color_manual(
+    name = "Genotype",
+    labels = c(
+      expression(paste("WT ", italic("Th. sirtalis"))),
+      expression(paste("LVNV ", italic("Th. sirtalis"))),
+      expression(italic("Th. couchii")),
+      expression(paste("WT ", italic("Th. hammondii"))),
+      expression(paste("WT ", italic("Th. atratus")))
+    ),
+    values = c("#000000", "#CC1E1D", "#1C8642", "#41BDEB","#0066CC")
+  ) +
+  geom_line(aes(x = pulse_width,y=ec50,group=Genotype, color=Genotype),
+            lwd = 1) + xlim(0,200) + ylim(0,500) 
+
+ggsave("Plots/rheobase_plots/strength_duration_sub.png",dpi=300)
 
 #testing ----
 plot2 <- ggplot(test, aes(x = x, y = y)) +
@@ -708,3 +728,76 @@ plot2 <- ggplot(test, aes(x = x, y = y)) +
               data = as.data.frame(test),
               se = FALSE)
 plot2
+
+#box plots with metrics ----
+genotypes <- c("LVNV", "T", "WT_sirtalis","WT_hammondii")
+
+rheo_all_long <- matrix(ncol = 4)
+colnames(rheo_all_long) <- c("Snake", "genotype", "variable", "value")
+
+for (type in genotypes) {
+  foldername = type
+  rheo_stats <-read.csv(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv",sep=""))
+  rheo_long <- rheo_stats[-1,] %>%
+    mutate(Ind = paste(Snake, "_", Muscle, sep = ""),
+           genotype = foldername) %>%
+    filter(MusMassg != 0.000999) %>%
+    dplyr::select(Snake, x0:maxF, genotype) %>%
+    pivot_longer(
+      cols = x0:maxF,
+      names_to = "variable",
+      values_to = "value"
+    )
+  
+  rheo_all_long <- rbind(rheo_all_long, rheo_long)
+}
+rheo_all_long <- rheo_all_long[-1, ]
+rheo_all_long$genotype <-   factor(
+  rheo_all_long$genotype,
+  levels = c("WT_sirtalis", "LVNV", "T", "WT_hammondii")
+)
+
+for (page in 1:3) {
+  rheo_boxes <-
+    ggplot(rheo_all_long, aes(genotype, value, fill = genotype)) +
+    geom_boxplot(outlier.shape = NA, na.rm = T) +
+    facet_wrap_paginate (
+      . ~ variable,
+      scales = 'free',
+      shrink = T,
+      nrow = 2,
+      ncol = 2,
+      page = page
+    ) +
+    xlab('') +
+    ylab('') +
+    theme(axis.text.x = element_text(
+      angle = 45,
+      vjust = 1,
+      hjust = 1
+    )) +
+    geom_pwc(
+      method = "dunn_test",
+      p.adjust.method = "bonferroni",
+      symnum.args = list(
+        cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf),
+        symbols = c("****", "***", "**", "*", "ns")
+      ),
+      hide.ns = T,
+      label = "p.adj.signif"
+    ) +
+    scale_fill_manual(
+      values = c("#000000", "#CC1E1D", "#1C8642", "#41BDEB"),
+      name = "Genotype",
+      labels = c(expression(paste("WT ", italic("Th. sirtalis"))),
+                 expression(paste("LVNV ", italic("Th. sirtalis"))),
+                 expression(italic("Th. couchii")),
+                 expression(paste("WT ", italic("Th. hammondii")))))
+  print(rheo_boxes)
+  ggsave(paste(
+    "Plots/rheobase_plots/4main_geno_metrics_",
+    page,
+    ".png"
+  ),
+  dpi = 300)
+}

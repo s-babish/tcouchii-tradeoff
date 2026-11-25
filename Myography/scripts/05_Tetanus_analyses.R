@@ -199,9 +199,8 @@ for (col in 4:13) {
 
 #compare between genotypes ----
 library(dunn.test)
-genotypes <- c("WT_elegans","WT_sirtalis","WT_hammondii","WT_atratus",
-                            "LVNV","EPN","P","T")
-genotypes <-  c("WT_sirtalis","WT_hammondii","WT_atratus","LVNV","EPN","T")
+genotypes <- c("WT_sirtalis","WT_hammondii","LVNV","T")
+genotypes <-  c("WT_sirtalis","WT_hammondii","WT_atratus","WT_elegans")
 
 tet_metrics <- matrix(ncol=19)
 colnames(tet_metrics) <- c("Species", "Snake","Muscle" ,"BaseF.N.g." , "ContrAmpl.N.g.",
@@ -241,7 +240,7 @@ for (col in 4:15) {
                                                  kw = T, method = "bonferroni",
                                                  table = T, list = F))
   dunn_mat <- matrix(c(rep(colnames(tet_metrics)[col],each=length(dunn$comparisons)),
-                       dunn$comparisons,dunn$Z,dunn$P),ncol=4)
+                       dunn$comparisons,dunn$Z,dunn$P.adjusted),ncol=4)
   colnames(dunn_mat) <- c("Metric","Comparison","Z","p-value")
   dunn_outputs <- rbind(dunn_outputs,dunn_mat)
 }
@@ -299,11 +298,11 @@ dunn <- c("twitch_tet_ratio",dunn.test(twitch_tet_comparisons$twitch_tet_ratio, 
                                                kw = T, method = "bonferroni",
                                                table = T, list = F))
 dunn_mat <- matrix(c(rep("twitch_tet_ratio",each=length(dunn$comparisons)),
-                     dunn$comparisons,dunn$Z,dunn$P),ncol=4)
+                     dunn$comparisons,dunn$Z,dunn$P.adjusted),ncol=4)
 colnames(dunn_mat) <- c("Metric","Comparison","Z","p-value")
 dunn_outputs <- rbind(dunn_outputs,dunn_mat)
 
-write.csv(dunn_outputs[-1,],"OutFiles/Tetanus/Subset_geno_dunn_comparisons.csv",row.names=F)
+write.csv(dunn_outputs[-1,],"OutFiles/Tetanus/4wt_geno_dunn_comparisons.csv",row.names=F)
 
 
 

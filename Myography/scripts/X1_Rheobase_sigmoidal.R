@@ -1,6 +1,7 @@
 #Libraries -----
 # library(tidyverse)
 # library(minpack.lm)
+# library(viridis)
 
 #Load (some) data ----
 #give folder name (change according to dataset you're using)
@@ -129,11 +130,12 @@ for (type in genotypes) {
     ec10 <-
       solveSigmoidal(0.1, 0, 1, result[1, ], result[2, ]) #adding at bobby's suggestion
     ec90 <- solveSigmoidal(0.9, 0, 1, result[1, ], result[2, ]) #ibid
+    ec40 <- solveSigmoidal(0.4, 0, 1, result[1, ], result[2, ])
     range.10.90 <- abs(ec90 - ec10)
     
-    result <- rbind(result, maxslope, ec10, ec90, range.10.90, maxes)
+    result <- rbind(result, maxslope, ec10, ec90, range.10.90, ec40, maxes)
     rownames(result) <-
-      c("x0", "dx", "maxslope", "EC10", "EC90", "range1090", "maxF")
+      c("x0", "dx", "maxslope", "EC10", "EC90", "range1090", "EC40","maxF")
     
     ####so that I can put the fitted lines on top of the raw data
     sim_output <- data.frame(current = seq(0, 600, by = 1))

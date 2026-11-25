@@ -3,13 +3,15 @@ library(tidyverse)
 library(lmtest)
 library(minpack.lm)
 
+
+#old stuff that just looked at one genotype ----
 foldername <- "WT_elegans"
 #Runs stats on the x0 results from fitting sigmoidal curves to rheobase data
 rheodat <- read.csv(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv",sep=""))
 rheodat$pulse_length <- as.factor(rheodat$pulse_length)
 rheodat <- rheodat[-1,-1]
 
-#anova on x0 values between pulses ----
+#anova on x0 values between pulses 
 rheo_anova <- aov(x0 ~ pulse_length, data = rheodat)
 summary(rheo_anova)
 
@@ -17,15 +19,15 @@ rheo_tukey <- TukeyHSD(rheo_anova)
 rheo_tukey
 #10000 is different from some of the others (100 and 50000)
 
-#EC10 ----
-ec10_anova <- aov(EC10 ~ pulse_length, data = rheodat)
-summary(ec10_anova)
+#ec40 
+ec40_anova <- aov(ec40 ~ pulse_length, data = rheodat)
+summary(ec40_anova)
 
-ec10_tukey <- TukeyHSD(ec10_anova)
-ec10_tukey
+ec40_tukey <- TukeyHSD(ec40_anova)
+ec40_tukey
 #all the same 
 
-#EC90 ----
+#EC90 
 #remove overly large ec90 values
 rheodat <- rheodat %>% 
   filter(EC90<1000)
@@ -39,7 +41,7 @@ ec90_tukey
 # cleaning issues in the raw data
 
 #(but for now, it says 10000 is different from the others, the others are all identical )
-#max force between pulses ----
+#max force between pulses 
 rheo_anova2 <- aov(maxF ~ pulse_length, data = rheodat)
 summary(rheo_anova2)
 
@@ -47,7 +49,7 @@ rheo_tukey2 <- TukeyHSD(rheo_anova2)
 rheo_tukey2
 #10000 and 50000 absolutely different from everything, and from each other
 
-# MAMU vs x0 and max force ----
+# MAMU vs x0 and max force 
 summary(glm(x0 ~ MAMU*pulse_length, data = rheodat))
 #not related to either variable
 #just trying to cover my bases so I don't get roasted for not doing the "right" stats
@@ -73,7 +75,7 @@ force_corr <- cor.test(rheodat$MAMU, rheodat$maxF, method = "pearson")
 force_corr
 #not correlated either
 
-#above but with IC50 ----
+#above but with IC50 
 #load data and combine with current data
 IC50 <- read.csv("data_raw/IC50/IC50.csv")
 IC50dat <- merge(rheodat,IC50, by="Snake")
@@ -172,7 +174,7 @@ pearson_corr2
 all_fits <- matrix(ncol=4)
 colnames(all_fits) <- c("Ind","rheobase","chronaxie","Genotype")
 
-genotypes <- c("LVNV","WT_sirtalis","T","WT_hammondii","EPN","WT_elegans")
+genotypes <- c("LVNV","WT_sirtalis","T","WT_hammondii")
 
 for (type in genotypes) {
   foldername = type
@@ -238,7 +240,7 @@ for (type in genotypes) {
 
   geno_plot
   
-  ggsave(toString(paste("Plots/rheobase_plots/",foldername,"_fit_check.png")),dpi=300)
+  ggsave(toString(paste("Plots/rheobase_plots/",foldername,"_fit_check.png"),sep=""),dpi=300)
   
   output <- t(matrix(c(colnames(df),result,rep(foldername,ncol(df))),nrow=4,byrow=T))
   colnames(output) <- c("Ind","rheobase","chronaxie","Genotype")
@@ -248,8 +250,374 @@ for (type in genotypes) {
 
 all_fits <- as.data.frame(all_fits[-1,])
 
-#write.csv(all_fits,"OutFiles/Rheobase/rheobase_curve_subset_method.csv",row.names=F)
+write.csv(all_fits,"OutFiles/Rheobase/rheobase_curve_subset_method.csv",row.names=F)
 
 all_fits <- as.data.frame(all_fits)
 comparison <- kruskal.test(all_fits$rheobase ~ all_fits$Genotype)
 print(comparison)
+
+comparison2 <- kruskal.test(all_fits$chronaxie ~ all_fits$Genotype)
+print(comparison2)
+
+#aggregating other parameters across genotypes and doing stats -----
+rheo_metrics <- matrix(ncol=11) #setting up storage matrix
+colnames(rheo_metrics) <- c("X", "x0", "dx", "maxslope", "EC10","EC90", "range1090","EC40", "maxF",
+                            "Genotype","pulse_length")
+
+genotypes <- c("LVNV","WT_sirtalis","T","WT_hammondii")
+
+for (type in genotypes) {
+  foldername = type
+rheodat <- read.csv(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv",sep="")) %>% 
+  mutate(
+    Genotype = type
+  )
+
+rheodat <- rheodat[-1,c(2:10,14,26)] #just keep columns I'm interested in
+
+rheo_metrics <- rbind(rheo_metrics,rheodat)
+}
+
+rheo_metrics <- rheo_metrics[-1,]
+rheo_metrics$Genotype <- as.factor(rheo_metrics$Genotype)
+rheo_metrics$pulse_length <- as.factor(rheo_metrics$pulse_length)
+
+dunn_outputs <- matrix(ncol = 4)
+colnames(dunn_outputs) <- c("Metric","Comparison","Z","p-value")
+
+pulse_lengths <- unique(rheo_metrics$pulse_length)
+pulse_dunn_outputs <- matrix(ncol = 5)
+colnames(pulse_dunn_outputs) <- c("pulse_length","Metric","Comparison","Z","p-value")
+
+
+library(dunn.test)
+#library(ARTool)
+
+for (col in 2:9) {
+  comparison <- kruskal.test(rheo_metrics[,col] ~ rheo_metrics$Genotype)
+  print(colnames(rheo_metrics)[col])
+  print(comparison)
+  
+  dunn <- c(colnames(rheo_metrics)[col],dunn.test(rheo_metrics[,col], g = rheo_metrics$Genotype, 
+                                                 kw = T, method = "bonferroni",
+                                                 table = T, list = F))
+  dunn_mat <- matrix(c(rep(colnames(rheo_metrics)[col],each=length(dunn$comparisons)),
+                       dunn$comparisons,dunn$Z,dunn$P.adjusted),ncol=4)
+  colnames(dunn_mat) <- c("Metric","Comparison","Z","p-value")
+  dunn_outputs <- rbind(dunn_outputs,dunn_mat)
+  
+  
+  #doing it for each pulse length as well, in a separate dataframe
+  for (length in pulse_lengths) {
+    pulse_metrics <- rheo_metrics[rheo_metrics$pulse_length == length,]
+    dunn2 <- c(colnames(pulse_metrics)[col],dunn.test(pulse_metrics[,col], g = pulse_metrics$Genotype, 
+                                                    kw = T, method = "bonferroni",
+                                                    table = T, list = F))
+    dunn2_mat <- matrix(c(rep(length,each=length(dunn$comparisons)),
+                              rep(colnames(pulse_metrics)[col],each=length(dunn$comparisons)),
+                         dunn$comparisons,dunn$Z,dunn$P.adjusted),ncol=5)
+    colnames(dunn2_mat) <- c("pulse_length","Metric","Comparison","Z","p-value")
+    pulse_dunn_outputs <- rbind(pulse_dunn_outputs,dunn2_mat)
+  }
+  #then a two-way
+  #reading it seems aligned rank transform may not be good in general, and it's not right for this data
+  # art_model <- art(rheo_metrics[,col] ~ Genotype*pulse_length, data=rheo_metrics)
+  # summary(art_model)
+  # anova(art_model)
+  # 
+  #marginal = art.con(art_model, "Genotype:pulse_length", adjust = "none") #i think this is broken rn
+  
+  #instead I'll try a permutation anova?
+  #couldn't get that to work either
+  
+  #repeated measures anova which is treating the pulse lengths as different
+  #obs, which might flatten some of the variation but will account for individual difs
+  #(of course it's still parametric)
+  
+  #aov(ec40 ~ Genotype + Error(X/Genotype), data = rheo_metrics)
+  
+}
+write.csv(dunn_outputs[-1,],"OutFiles/Rheobase/4main_Geno_dunn_comparisons.csv",row.names=F)
+
+write.csv(pulse_dunn_outputs[-1,],"OutFiles/Rheobase/4main_Pulse_Geno_dunn_comparisons.csv",row.names=F)
+
+#want to calc how many are sig with and without the pulse splitting to see if it matters much
+dunn_outputs <- as.data.frame(dunn_outputs[-1,])
+for (metric in unique(dunn_outputs$Metric)) {
+  df <- as.data.frame(dunn_outputs) %>% filter(Metric == metric)
+  df$'p-value' <- as.numeric(df$'p-value') #bc of struggles with scientific notation
+  total_sig <- sum(df$'p-value' < 0.025)
+  
+  df2 <- as.data.frame(pulse_dunn_outputs) %>% filter(Metric == metric)
+  df2$'p-value' <- as.numeric(df2$'p-value') #same sci notation struggles
+  sub_sig <- sum(df2$'p-value' < 0.025)/length(unique(df2$pulse_length))
+  
+  print(paste0(metric," Overall Sig: ",total_sig," Subset Sig Prop: ",sub_sig))
+}
+
+#different pulse widths slightly matter, tbd what i'll do about that
+
+#okay now I fit the strength-duration curve but with the other (predicted) ECs ----
+#ec10 -----
+library(minpack.lm)
+library(viridis)
+
+ec10_fits <- matrix(ncol=4)
+colnames(ec10_fits) <- c("Ind","rheobase","chronaxie","Genotype")
+
+genotypes <- c("LVNV","WT_sirtalis","T","WT_hammondii","EPN","WT_elegans")
+
+for (type in genotypes) {
+  foldername = type
+  df<-read.csv(toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv", sep="")))
+  df <- df[-1,-1] %>% 
+    filter(MusMassg != 0.999) %>% 
+    dplyr::select(X,EC10,pulse_length) %>% 
+    pivot_wider(names_from = pulse_length, values_from = EC10) %>% 
+    column_to_rownames('X') 
+  
+  df <- t(df)
+  df <- df[1:5,] #ditching the high pulses bc they make fitting harder
+  
+  expdecay <- function(pw,rheobase,chronaxie) {
+    rheobase*(1+(chronaxie/pw)) 
+  }
+  expdecay <- Vectorize(expdecay)
+  
+  expresidFun <- function(parS,observed,indices){
+    expdecay(as.numeric(rownames(df))[indices],parS$rheobase,parS$chronaxie) - observed
+  }
+  
+  fitDecay <- function(x){
+    nls.out <- nls.lm(par = list(rheobase = min(df[,x],na.rm=T),chronaxie = 0.2), 
+                      fn = expresidFun, lower = c(0,0), upper = c(600,500),
+                      control = nls.lm.control(maxiter = 1024, maxfev = 1024), 
+                      observed = df[!is.na(df[,x]),x], indices = !is.na(df[,x]))
+    print(nls.out)
+    unlist(nls.out$par)
+  }
+  
+  result <- Vectorize(fitDecay)(1:ncol(df))
+  print(result)
+  
+  #used to plot the raw data
+  df_long <- as.data.frame(df) %>% mutate(
+    pulse_length=as.numeric(rownames(df))
+  ) %>%  pivot_longer(
+    cols= -pulse_length,
+    names_to = "Ind",
+    values_to = "current"
+  )
+  
+  #so that I can put the fitted lines on top of the raw data
+  sim_output <- data.frame(pw = seq(50,1000,by=10))
+  for (ind in 1:ncol(result)) {
+    sim_output[,ind+1] <- result[1,ind]*(1+(result[2,ind]/sim_output[,1]))
+  }
+  colnames(sim_output) <- c("pulse_length", colnames(df))
+  
+  sim_output <- sim_output %>% pivot_longer(
+    cols= -pulse_length,
+    names_to = "Ind",
+    values_to = "current"
+  )
+  
+  #this is all built in to visually assess the goodness of fit of the curves
+  geno_plot <- ggplot(df_long, aes(x = pulse_length, y = current, group = Ind)) +
+    geom_line(data = sim_output, aes(x=pulse_length, y=current, group = Ind, color=Ind)) +  
+    geom_point(aes(color = Ind, x=pulse_length,y=current), data=df_long) +
+    scale_fill_viridis(discrete=T) +
+    scale_y_continuous(limits = c(0,600)) # +facet_wrap(~Ind)
+  
+  geno_plot
+  
+  ggsave(toString(paste("Plots/rheobase_plots/",foldername,"_ec10_fit_check.png")),dpi=300)
+  
+  output <- t(matrix(c(colnames(df),result,rep(foldername,ncol(df))),nrow=4,byrow=T))
+  colnames(output) <- c("Ind","rheobase","chronaxie","Genotype")
+  
+  ec10_fits <- rbind(ec10_fits,output)
+}
+
+ec10_fits <- as.data.frame(ec10_fits[-1,])
+
+#write.csv(ec10_fits,"OutFiles/Rheobase/rheobase_curve_ec10_subset_method.csv",row.names=F)
+
+ec10_fits <- as.data.frame(ec10_fits)
+comparison <- kruskal.test(ec10_fits$rheobase ~ ec10_fits$Genotype)
+print(comparison)
+
+# ec40 -----
+ec40_fits <- matrix(ncol=4)
+colnames(ec40_fits) <- c("Ind","rheobase","chronaxie","Genotype")
+
+genotypes <- c("LVNV","WT_sirtalis","T","WT_hammondii","EPN","WT_elegans")
+
+for (type in genotypes) {
+  foldername = type
+  df<-read.csv(toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv", sep="")))
+  df <- df[-1,-1] %>% 
+    filter(MusMassg != 0.999) %>% 
+    dplyr::select(X,EC40,pulse_length) %>% 
+    pivot_wider(names_from = pulse_length, values_from = EC40) %>% 
+    column_to_rownames('X') 
+  
+  df <- t(df)
+  df <- df[1:5,] #ditching the high pulses bc they make fitting harder
+  
+  expdecay <- function(pw,rheobase,chronaxie) {
+    rheobase*(1+(chronaxie/pw)) 
+  }
+  expdecay <- Vectorize(expdecay)
+  
+  expresidFun <- function(parS,observed,indices){
+    expdecay(as.numeric(rownames(df))[indices],parS$rheobase,parS$chronaxie) - observed
+  }
+  
+  fitDecay <- function(x){
+    nls.out <- nls.lm(par = list(rheobase = min(df[,x],na.rm=T),chronaxie = 0.2), 
+                      fn = expresidFun, lower = c(0,0), upper = c(600,500),
+                      control = nls.lm.control(maxiter = 1024, maxfev = 1024), 
+                      observed = df[!is.na(df[,x]),x], indices = !is.na(df[,x]))
+    print(nls.out)
+    unlist(nls.out$par)
+  }
+  
+  result <- Vectorize(fitDecay)(1:ncol(df))
+  print(result)
+  
+  #used to plot the raw data
+  df_long <- as.data.frame(df) %>% mutate(
+    pulse_length=as.numeric(rownames(df))
+  ) %>%  pivot_longer(
+    cols= -pulse_length,
+    names_to = "Ind",
+    values_to = "current"
+  )
+  
+  #so that I can put the fitted lines on top of the raw data
+  sim_output <- data.frame(pw = seq(50,1000,by=10))
+  for (ind in 1:ncol(result)) {
+    sim_output[,ind+1] <- result[1,ind]*(1+(result[2,ind]/sim_output[,1]))
+  }
+  colnames(sim_output) <- c("pulse_length", colnames(df))
+  
+  sim_output <- sim_output %>% pivot_longer(
+    cols= -pulse_length,
+    names_to = "Ind",
+    values_to = "current"
+  )
+  
+  #this is all built in to visually assess the goodness of fit of the curves
+  geno_plot <- ggplot(df_long, aes(x = pulse_length, y = current, group = Ind)) +
+    geom_line(data = sim_output, aes(x=pulse_length, y=current, group = Ind, color=Ind)) +  
+    geom_point(aes(color = Ind, x=pulse_length,y=current), data=df_long) +
+    scale_fill_viridis(discrete=T) +
+    scale_y_continuous(limits = c(0,600)) # +facet_wrap(~Ind)
+  
+  geno_plot
+  
+  ggsave(toString(paste("Plots/rheobase_plots/",foldername,"_ec40_fit_check.png")),dpi=300)
+  
+  output <- t(matrix(c(colnames(df),result,rep(foldername,ncol(df))),nrow=4,byrow=T))
+  colnames(output) <- c("Ind","rheobase","chronaxie","Genotype")
+  
+  ec40_fits <- rbind(ec40_fits,output)
+}
+
+ec40_fits <- as.data.frame(ec40_fits[-1,])
+
+#write.csv(ec40_fits,"OutFiles/Rheobase/rheobase_curve_ec40_subset_method.csv",row.names=F)
+
+ec40_fits <- as.data.frame(ec40_fits)
+comparison <- kruskal.test(ec40_fits$rheobase ~ ec40_fits$Genotype)
+print(comparison)
+
+# ec90 -----
+ec90_fits <- matrix(ncol=4)
+colnames(ec90_fits) <- c("Ind","rheobase","chronaxie","Genotype")
+
+genotypes <- c("LVNV","WT_sirtalis","T","WT_hammondii","EPN","WT_elegans")
+
+for (type in genotypes) {
+  foldername = type
+  df<-read.csv(toString(paste("OutFiles/Rheobase/",foldername,"/Sigmoidal/Sigmoidal-rpt.csv", sep="")))
+  df <- df[-1,-1] %>% 
+    filter(MusMassg != 0.999) %>% 
+    dplyr::select(X,EC90,pulse_length) %>% 
+    pivot_wider(names_from = pulse_length, values_from = EC90) %>% 
+    column_to_rownames('X') 
+  
+  df <- t(df)
+  df <- df[1:5,] #ditching the high pulses bc they make fitting harder
+  
+  expdecay <- function(pw,rheobase,chronaxie) {
+    rheobase*(1+(chronaxie/pw)) 
+  }
+  expdecay <- Vectorize(expdecay)
+  
+  expresidFun <- function(parS,observed,indices){
+    expdecay(as.numeric(rownames(df))[indices],parS$rheobase,parS$chronaxie) - observed
+  }
+  
+  fitDecay <- function(x){
+    nls.out <- nls.lm(par = list(rheobase = min(df[,x],na.rm=T),chronaxie = 0.2), 
+                      fn = expresidFun, lower = c(0,0), upper = c(600,500),
+                      control = nls.lm.control(maxiter = 1024, maxfev = 1024), 
+                      observed = df[!is.na(df[,x]),x], indices = !is.na(df[,x]))
+    print(nls.out)
+    unlist(nls.out$par)
+  }
+  
+  result <- Vectorize(fitDecay)(1:ncol(df))
+  print(result)
+  
+  #used to plot the raw data
+  df_long <- as.data.frame(df) %>% mutate(
+    pulse_length=as.numeric(rownames(df))
+  ) %>%  pivot_longer(
+    cols= -pulse_length,
+    names_to = "Ind",
+    values_to = "current"
+  )
+  
+  #so that I can put the fitted lines on top of the raw data
+  sim_output <- data.frame(pw = seq(50,1000,by=10))
+  for (ind in 1:ncol(result)) {
+    sim_output[,ind+1] <- result[1,ind]*(1+(result[2,ind]/sim_output[,1]))
+  }
+  colnames(sim_output) <- c("pulse_length", colnames(df))
+  
+  sim_output <- sim_output %>% pivot_longer(
+    cols= -pulse_length,
+    names_to = "Ind",
+    values_to = "current"
+  )
+  
+  #this is all built in to visually assess the goodness of fit of the curves
+  geno_plot <- ggplot(df_long, aes(x = pulse_length, y = current, group = Ind)) +
+    geom_line(data = sim_output, aes(x=pulse_length, y=current, group = Ind, color=Ind)) +  
+    geom_point(aes(color = Ind, x=pulse_length,y=current), data=df_long) +
+    scale_fill_viridis(discrete=T) +
+    scale_y_continuous(limits = c(0,600)) # +facet_wrap(~Ind)
+  
+  geno_plot
+  
+  ggsave(toString(paste("Plots/rheobase_plots/",foldername,"_ec90_fit_check.png")),dpi=300)
+  
+  output <- t(matrix(c(colnames(df),result,rep(foldername,ncol(df))),nrow=4,byrow=T))
+  colnames(output) <- c("Ind","rheobase","chronaxie","Genotype")
+  
+  ec90_fits <- rbind(ec90_fits,output)
+}
+
+ec90_fits <- as.data.frame(ec90_fits[-1,])
+
+#write.csv(ec90_fits,"OutFiles/Rheobase/rheobase_curve_ec90_subset_method.csv",row.names=F)
+
+ec90_fits <- as.data.frame(ec90_fits)
+comparison <- kruskal.test(ec90_fits$rheobase ~ ec90_fits$Genotype)
+print(comparison)
+
+#all suggestive but not-significant results
+#also very interesting that these give more suggestive results than the ec50/x0
